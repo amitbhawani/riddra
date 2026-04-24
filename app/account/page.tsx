@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { signoutAction } from "@/app/(auth)/actions";
-import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { UserBookmarkPanel } from "@/components/user-bookmark-panel";
 import { UserPortfolioPanel } from "@/components/user-portfolio-panel";
 import { UserProfileSettingsCard } from "@/components/user-profile-settings-card";
@@ -28,7 +27,6 @@ import {
   getUserRecentlyViewed,
   getUserWatchlist,
 } from "@/lib/user-product-store";
-import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -198,7 +196,7 @@ function getLockedContentMessage(row: AdminListRow, currentTierName: string) {
 
 export default async function AccountPage() {
   const user = await requireUser();
-  const [subscription, profile, watchlistItems, portfolioHoldings, bookmarks, recentlyViewed, store, tiers, sharedSidebarRailData] =
+  const [subscription, profile, watchlistItems, portfolioHoldings, bookmarks, recentlyViewed, store, tiers] =
     await Promise.all([
       getUserSubscriptionSummary(user),
       getUserProductProfile(user),
@@ -208,7 +206,6 @@ export default async function AccountPage() {
       getUserRecentlyViewed(user),
       getAdminOperatorStore(),
       getAdminMembershipTiers(),
-      getSharedSidebarRailData({ pageCategory: "account" }),
     ]);
   const allRows = await getAdminRowsForFamilies(memberFacingAdminFamilies, store.records, {
     cacheKey: store.updatedAt,
@@ -320,8 +317,7 @@ export default async function AccountPage() {
           </GlowCard>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
-          <div className="space-y-6">
+        <div className="space-y-6">
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <GlowCard>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -584,20 +580,6 @@ export default async function AccountPage() {
             </div>
           </GlowCard>
         </div>
-
-          </div>
-
-          {sharedSidebarRailData.enabledOnPageType ? (
-            <aside className="space-y-4 xl:sticky xl:top-24">
-              <SharedMarketSidebarRail
-                visibleBlocks={sharedSidebarRailData.visibleBlocks}
-                marketSnapshotItems={sharedSidebarRailData.marketSnapshotItems}
-                topGainers={sharedSidebarRailData.topGainers}
-                topLosers={sharedSidebarRailData.topLosers}
-                popularStocks={sharedSidebarRailData.popularStocks}
-              />
-            </aside>
-          ) : null}
         </div>
       </Container>
     </div>

@@ -12,6 +12,7 @@ type WealthDetailHeaderProps = {
   truthDescription: string;
   truthItems: string[];
   supportStats: Array<{ label: string; value: string | number; detail?: string }>;
+  contained?: boolean;
 };
 
 export function WealthDetailHeader({
@@ -24,9 +25,10 @@ export function WealthDetailHeader({
   truthDescription,
   truthItems,
   supportStats,
+  contained = true,
 }: WealthDetailHeaderProps) {
-  return (
-    <Container className="space-y-6">
+  const content = (
+    <div className="space-y-6">
       <div className="space-y-3">
         <Breadcrumbs items={breadcrumbs} />
         <Eyebrow>{eyebrow}</Eyebrow>
@@ -69,6 +71,8 @@ export function WealthDetailHeader({
         items={truthItems.map((item) => ({ body: item }))}
         variant="context"
       />
-    </Container>
+    </div>
   );
+
+  return contained ? <Container className="space-y-6">{content}</Container> : content;
 }

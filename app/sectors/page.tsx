@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getStockSectorHubs } from "@/lib/hubs";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -17,18 +19,21 @@ export default async function SectorsPage() {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
-  const sectors = await getStockSectorHubs();
+  const [sectors, sidebar] = await Promise.all([getStockSectorHubs(), getGlobalSidebarRail("sectors")]);
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Cluster authority</Eyebrow>
           <SectionHeading
             title="Stock sector hubs"
             description="Sector hubs help Riddra move from isolated stock pages into grouped market understanding, compare flows, and thematic search authority."
           />
-        </div>
+              </div>
 
         <SubscriberTruthNotice
           eyebrow="Sector truth"
@@ -86,7 +91,11 @@ export default async function SectorsPage() {
             </Link>
           ))}
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

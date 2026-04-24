@@ -215,6 +215,26 @@ a {
   border-color: rgba(212, 133, 59, 0.6);
 }
 
+.riddra-legacy-light-surface [class*="text-white"] {
+  color: #111827 !important;
+}
+
+.riddra-legacy-light-surface [class*="text-mist"] {
+  color: rgba(75, 85, 99, 0.84) !important;
+}
+
+.riddra-legacy-light-surface [class*="border-white"] {
+  border-color: rgba(221, 215, 207, 0.96) !important;
+}
+
+.riddra-legacy-light-surface [class*="bg-black/"] {
+  background: rgba(255, 255, 255, 0.86) !important;
+}
+
+.riddra-legacy-light-surface [class*="bg-white/"] {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
 .riddra-product-section {
   border-top: 1px solid var(--riddra-product-border);
   padding-top: var(--riddra-product-section-gap);

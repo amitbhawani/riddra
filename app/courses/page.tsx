@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { Container, Eyebrow, GlowCard } from "@/components/ui";
 import { courseCollections, courses } from "@/lib/courses";
@@ -21,10 +23,14 @@ export default async function CoursesPage() {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
+  const sidebar = await getGlobalSidebarRail("courses");
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <Container>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
         <div className="space-y-5">
           <Eyebrow>Learning products</Eyebrow>
           <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">Courses</h1>
@@ -183,6 +189,10 @@ export default async function CoursesPage() {
             </Link>
           ))}
         </div>
+            </div>
+          }
+          right={sidebar}
+        />
       </Container>
     </div>
   );

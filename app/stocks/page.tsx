@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
 import {
   ProductBreadcrumbs,
   ProductCard,
   ProductPageContainer,
+  ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 
 export default async function StocksIndexPage() {
   const stocks = await getStocks();
+  const sidebar = await getGlobalSidebarRail("stocks");
   const verifiedCount = stocks.filter((stock) => stock.snapshotMeta?.mode === "delayed_snapshot").length;
   const managedCount = stocks.filter((stock) => stock.snapshotMeta?.mode === "manual_close").length;
   const sectorCount = new Set(stocks.map((stock) => stock.sector)).size;
@@ -164,7 +167,9 @@ export default async function StocksIndexPage() {
     <div className="riddra-product-page border-y border-[rgba(221,215,207,0.82)] bg-[linear-gradient(180deg,rgba(248,246,242,0.98)_0%,rgba(250,249,247,0.98)_100%)] py-2 sm:py-2.5">
       <ProductPageContainer className="space-y-6">
         <ProductBreadcrumbs items={breadcrumbs} />
-
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
         <ProductCard tone="primary" className="p-4 sm:p-5">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
             <div className="space-y-4">
@@ -282,6 +287,10 @@ export default async function StocksIndexPage() {
             ))}
           </div>
         </ProductCard>
+            </div>
+          }
+          right={sidebar}
+        />
       </ProductPageContainer>
     </div>
   );

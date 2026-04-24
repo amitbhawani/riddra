@@ -6,11 +6,13 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { type ComparisonBattleMetric, ComparisonBattleGrid } from "@/components/comparison-battle-grid";
 import { CompareRouteCard } from "@/components/compare-route-card";
 import { ComparisonVisualGrid } from "@/components/comparison-visual-grid";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { MarketDataStatusBadge } from "@/components/market-data-status-badge";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { getStockCompareCandidates, getStockComparePair } from "@/lib/asset-insights";
 import { getCanonicalStockCompareHref } from "@/lib/compare-routing";
 import { getStocks } from "@/lib/content";
@@ -51,11 +53,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StockComparePage({ params }: PageProps) {
   const { left, right } = await params;
-  const [stocks, pair, leftCandidates, rightCandidates] = await Promise.all([
+  const [stocks, pair, leftCandidates, rightCandidates, sidebar] = await Promise.all([
     getStocks(),
     getStockComparePair(left, right),
     getStockCompareCandidates(left, { excludeSlug: right, limit: 3 }),
     getStockCompareCandidates(right, { excludeSlug: left, limit: 3 }),
+    getGlobalSidebarRail("compare"),
   ]);
 
   if (!pair) {
@@ -213,7 +216,7 @@ export default async function StockComparePage({ params }: PageProps) {
   ];
 
   return (
-    <div className="riddra-member-page py-16 sm:py-24">
+    <div className="riddra-product-page py-3 sm:py-4">
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -222,8 +225,11 @@ export default async function StockComparePage({ params }: PageProps) {
           path,
         })}
       />
-      <Container className="space-y-8">
-        <div className="space-y-5">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Stock comparison</Eyebrow>
           <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -246,7 +252,7 @@ export default async function StockComparePage({ params }: PageProps) {
               Open {pair.right.name}
             </Link>
           </div>
-        </div>
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="Stock compare truth"
@@ -652,7 +658,11 @@ export default async function StockComparePage({ params }: PageProps) {
             </Link>
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

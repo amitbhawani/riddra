@@ -87,14 +87,14 @@ export function AuthForm({
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
-        <p className="text-sm leading-7 text-mist/72">{description}</p>
+        <h2 className="riddra-product-body text-[1.6rem] font-semibold tracking-tight text-[#1B3A6B]">{title}</h2>
+        <p className="riddra-product-body text-[14px] leading-7 text-[rgba(75,85,99,0.84)]">{description}</p>
       </div>
 
       <form action={formAction} onSubmit={validateSubmit} className="grid gap-4" noValidate>
         {googleAction ? (
           <button
-            className="inline-flex items-center justify-center rounded-full border border-white/14 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white transition hover:border-white/24 hover:bg-white/[0.07]"
+            className="inline-flex items-center justify-center rounded-[12px] border border-[rgba(27,58,107,0.14)] bg-white px-5 py-3 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
             data-skip-client-validation="true"
             formAction={googleAction}
             type="submit"
@@ -104,16 +104,16 @@ export function AuthForm({
         ) : null}
 
         {googleAction ? (
-          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-mist/45">
-            <div className="h-px flex-1 bg-white/10" />
+          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-[rgba(107,114,128,0.72)]">
+            <div className="h-px flex-1 bg-[rgba(221,215,207,0.92)]" />
             <span>or continue with email</span>
-            <div className="h-px flex-1 bg-white/10" />
+            <div className="h-px flex-1 bg-[rgba(221,215,207,0.92)]" />
           </div>
         ) : null}
 
         {includeName ? (
           <input
-            className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white placeholder:text-mist/40"
+            className="w-full rounded-[12px] border border-[rgba(221,215,207,0.96)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-[#1B3A6B] placeholder:text-[rgba(107,114,128,0.62)] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] outline-none transition focus:border-[rgba(27,58,107,0.2)] focus:ring-2 focus:ring-[rgba(27,58,107,0.08)]"
             name="full_name"
             placeholder="Full name"
             required
@@ -127,7 +127,7 @@ export function AuthForm({
           />
         ) : null}
         <input
-          className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white placeholder:text-mist/40"
+          className="w-full rounded-[12px] border border-[rgba(221,215,207,0.96)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-[#1B3A6B] placeholder:text-[rgba(107,114,128,0.62)] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] outline-none transition focus:border-[rgba(27,58,107,0.2)] focus:ring-2 focus:ring-[rgba(27,58,107,0.08)]"
           name="email"
           placeholder="Email address"
           type="email"
@@ -143,31 +143,34 @@ export function AuthForm({
         />
 
         {emailHelperText ? (
-          <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-7 text-mist/72">
+          <div className="rounded-[12px] border border-[rgba(221,215,207,0.86)] bg-[rgba(248,246,242,0.86)] px-4 py-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
             {emailHelperText}
           </div>
         ) : null}
 
         {clientError || state.error ? (
-          <div id="auth-form-client-error" className="rounded-2xl border border-bloom/30 bg-bloom/10 px-4 py-3 text-sm text-white">
+          <div
+            id="auth-form-client-error"
+            className="rounded-[12px] border border-[rgba(239,68,68,0.22)] bg-[rgba(239,68,68,0.08)] px-4 py-3 text-sm text-[#B42318]"
+          >
             {clientError ?? state.error}
           </div>
         ) : null}
 
         {queryError ? (
-          <div className="rounded-2xl border border-bloom/30 bg-bloom/10 px-4 py-3 text-sm text-white">
+          <div className="rounded-[12px] border border-[rgba(239,68,68,0.22)] bg-[rgba(239,68,68,0.08)] px-4 py-3 text-sm text-[#B42318]">
             {queryError}
           </div>
         ) : null}
 
         {state.success ? (
-          <div className="rounded-2xl border border-aurora/30 bg-aurora/10 px-4 py-3 text-sm text-white">
+          <div className="rounded-[12px] border border-[rgba(22,163,74,0.2)] bg-[rgba(22,163,74,0.08)] px-4 py-3 text-sm text-[#166534]">
             {state.success}
           </div>
         ) : null}
 
         <button
-          className="inline-flex items-center justify-center rounded-full bg-aurora px-5 py-3 text-sm font-medium text-ink transition hover:bg-[#75f0d3] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex items-center justify-center rounded-[12px] bg-[#1B3A6B] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#264a83] disabled:cursor-not-allowed disabled:opacity-70"
           disabled={pending}
           onClick={validateSubmitClick}
           type="submit"

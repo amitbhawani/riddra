@@ -42,7 +42,7 @@
     "indexSidebarMode": "",
     "indexSidebarTitle": "",
     "indexSidebarLinks": "",
-    "sharedSidebarEnabledPageCategories": "stocks\nmutual_funds\nindices\nsearch\nuser_profiles\naccount\nportfolio\nipo\netfs\npms\naif\nsif\ncourses\nlearn\nwebinars\nnewsletter\nresearch_articles\ncommunity\nmentorship",
+    "sharedSidebarEnabledPageCategories": "markets\nhome\nstocks\nmutual_funds\nindices\nsearch\ncompare\ntools\ncharts\nreports\nsectors\npricing\nhelp_contact\nlegal\nuser_profiles\naccount\nportfolio\nipo\netfs\npms\naif\nsif\ncourses\nlearn\nwebinars\nnewsletter\nresearch_articles\nfallback\ncommunity\nmentorship",
     "sharedSidebarVisibleBlocks": "market_snapshot\ntop_gainers\ntop_losers\npopular_stocks\npage_actions\nroute_links\nworkflow_checklist",
     "sharedSidebarMarketDataMode": "manual_snapshot",
     "sharedSidebarIndiaRows": "Nifty 50|22,487.20|+0.74%|/nifty50\nNifty Bank|48,211.80|+0.92%|/banknifty\nSensex|73,904.55|+0.66%|/sensex\nGift Nifty|22,541.10|+0.36%|/markets\nGold|₹71,842|+0.44%|/markets\nSilver|₹81,420|+0.27%|/markets",

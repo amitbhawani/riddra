@@ -128,6 +128,25 @@ export function AdminSettingsClient({
       </AdminSectionCard>
 
       <AdminSectionCard
+        id="head-code"
+        title="Header code"
+        description="Paste public-site code that should be injected before the closing </head> tag, such as Google Analytics, ads, or verification snippets."
+      >
+        <div className="space-y-3">
+          <textarea
+            value={settings.publicHeadCode}
+            onChange={(event) => update("publicHeadCode", event.target.value)}
+            rows={8}
+            placeholder={`<!-- Example -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-XXXX\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-XXXX');\n</script>`}
+            className="w-full rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 py-2 text-[13px] leading-6 text-[#111827]"
+          />
+          <div className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] px-3 py-2 text-[12px] leading-5 text-[#4b5563]">
+            This runs on the public-facing site only. Do not paste full <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, or <code>&lt;body&gt;</code> wrappers.
+          </div>
+        </div>
+      </AdminSectionCard>
+
+      <AdminSectionCard
         title="Membership and support defaults"
         description="Default tier and CTA behavior for new records, plus support destinations."
       >

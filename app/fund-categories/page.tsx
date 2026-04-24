@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getFundCategoryHubs } from "@/lib/hubs";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -17,18 +19,21 @@ export default async function FundCategoriesPage() {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
-  const categories = await getFundCategoryHubs();
+  const [categories, sidebar] = await Promise.all([getFundCategoryHubs(), getGlobalSidebarRail("mutual_funds")]);
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Cluster authority</Eyebrow>
           <SectionHeading
             title="Mutual fund category hubs"
             description="Category hubs make the fund experience easier to understand and give Riddra a stronger long-tail discovery structure."
           />
-        </div>
+              </div>
 
         <SubscriberTruthNotice
           eyebrow="Fund-category truth"
@@ -86,7 +91,11 @@ export default async function FundCategoriesPage() {
             </Link>
           ))}
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

@@ -1,15 +1,6 @@
 {
   "gold": [
     {
-      "date": "2026-01-20",
-      "gold24": 15489,
-      "gold22": 14198,
-      "gold18": 11617,
-      "xauusd": 4796.17,
-      "usdinr": 92,
-      "source": "gold-api.com + open.er-api.com"
-    },
-    {
       "date": "2026-01-21",
       "gold24": 15438,
       "gold22": 14152,
@@ -808,6 +799,15 @@
       "gold18": 11654,
       "xauusd": 4728.899902,
       "usdinr": 93.605785,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-24",
+      "gold24": 15466,
+      "gold22": 14167,
+      "gold18": 11600,
+      "xauusd": 4678.899902,
+      "usdinr": 94.17,
       "source": "Live"
     }
   ],

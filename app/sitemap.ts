@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { canonicalCompareCoverageRows } from "@/lib/canonical-compare-coverage";
 import { canonicalCoverageRows } from "@/lib/canonical-coverage";
 import { getFundCategoryHubs, getStockSectorHubs } from "@/lib/hubs";
+import { getPublishableCmsSlugSet } from "@/lib/publishable-content";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 
 const publicBetaRoutes = [
@@ -40,27 +41,62 @@ const publicBetaRoutes = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getPublicSiteUrl();
-  const [sectorHubs, fundCategoryHubs] = await Promise.all([
+  const [
+    sectorHubs,
+    fundCategoryHubs,
+    stockSlugs,
+    fundSlugs,
+    ipoSlugs,
+    etfSlugs,
+    pmsSlugs,
+    aifSlugs,
+    sifSlugs,
+  ] = await Promise.all([
     getStockSectorHubs(),
     getFundCategoryHubs(),
+    getPublishableCmsSlugSet("stock"),
+    getPublishableCmsSlugSet("mutual_fund"),
+    getPublishableCmsSlugSet("ipo"),
+    getPublishableCmsSlugSet("etf"),
+    getPublishableCmsSlugSet("pms"),
+    getPublishableCmsSlugSet("aif"),
+    getPublishableCmsSlugSet("sif"),
   ]);
+  const publishableSlugSets = {
+    stock: stockSlugs,
+    mutual_fund: fundSlugs,
+    ipo: ipoSlugs,
+    etf: etfSlugs,
+    pms: pmsSlugs,
+    aif: aifSlugs,
+    sif: sifSlugs,
+  } as const;
+  const publishableCoverageRows = canonicalCoverageRows.filter((row) =>
+    publishableSlugSets[row.family].has(row.slug),
+  );
+  const publishableStockRows = publishableCoverageRows.filter((row) => row.family === "stock");
+  const publishableCompareRows = canonicalCompareCoverageRows.filter((row) => {
+    if (row.family === "stock_compare") {
+      return stockSlugs.has(row.leftSlug) && stockSlugs.has(row.rightSlug);
+    }
+
+    return fundSlugs.has(row.leftSlug) && fundSlugs.has(row.rightSlug);
+  });
 
   return [
     ...publicBetaRoutes.map((path) => ({
       url: `${siteUrl}${path}`,
       lastModified: new Date(),
     })),
-    ...canonicalCoverageRows.map((row) => ({
+    ...publishableCoverageRows.map((row) => ({
       url: `${siteUrl}${row.route}`,
       lastModified: new Date(),
     })),
-    ...canonicalCoverageRows
-      .filter((row) => row.family === "stock")
-      .map((row) => ({
-        url: `${siteUrl}${row.route}/chart`,
-        lastModified: new Date(),
-      })),
-    ...canonicalCompareCoverageRows.map((row) => ({
+    ...publishableStockRows.map((row) => ({
+      url: `${siteUrl}${row.route}/chart`,
+      lastModified: new Date(),
+    })),
+    ...publishableCompareRows.map((row) => ({
       url: `${siteUrl}${row.route}`,
       lastModified: new Date(),
     })),

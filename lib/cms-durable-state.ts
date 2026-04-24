@@ -68,6 +68,7 @@ type SystemSettingsRow = {
   default_meta_description: string;
   default_og_image: string;
   default_canonical_base: string;
+  public_head_code: string | null;
   default_no_index: boolean;
   default_membership_tier: string;
   default_locked_cta_label: string;
@@ -496,6 +497,7 @@ function mapSettingsRow(row: SystemSettingsRow): SystemSettings {
     defaultMetaDescription: cleanString(row.default_meta_description),
     defaultOgImage: cleanString(row.default_og_image),
     defaultCanonicalBase: cleanString(row.default_canonical_base),
+    publicHeadCode: cleanString(row.public_head_code),
     defaultNoIndex: Boolean(row.default_no_index),
     defaultMembershipTier: cleanString(row.default_membership_tier),
     defaultLockedCtaLabel: cleanString(row.default_locked_cta_label),
@@ -1181,7 +1183,7 @@ export async function getDurableSystemSettings() {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from(table)
-      .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
+      .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,public_head_code,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
       .eq("settings_key", "default")
       .maybeSingle();
 
@@ -1214,6 +1216,7 @@ export async function saveDurableSystemSettings(settings: SystemSettings) {
           default_meta_description: cleanString(settings.defaultMetaDescription),
           default_og_image: cleanString(settings.defaultOgImage),
           default_canonical_base: cleanString(settings.defaultCanonicalBase),
+          public_head_code: cleanString(settings.publicHeadCode),
           default_no_index: settings.defaultNoIndex,
           default_membership_tier: cleanString(settings.defaultMembershipTier),
           default_locked_cta_label: cleanString(settings.defaultLockedCtaLabel),
@@ -1227,7 +1230,7 @@ export async function saveDurableSystemSettings(settings: SystemSettings) {
         },
         { onConflict: "settings_key" },
       )
-      .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
+      .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,public_head_code,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
       .single();
 
     if (error) {

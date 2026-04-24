@@ -1,12 +1,15 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   ProductBulletListCard,
   ProductCard,
+  ProductPageContainer,
+  ProductPageTwoColumnLayout,
   ProductRouteGrid,
   ProductSectionTitle,
 } from "@/components/product-page-system";
-import { Container, Eyebrow, SectionHeading } from "@/components/ui";
+import { Eyebrow, SectionHeading } from "@/components/ui";
 import type { WealthProduct } from "@/lib/wealth-products";
 
 type WealthFamilyHubPageProps = {
@@ -23,6 +26,7 @@ type WealthFamilyHubPageProps = {
   laneItems: string[];
   products: WealthProduct[];
   hrefBase: string;
+  sidebar?: ReactNode;
 };
 
 export function WealthFamilyHubPage({
@@ -39,10 +43,14 @@ export function WealthFamilyHubPage({
   laneItems,
   products,
   hrefBase,
+  sidebar,
 }: WealthFamilyHubPageProps) {
   return (
-    <div className="py-10 sm:py-12">
-      <Container className="space-y-6">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
         <div className="space-y-3">
           <Eyebrow>{eyebrow}</Eyebrow>
           <SectionHeading title={title} description={description} />
@@ -112,7 +120,11 @@ export function WealthFamilyHubPage({
             meta: product.benchmark,
           }))}
         />
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

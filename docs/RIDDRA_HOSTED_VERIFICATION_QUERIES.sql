@@ -140,6 +140,7 @@ select
   settings_key,
   site_name,
   default_membership_tier,
+  public_head_code,
   case
     when settings_key = 'default'
       and site_name <> ''
@@ -149,6 +150,19 @@ select
   end as status
 from public.product_system_settings
 where settings_key = 'default';
+
+select
+  'product_system_settings_public_head_code_column' as check_group,
+  column_name,
+  data_type,
+  case
+    when column_name = 'public_head_code' and data_type = 'text' then 'PASS'
+    else 'FAIL'
+  end as status
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'product_system_settings'
+  and column_name = 'public_head_code';
 
 select
   'admin_refresh_jobs' as check_group,

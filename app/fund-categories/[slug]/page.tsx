@@ -4,10 +4,11 @@ import Link from "next/link";
 
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import {
   describeFundCompareCandidate,
   getCanonicalFundCompareHref,
@@ -180,7 +181,7 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
           path: `/fund-categories/${category.hub.slug}`,
         })}
       />
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="mutual_funds">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Fund category hub</Eyebrow>
@@ -271,7 +272,7 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
             )}
           </div>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

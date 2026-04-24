@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { gettingStartedPaths } from "@/lib/get-started";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
@@ -33,7 +34,7 @@ export default function GetStartedPage() {
           path: "/get-started",
         })}
       />
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="home">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Launch onboarding</Eyebrow>
@@ -101,7 +102,7 @@ export default function GetStartedPage() {
             </GlowCard>
           ))}
         </div>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

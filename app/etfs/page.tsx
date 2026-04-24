@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { WealthFamilyHubPage } from "@/components/wealth-family-hub-page";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
 import { getPublishableCmsSlugSet } from "@/lib/publishable-content";
@@ -22,6 +23,7 @@ export default async function EtfIndexPage() {
     publishedSlugs.has(product.slug),
   );
   const overview = getWealthFamilyOverview("etf");
+  const sidebar = await getGlobalSidebarRail("etfs");
 
   return (
     <WealthFamilyHubPage
@@ -48,6 +50,7 @@ export default async function EtfIndexPage() {
       laneItems={overview.compareHighlights}
       products={products}
       hrefBase="/etfs"
+      sidebar={sidebar}
     />
   );
 }

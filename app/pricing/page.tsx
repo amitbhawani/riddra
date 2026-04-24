@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { ButtonLink, Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { ButtonLink, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getLaunchCommitmentItems } from "@/lib/launch-commitments";
 import { planAccessMatrix } from "@/lib/plan-access-matrix";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
@@ -14,7 +16,8 @@ export const metadata: Metadata = {
   description: "Review Riddra launch-preview pricing for Starter, Pro, and Elite workflows.",
 };
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const sidebar = await getGlobalSidebarRail("pricing");
   const config = getRuntimeLaunchConfig();
   const supportRegistry = getSupportOpsRegistrySummary("account");
   const commitmentItems = getLaunchCommitmentItems();
@@ -23,15 +26,18 @@ export default function PricingPage() {
   const supportCommitment = commitmentItems.find((item) => item.title === "Support and transactional delivery");
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Launch pricing</Eyebrow>
           <SectionHeading
             title="Simple pricing that feels believable at launch"
             description="The pricing layer should feel commercially realistic even while some workflow boundaries are still being hardened. Starter stays free, Pro serves serious market users, and Elite sits above that as the highest-touch layer."
           />
-        </div>
+              </div>
         <PublicSurfaceTruthSection
           eyebrow="Pricing truth"
           title="This pricing page is a private-beta expectation layer, not a live checkout surface"
@@ -222,7 +228,11 @@ export default function PricingPage() {
             </Link>
           </GlowCard>
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

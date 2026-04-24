@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { UserContentActionCard } from "@/components/user-content-action-card";
 import {
@@ -83,6 +84,7 @@ export default async function LearnArticlePage({ params }: PageProps) {
     billingSubject: "premium education workflow language",
     supportSubject: "readers who convert into assisted workflows",
   });
+  const sidebar = await getGlobalSidebarRail("learn");
 
   return (
     <>
@@ -178,6 +180,7 @@ export default async function LearnArticlePage({ params }: PageProps) {
                   ]}
                   variant="analysis"
                 />
+                {sidebar}
               </>
             }
           />

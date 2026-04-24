@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import {
   ProductBulletListCard,
   ProductInsightGridCard,
@@ -72,6 +73,7 @@ export default async function NewsletterTrackPage({ params }: PageProps) {
     billingSubject: "premium newsletter workflow language",
     supportSubject: "readers who convert into assisted workflows",
   });
+  const sidebar = await getGlobalSidebarRail("newsletter");
 
   return (
     <ProductPageShell
@@ -178,6 +180,7 @@ export default async function NewsletterTrackPage({ params }: PageProps) {
                 ]}
                 variant="signals"
               />
+              {sidebar}
             </>
           }
         />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { WealthFamilyHubPage } from "@/components/wealth-family-hub-page";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
 import { getPublishableCmsSlugSet } from "@/lib/publishable-content";
@@ -22,6 +23,8 @@ export default async function SifIndexPage() {
     publishedSlugs.has(product.slug),
   );
   const overview = getWealthFamilyOverview("sif");
+  const sidebar = await getGlobalSidebarRail("sif");
+
   return (
     <WealthFamilyHubPage
       eyebrow="Wealth products"
@@ -47,6 +50,7 @@ export default async function SifIndexPage() {
       laneItems={overview.compareHighlights}
       products={products}
       hrefBase="/sif"
+      sidebar={sidebar}
     />
   );
 }

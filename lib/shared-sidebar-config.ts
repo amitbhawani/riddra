@@ -12,6 +12,11 @@ export const sharedSidebarPageCategoryOptions = [
     description: "Use the shared global sidebar on market overview and market board pages.",
   },
   {
+    label: "Home",
+    value: "home",
+    description: "Use the shared global sidebar on the public homepage and top-level discovery surfaces.",
+  },
+  {
     label: "Stocks",
     value: "stocks",
     description: "Use the shared global sidebar on stock detail pages and stock prototypes.",
@@ -30,6 +35,46 @@ export const sharedSidebarPageCategoryOptions = [
     label: "Search",
     value: "search",
     description: "Use the shared global sidebar on the public search experience.",
+  },
+  {
+    label: "Compare",
+    value: "compare",
+    description: "Use the shared global sidebar on stock and fund comparison pages.",
+  },
+  {
+    label: "Tools",
+    value: "tools",
+    description: "Use the shared global sidebar on tools and calculator pages.",
+  },
+  {
+    label: "Charts",
+    value: "charts",
+    description: "Use the shared global sidebar on charting and scanner pages.",
+  },
+  {
+    label: "Reports",
+    value: "reports",
+    description: "Use the shared global sidebar on reports, calendars, and market research pages.",
+  },
+  {
+    label: "Sectors",
+    value: "sectors",
+    description: "Use the shared global sidebar on sector hub and sector detail pages.",
+  },
+  {
+    label: "Pricing",
+    value: "pricing",
+    description: "Use the shared global sidebar on pricing and upgrade pages.",
+  },
+  {
+    label: "Help / Contact",
+    value: "help_contact",
+    description: "Use the shared global sidebar on help, support, and contact pages.",
+  },
+  {
+    label: "Legal",
+    value: "legal",
+    description: "Use the shared global sidebar on public policy and legal pages.",
   },
   {
     label: "User Profiles",

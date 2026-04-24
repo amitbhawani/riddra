@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 
 import { AdvancedChartWorkspace } from "@/components/advanced-chart-workspace";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { MarketDataStatusBadge } from "@/components/market-data-status-badge";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { getStockChartSnapshot } from "@/lib/chart-content";
 import { getStock, getStocks } from "@/lib/content";
 import { getChartSnapshotPresentation } from "@/lib/market-session";
@@ -61,7 +62,7 @@ export default async function StockChartPage({ params }: PageProps) {
   const tradingviewSymbol = getTradingviewStockSymbol(stock.symbol);
 
   return (
-    <div className="riddra-member-page py-16 sm:py-24">
+    <div className="py-16 sm:py-24">
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -70,7 +71,7 @@ export default async function StockChartPage({ params }: PageProps) {
           path: `/stocks/${stock.slug}/chart`,
         })}
       />
-      <Container className="space-y-8">
+      <GlobalSidebarPageShell category="charts" className="space-y-8" leftClassName="riddra-legacy-light-surface space-y-8">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{stock.symbol} chart</Eyebrow>
@@ -192,7 +193,7 @@ export default async function StockChartPage({ params }: PageProps) {
             </div>
           </GlowCard>
         </div>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { ScreenerWorkspace } from "../../components/screener-workspace";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getStocks } from "@/lib/content";
 import { buildScreenerRows } from "@/lib/screener";
 import {
@@ -99,20 +101,24 @@ type PageProps = {
 
 export default async function ScreenerPage({ searchParams }: PageProps) {
   const { query = "", sector, truth, compare, stack, metric, sort } = await searchParams;
-  const results = buildScreenerRows(await getStocks());
+  const [stocks, sidebar] = await Promise.all([getStocks(), getGlobalSidebarRail("tools")]);
+  const results = buildScreenerRows(stocks);
   const initialMetricGroup = metric && screenerMetricGroupIds.includes(metric) ? metric : null;
   const initialSortBy = sort && screenerSortOptions.includes(sort) ? sort : null;
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Reference-grade screener direction</Eyebrow>
           <SectionHeading
             title="Screener"
             description="Filter the market with saved stacks, refine by sector and truth state, use natural-language search for sector and metric intent, and jump straight into the stocks and charts worth deeper review."
           />
-        </div>
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="Screener truth"
@@ -156,7 +162,11 @@ export default async function ScreenerPage({ searchParams }: PageProps) {
             </GlowCard>
           ))}
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

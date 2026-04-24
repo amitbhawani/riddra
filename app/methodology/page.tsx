@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSourceRegistry } from "@/lib/source-registry";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -20,7 +21,7 @@ export default async function MethodologyPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="legal">
         <div className="space-y-5">
           <Eyebrow>Trust layer</Eyebrow>
           <SectionHeading
@@ -92,7 +93,7 @@ export default async function MethodologyPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

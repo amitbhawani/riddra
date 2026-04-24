@@ -17,5 +17,5 @@ export default function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="riddra-member-page">{children}</div>;
+  return <>{children}</>;
 }

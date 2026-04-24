@@ -271,7 +271,7 @@ const emptyStore: LaunchConfigStore = {
     indexSidebarTitle: "Index page sidebar",
     indexSidebarLinks: "Indices Hub|/indices\nNifty 50|/nifty50\nSensex|/sensex",
     sharedSidebarEnabledPageCategories:
-      "stocks\nmutual_funds\nindices\nsearch\nuser_profiles\nipo\netfs\npms\naif\nsif\ncourses\nlearn\nwebinars\nnewsletter\nresearch_articles\ncommunity\nmentorship",
+      "markets\nhome\nstocks\nmutual_funds\nindices\nsearch\ncompare\ntools\ncharts\nreports\nsectors\npricing\nhelp_contact\nlegal\nuser_profiles\naccount\nportfolio\nipo\netfs\npms\naif\nsif\ncourses\nlearn\nwebinars\nnewsletter\nresearch_articles\nfallback\ncommunity\nmentorship",
     sharedSidebarVisibleBlocks:
       "market_snapshot\ntop_gainers\ntop_losers\npopular_stocks\npage_actions\nroute_links\nworkflow_checklist",
     sharedSidebarMarketDataMode: "manual_snapshot",

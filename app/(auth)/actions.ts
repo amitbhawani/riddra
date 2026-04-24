@@ -102,7 +102,7 @@ export async function googleAuthAction() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: getAuthCallbackUrl("/account/setup"),
+      redirectTo: getAuthCallbackUrl("/account"),
     },
   });
 

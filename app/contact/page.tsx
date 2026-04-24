@@ -3,8 +3,10 @@ import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ContactRequestPanel } from "@/components/contact-request-panel";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getConfiguredSupportEmail, getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
 
@@ -13,7 +15,8 @@ export const metadata: Metadata = {
   description: "Support, partnership, and launch-contact page for Riddra.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const sidebar = await getGlobalSidebarRail("help_contact");
   const config = getRuntimeLaunchConfig();
   const supportRegistry = getSupportOpsRegistrySummary("account");
   const supportEmail = getConfiguredSupportEmail();
@@ -23,16 +26,19 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Support layer</Eyebrow>
           <SectionHeading
             title="Contact"
             description="Reach the team for support, partnership conversations, contributor questions, or launch-related help."
           />
-        </div>
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="Contact truth"
@@ -124,7 +130,11 @@ export default function ContactPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

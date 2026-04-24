@@ -40,6 +40,15 @@ export default async function AdminSettingsPage() {
         links={[{ href: "/admin/global-site/page-sidebar", label: "Open shared sidebar settings", tone: "primary" }]}
       />
 
+      <AdminGuidanceCard
+        title="Header code and tracking"
+        description="Global analytics, ad, and verification snippets can now be managed from system settings instead of editing the app shell by hand."
+        items={[
+          "Use the Header code field to paste site-wide public snippets that should load inside the real document head.",
+          "This is intended for trusted admin-managed code such as Google Analytics, Google Ads, or search-console verification tags.",
+        ]}
+      />
+
       <AdminSettingsClient initialSettings={settings} />
     </AdminPageFrame>
   );

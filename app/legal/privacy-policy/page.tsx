@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function LegalPrivacyPolicyPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="legal">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Legal</Eyebrow>
@@ -55,7 +56,7 @@ export default function LegalPrivacyPolicyPage() {
             This is a launch-ready placeholder privacy-policy page so the public URL can be shared with third-party platforms while the longer reviewed legal copy is finalized.
           </p>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getIpos } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -12,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function IpoIndexPage() {
-  const ipos = await getIpos();
+  const [ipos, sidebar] = await Promise.all([getIpos(), getGlobalSidebarRail("ipo")]);
   const mainboardCount = ipos.filter((ipo) => !ipo.ipoType.toLowerCase().includes("sme")).length;
   const smeCount = ipos.filter((ipo) => ipo.ipoType.toLowerCase().includes("sme")).length;
   const upcomingCount = ipos.filter((ipo) => ipo.status.toLowerCase().includes("upcoming")).length;
@@ -24,54 +26,64 @@ export default async function IpoIndexPage() {
 
   if (ipos.length === 0) {
     return (
-      <div className="py-16 sm:py-24">
-        <Container className="space-y-10">
-          <div className="space-y-5">
-            <Eyebrow>Traffic engine</Eyebrow>
-            <SectionHeading
-              title="IPO hub"
-              description="Browse upcoming issues, GMP coverage, allotment updates, and listing-day tracking from one organized IPO hub."
-            />
-          </div>
-          <PublicSurfaceTruthSection
-            eyebrow="IPO route truth"
-            title="This IPO hub is waiting for verified issue coverage"
-            description="The hub no longer falls back to sample IPO coverage for the public market layer. Real tracked issue records must exist before routes appear here."
-            authReady="Signed-in continuity is active enough to carry IPO discovery into account and workspace flows."
-            authPending="Local preview auth still limits how trustworthy the full IPO-to-account handoff can be."
-            billingReady="Billing core credentials exist, so premium IPO workflow language can move beyond pure preview framing once checkout and webhook flows are exercised."
-            billingPending="Billing credentials are still incomplete, so premium IPO promises should stay expectation-setting."
-            supportReady="Support delivery is configured enough to begin testing real follow-up for public IPO users who convert."
-            supportPending="Support delivery is still not fully active, so IPO routes should keep support expectations conservative."
-            href="/launch-readiness"
-            hrefLabel="Open launch readiness"
+      <div className="riddra-product-page py-3 sm:py-4">
+        <ProductPageContainer>
+          <ProductPageTwoColumnLayout
+            left={
+              <div className="riddra-legacy-light-surface space-y-6">
+                <div className="space-y-5">
+                  <Eyebrow>Traffic engine</Eyebrow>
+                  <SectionHeading
+                    title="IPO hub"
+                    description="Browse upcoming issues, GMP coverage, allotment updates, and listing-day tracking from one organized IPO hub."
+                  />
+                </div>
+                <PublicSurfaceTruthSection
+                  eyebrow="IPO route truth"
+                  title="This IPO hub is waiting for verified issue coverage"
+                  description="The hub no longer falls back to sample IPO coverage for the public market layer. Real tracked issue records must exist before routes appear here."
+                  authReady="Signed-in continuity is active enough to carry IPO discovery into account and workspace flows."
+                  authPending="Local preview auth still limits how trustworthy the full IPO-to-account handoff can be."
+                  billingReady="Billing core credentials exist, so premium IPO workflow language can move beyond pure preview framing once checkout and webhook flows are exercised."
+                  billingPending="Billing credentials are still incomplete, so premium IPO promises should stay expectation-setting."
+                  supportReady="Support delivery is configured enough to begin testing real follow-up for public IPO users who convert."
+                  supportPending="Support delivery is still not fully active, so IPO routes should keep support expectations conservative."
+                  href="/launch-readiness"
+                  hrefLabel="Open launch readiness"
+                />
+                <MarketDataUnavailableState
+                  eyebrow="IPO hub availability"
+                  title="No public IPO routes are ready yet"
+                  description="This hub now refuses to populate itself from seeded issue coverage when verified IPO records are unavailable."
+                  items={[
+                    "Load real IPO route records before the hub exposes issue pages to public users.",
+                    "GMP, subscription, and listing fields then stay conservative until verified issue detail is attached.",
+                  ]}
+                  href="/admin/deployment-readiness"
+                  hrefLabel="Open deployment readiness"
+                />
+              </div>
+            }
+            right={sidebar}
           />
-          <MarketDataUnavailableState
-            eyebrow="IPO hub availability"
-            title="No public IPO routes are ready yet"
-            description="This hub now refuses to populate itself from seeded issue coverage when verified IPO records are unavailable."
-            items={[
-              "Load real IPO route records before the hub exposes issue pages to public users.",
-              "GMP, subscription, and listing fields then stay conservative until verified issue detail is attached.",
-            ]}
-            href="/admin/deployment-readiness"
-            hrefLabel="Open deployment readiness"
-          />
-        </Container>
+        </ProductPageContainer>
       </div>
     );
   }
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Traffic engine</Eyebrow>
           <SectionHeading
             title="IPO hub"
             description="Browse upcoming issues, GMP coverage, allotment updates, and listing-day tracking from one organized IPO hub."
           />
-        </div>
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="IPO route truth"
@@ -176,7 +188,11 @@ export default async function IpoIndexPage() {
             </Link>
           ))}
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

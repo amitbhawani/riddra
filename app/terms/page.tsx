@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getConfiguredSupportEmail } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
@@ -23,7 +24,7 @@ export default function TermsPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="legal">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Trust layer</Eyebrow>
@@ -74,7 +75,7 @@ export default function TermsPage() {
           <p>Subscriber features, imported portfolios, and alerts are provided on a best-effort basis until the final production data stack is fully connected and documented.</p>
           <p>This is the current operating terms summary for launch. Reviewed legal terms replace it before broader commercialization.</p>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

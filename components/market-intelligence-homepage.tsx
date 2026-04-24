@@ -1,8 +1,10 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   ProductCard,
   ProductPageContainer,
+  ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
 import { MarketSnapshotOverview } from "@/components/market-snapshot-system";
@@ -32,6 +34,7 @@ export function MarketIntelligenceHomepage({
   topStocks,
   topFunds,
   topIpos,
+  sidebar,
 }: {
   indexSnapshots: IndexSnapshot[];
   marketSnapshotGroups: MarketSnapshotGroup[];
@@ -40,14 +43,18 @@ export function MarketIntelligenceHomepage({
   topStocks: StockSnapshot[];
   topFunds: FundSnapshot[];
   topIpos: IpoSnapshot[];
+  sidebar?: ReactNode;
 }) {
   const primaryIndex = indexSnapshots[0] ?? null;
 
   return (
     <div className="pb-14 pt-10 sm:pb-20 sm:pt-14">
       <div className="riddra-product-page py-8 sm:py-10">
-        <ProductPageContainer className="space-y-11">
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+        <ProductPageContainer>
+          <ProductPageTwoColumnLayout
+            left={
+              <div className="space-y-6">
+                <section className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
             <ProductCard tone="primary" className="space-y-6 p-0">
               <div className="space-y-5 p-5 sm:p-6">
                 <p className="riddra-product-body text-[11px] uppercase tracking-[0.24em] text-[rgba(107,114,128,0.84)]">
@@ -118,9 +125,9 @@ export function MarketIntelligenceHomepage({
                 ))}
               </div>
             </ProductCard>
-          </section>
+                </section>
 
-          <section className="space-y-5">
+                <section className="space-y-5">
             {marketSnapshotGroups.length ? (
               <MarketSnapshotOverview groups={marketSnapshotGroups} />
             ) : (
@@ -130,9 +137,9 @@ export function MarketIntelligenceHomepage({
                 </p>
               </ProductCard>
             )}
-          </section>
+                </section>
 
-          <section className="grid gap-6 border-t border-[rgba(226,222,217,0.82)] pt-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <section className="grid gap-6 border-t border-[rgba(226,222,217,0.82)] pt-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="space-y-3">
               <ProductSectionTitle
                 title="Leadership pulse"
@@ -177,9 +184,9 @@ export function MarketIntelligenceHomepage({
                 </ProductCard>
               ) : null}
             </div>
-          </section>
+                </section>
 
-          <section className="space-y-5 border-t border-[rgba(226,222,217,0.82)] pt-8">
+                <section className="space-y-5 border-t border-[rgba(226,222,217,0.82)] pt-8">
             <ProductSectionTitle
               title="Route-ready market ideas"
               description="These cards route into working product pages only. No generated pages and no fake discovery entries."
@@ -249,7 +256,11 @@ export function MarketIntelligenceHomepage({
                 </div>
               </ProductCard>
             </div>
-          </section>
+                </section>
+              </div>
+            }
+            right={sidebar}
+          />
         </ProductPageContainer>
       </div>
     </div>

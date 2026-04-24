@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { fiiDiiReport, type FiiDiiParticipantRow } from "@/lib/fii-dii-report";
 import { getPublicTruthCopy } from "@/lib/public-route-truth";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
@@ -13,7 +15,8 @@ export const metadata: Metadata = {
   description: "NSE-inspired institutional activity report for FII / FPI and DII buy, sell, and net-flow tracking.",
 };
 
-export default function FiiDiiReportPage() {
+export default async function FiiDiiReportPage() {
+  const sidebar = await getGlobalSidebarRail("reports");
   const truthCopy = getPublicTruthCopy({
     continuitySubject: "report usage",
     handoffLabel: "report-to-account handoff",
@@ -27,7 +30,7 @@ export default function FiiDiiReportPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <div className="riddra-product-page py-3 sm:py-4">
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -36,46 +39,49 @@ export default function FiiDiiReportPage() {
           path: "/reports/fii-dii",
         })}
       />
-      <Container className="space-y-10">
-        <div className="space-y-5">
-          <Breadcrumbs items={breadcrumbs} />
-          <Eyebrow>Institutional flow</Eyebrow>
-          <SectionHeading
-            title="FII / DII activity"
-            description="This route is modeled on the NSE institutional activity report so Riddra can carry a dedicated public page for foreign and domestic institutional flow, not just scattered references inside stock pages."
-          />
-        </div>
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
+                <Breadcrumbs items={breadcrumbs} />
+                <Eyebrow>Institutional flow</Eyebrow>
+                <SectionHeading
+                  title="FII / DII activity"
+                  description="This route is modeled on the NSE institutional activity report so Riddra can carry a dedicated public page for foreign and domestic institutional flow, not just scattered references inside stock pages."
+                />
+              </div>
 
-        <PublicSurfaceTruthSection
-          eyebrow="Institutional-flow truth"
-          title="This report route is useful for public market context right now, but saved continuity still depends on launch activation"
-          description="Use FII and DII activity confidently for public market context, while keeping auth continuity, premium workflow promises, and support follow-through honest until those live paths are fully verified."
-          authReady={truthCopy.authReady}
-          authPending={truthCopy.authPending}
-          billingReady={truthCopy.billingReady}
-          billingPending={truthCopy.billingPending}
-          supportReady={truthCopy.supportReady}
-          supportPending={truthCopy.supportPending}
-          href="/launch-readiness"
-          hrefLabel="Open launch readiness"
-          secondaryHref="/account/support"
-          secondaryHrefLabel="Open support continuity"
-        />
+              <PublicSurfaceTruthSection
+                eyebrow="Institutional-flow truth"
+                title="This report route is useful for public market context right now, but saved continuity still depends on launch activation"
+                description="Use FII and DII activity confidently for public market context, while keeping auth continuity, premium workflow promises, and support follow-through honest until those live paths are fully verified."
+                authReady={truthCopy.authReady}
+                authPending={truthCopy.authPending}
+                billingReady={truthCopy.billingReady}
+                billingPending={truthCopy.billingPending}
+                supportReady={truthCopy.supportReady}
+                supportPending={truthCopy.supportPending}
+                href="/launch-readiness"
+                hrefLabel="Open launch readiness"
+                secondaryHref="/account/support"
+                secondaryHrefLabel="Open support continuity"
+              />
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <GlowCard>
-            <p className="text-sm text-mist/68">Source benchmark</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.sourceLabel}</p>
-          </GlowCard>
-          <GlowCard>
-            <p className="text-sm text-mist/68">Current mode</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.syncMode}</p>
-          </GlowCard>
-          <GlowCard>
-            <p className="text-sm text-mist/68">Latest sync</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.lastSyncLabel}</p>
-          </GlowCard>
-        </div>
+              <div className="grid gap-6 lg:grid-cols-3">
+                <GlowCard>
+                  <p className="text-sm text-mist/68">Source benchmark</p>
+                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.sourceLabel}</p>
+                </GlowCard>
+                <GlowCard>
+                  <p className="text-sm text-mist/68">Current mode</p>
+                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.syncMode}</p>
+                </GlowCard>
+                <GlowCard>
+                  <p className="text-sm text-mist/68">Latest sync</p>
+                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.lastSyncLabel}</p>
+                </GlowCard>
+              </div>
 
         <GlowCard>
           <h2 className="text-2xl font-semibold text-white">Source and sync posture</h2>
@@ -123,7 +129,11 @@ export default function FiiDiiReportPage() {
             </div>
           </GlowCard>
         </div>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

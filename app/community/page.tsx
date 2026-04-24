@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { mentorshipLadderStages } from "@/lib/mentorship-ladders";
 import {
   communityProgramsItems,
@@ -15,17 +17,21 @@ export const metadata: Metadata = {
   description: "Riddra community-programs view for guided participation, mentorship ladders, and deeper subscriber learning loops.",
 };
 
-export default function CommunityPage() {
+export default async function CommunityPage() {
+  const sidebar = await getGlobalSidebarRail("community");
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
-          <Eyebrow>Community layer</Eyebrow>
-          <SectionHeading
-            title="Community programs"
-            description="Explore community programs, office hours, and guided participation paths that extend learning beyond standalone content."
-          />
-        </div>
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
+                <Eyebrow>Community layer</Eyebrow>
+                <SectionHeading
+                  title="Community programs"
+                  description="Explore community programs, office hours, and guided participation paths that extend learning beyond standalone content."
+                />
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="Community truth"
@@ -109,7 +115,11 @@ export default function CommunityPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

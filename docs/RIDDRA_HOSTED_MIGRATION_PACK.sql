@@ -180,6 +180,7 @@ create table if not exists public.product_system_settings (
   default_meta_description text not null,
   default_og_image text not null default '',
   default_canonical_base text not null default '',
+  public_head_code text not null default '',
   default_no_index boolean not null default false,
   default_membership_tier text not null default 'free',
   default_locked_cta_label text not null default 'Unlock with membership',
@@ -199,6 +200,7 @@ insert into public.product_system_settings (
   default_meta_description,
   default_og_image,
   default_canonical_base,
+  public_head_code,
   default_no_index,
   default_membership_tier,
   default_locked_cta_label,
@@ -216,6 +218,7 @@ values (
   'Riddra is a market intelligence and research platform for Indian investors.',
   '',
   '',
+  '',
   false,
   'free',
   'Unlock with membership',
@@ -227,6 +230,9 @@ values (
   true
 )
 on conflict (settings_key) do nothing;
+
+alter table if exists public.product_system_settings
+  add column if not exists public_head_code text not null default '';
 
 -- ---------------------------------------------------------------------------
 -- Media, preview, versions, refresh runs, membership tiers

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { ToolsExplorer } from "@/components/tools-explorer";
 import { Container, Eyebrow, GlowCard } from "@/components/ui";
@@ -11,10 +13,15 @@ export const metadata: Metadata = {
   description: "Riddra tool hub with investing calculators, market trackers, PDF utilities, and practical everyday workflows.",
 };
 
-export default function ToolsPage() {
+export default async function ToolsPage() {
+  const sidebar = await getGlobalSidebarRail("tools");
+
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <Container>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
         <div className="space-y-5">
           <Eyebrow>Activation layer</Eyebrow>
           <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">Tools</h1>
@@ -67,6 +74,10 @@ export default function ToolsPage() {
             </Link>
           ))}
         </div>
+            </div>
+          }
+          right={sidebar}
+        />
       </Container>
     </div>
   );

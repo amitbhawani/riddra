@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { WealthDetailHeader } from "@/components/wealth-detail-header";
 import { WealthDetailSections } from "@/components/wealth-detail-sections";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
@@ -37,33 +39,42 @@ export default async function AifDetailPage({ params }: PageProps) {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
+  const sidebar = await getGlobalSidebarRail("aif");
 
   return (
-    <div className="py-10 sm:py-12">
-      <WealthDetailHeader
-        breadcrumbs={[{ name: "Home", href: "/" }, { name: "AIF", href: "/aif" }, { name: product.name, href: `/aif/${product.slug}` }]}
-        eyebrow={product.category}
-        title={product.name}
-        angle={product.angle}
-        summary={product.summary}
-        truthTitle="AIF detail route truth"
-        truthDescription="Keep the detail route honest about continuity while still reading like a premium public research page."
-        truthItems={getPublicTruthItems(truth, {
-          continuitySubject: `${product.name} research`,
-          handoffLabel: `${product.name} AIF-to-account handoff`,
-          billingSubject: "premium AIF workflow language",
-          supportSubject: "AIF users who convert into assisted workflows",
-        })}
-        supportStats={[
-          { label: "Support rows", value: supportRegistry.total },
-          { label: "In progress", value: supportRegistry.inProgress },
-          { label: "Blocked", value: supportRegistry.blocked },
-          { label: "Support", value: config.supportEmail || config.billingSupportEmail || "Not configured yet" },
-        ]}
-      />
-      <div className="mx-auto w-full max-w-[1320px] px-3 sm:px-4 lg:px-4 xl:px-5">
-        <WealthDetailSections family="aif" product={product} />
-      </div>
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
+              <WealthDetailHeader
+                breadcrumbs={[{ name: "Home", href: "/" }, { name: "AIF", href: "/aif" }, { name: product.name, href: `/aif/${product.slug}` }]}
+                eyebrow={product.category}
+                title={product.name}
+                angle={product.angle}
+                summary={product.summary}
+                truthTitle="AIF detail route truth"
+                truthDescription="Keep the detail route honest about continuity while still reading like a premium public research page."
+                truthItems={getPublicTruthItems(truth, {
+                  continuitySubject: `${product.name} research`,
+                  handoffLabel: `${product.name} AIF-to-account handoff`,
+                  billingSubject: "premium AIF workflow language",
+                  supportSubject: "AIF users who convert into assisted workflows",
+                })}
+                supportStats={[
+                  { label: "Support rows", value: supportRegistry.total },
+                  { label: "In progress", value: supportRegistry.inProgress },
+                  { label: "Blocked", value: supportRegistry.blocked },
+                  { label: "Support", value: config.supportEmail || config.billingSupportEmail || "Not configured yet" },
+                ]}
+                contained={false}
+              />
+              <WealthDetailSections family="aif" product={product} />
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

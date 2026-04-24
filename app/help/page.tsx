@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { supportOpsItems } from "@/lib/support-ops";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
@@ -12,19 +14,23 @@ export const metadata: Metadata = {
   description: "Get help with onboarding, billing, portfolio imports, and understanding how Riddra works.",
 };
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  const sidebar = await getGlobalSidebarRail("help_contact");
   const config = getRuntimeLaunchConfig();
   const supportRegistry = getSupportOpsRegistrySummary("account");
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Eyebrow>Help and support</Eyebrow>
           <SectionHeading
             title="Help center"
             description="Use the help center for onboarding, billing, portfolio imports, and product understanding in one public support layer."
           />
-        </div>
+              </div>
 
         <PublicSurfaceTruthSection
           eyebrow="Public support truth"
@@ -99,7 +105,11 @@ export default function HelpPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

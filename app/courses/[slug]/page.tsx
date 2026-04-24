@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import {
   ProductBreadcrumbs,
   ProductCard,
   ProductPageContainer,
+  ProductPageTwoColumnLayout,
 } from "@/components/product-page-system";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { GlowCard } from "@/components/ui";
@@ -44,6 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CourseDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const sidebar = await getGlobalSidebarRail("courses");
   const publishableRecord = await getPublishableCmsRecordBySlug("course", slug);
   const course = publishableRecord ? getCourseBySlug(publishableRecord.canonicalSlug) : null;
 
@@ -68,9 +71,12 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
   return (
     <div className="riddra-product-page border-y border-[rgba(221,215,207,0.82)] bg-[linear-gradient(180deg,rgba(248,246,242,0.98)_0%,rgba(250,249,247,0.98)_100%)] py-3 sm:py-4">
-      <ProductPageContainer className="space-y-6">
-        <ProductBreadcrumbs items={breadcrumbs.map((item) => ({ label: item.name, href: item.href }))} />
-        <ProductCard tone="primary" className="space-y-4 p-4 sm:p-5">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <ProductBreadcrumbs items={breadcrumbs.map((item) => ({ label: item.name, href: item.href }))} />
+              <ProductCard tone="primary" className="space-y-4 p-4 sm:p-5">
           <div className="space-y-2">
             <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
               {course.category}
@@ -90,7 +96,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               Start lesson 1
             </Link>
           ) : null}
-        </ProductCard>
+              </ProductCard>
 
         <SubscriberTruthNotice
           eyebrow="Course detail truth"
@@ -286,6 +292,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
             </div>
           </GlowCard>
         </div>
+            </div>
+          }
+          right={sidebar}
+        />
       </ProductPageContainer>
     </div>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { IndexLiveRefreshCard } from "@/components/index-live-refresh-card";
 import { IndexWeightRosterCard } from "@/components/index-weight-roster-card";
 import { IndexSubnav } from "@/components/index-subnav";
@@ -9,7 +10,12 @@ import { JsonLd } from "@/components/json-ld";
 import { IndexAccessCard } from "@/components/index-access-card";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
 import { ManagedPageSidebarCard } from "@/components/managed-page-sidebar-card";
-import { ProductCard, ProductPageContainer, ProductSectionTitle } from "@/components/product-page-system";
+import {
+  ProductCard,
+  ProductPageContainer,
+  ProductPageTwoColumnLayout,
+  ProductSectionTitle,
+} from "@/components/product-page-system";
 import { TimelineBarStrip } from "@/components/timeline-bar-strip";
 import type { IndexSnapshot } from "@/lib/index-intelligence";
 import { getIndexSnapshots, getIndexWeightRosters, type IndexWeightRoster } from "@/lib/index-content";
@@ -24,6 +30,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function IndicesPage() {
+  const sidebar = await getGlobalSidebarRail("indices");
   let snapshots: IndexSnapshot[] = [];
   let rosters: IndexWeightRoster[] = [];
   let readFailureDetail: string | null = null;
@@ -60,7 +67,10 @@ export default async function IndicesPage() {
           path: "/indices",
         })}
       />
-      <ProductPageContainer className="space-y-8">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
         <div className="space-y-4">
           <Breadcrumbs items={breadcrumbs} />
           <ProductSectionTitle
@@ -189,6 +199,10 @@ export default async function IndicesPage() {
           <IndexAccessCard />
         </div>
         <ManagedPageSidebarCard family="index" assetName="Index intelligence hub" />
+            </div>
+          }
+          right={sidebar}
+        />
       </ProductPageContainer>
     </div>
   );

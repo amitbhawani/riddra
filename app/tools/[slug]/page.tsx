@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CommodityHistoryPreview } from "@/components/commodity-history-preview";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { ToolCalculatorPanel } from "@/components/tool-calculator-panel";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { getCommodityHistory, type GoldHistoryEntry, type SilverHistoryEntry } from "@/lib/commodity-history";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -56,16 +58,20 @@ export default async function ToolDetailPage({ params }: PageProps) {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
+  const sidebar = await getGlobalSidebarRail("tools");
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-8">
-        <div className="space-y-5">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{tool.category}</Eyebrow>
           <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">{tool.title}</h1>
           <p className="max-w-3xl text-base leading-8 text-mist/76">{tool.summary}</p>
-        </div>
+              </div>
 
         <SubscriberTruthNotice
           eyebrow="Tool detail truth"
@@ -160,7 +166,11 @@ export default async function ToolDetailPage({ params }: PageProps) {
             ))}
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }

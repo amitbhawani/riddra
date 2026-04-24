@@ -3,8 +3,10 @@ import Link from "next/link";
 
 import { AdvancedChartWorkspace } from "@/components/advanced-chart-workspace";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
+import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import {
@@ -22,13 +24,14 @@ export const metadata: Metadata = {
 
 export default async function ChartsPage() {
   const stocks = await getStocks();
+  const sidebar = await getGlobalSidebarRail("charts");
   const breadcrumbs = [
     { name: "Home", href: "/" },
     { name: "Charts", href: "/charts" },
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <div className="riddra-product-page py-3 sm:py-4">
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -38,7 +41,10 @@ export default async function ChartsPage() {
           path: "/charts",
         })}
       />
-      <Container className="space-y-10">
+      <Container>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Charting workspace</Eyebrow>
@@ -145,6 +151,10 @@ export default async function ChartsPage() {
             )}
           </div>
         </GlowCard>
+            </div>
+          }
+          right={sidebar}
+        />
       </Container>
     </div>
   );

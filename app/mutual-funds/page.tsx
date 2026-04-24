@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
-import { ProductCard, ProductPageContainer, ProductSectionTitle } from "@/components/product-page-system";
+import {
+  ProductCard,
+  ProductPageContainer,
+  ProductPageTwoColumnLayout,
+  ProductSectionTitle,
+} from "@/components/product-page-system";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
 import {
   describeFundCompareCandidate,
@@ -24,6 +30,7 @@ export const metadata: Metadata = {
 
 export default async function MutualFundsIndexPage() {
   const funds = await getFunds();
+  const sidebar = await getGlobalSidebarRail("mutual_funds");
   const categories = Array.from(new Set(funds.map((fund) => fund.category)));
   const verifiedCount = funds.filter((fund) => fund.snapshotMeta?.mode === "delayed_snapshot").length;
   const managedCount = funds.filter((fund) => fund.snapshotMeta?.mode === "manual_nav").length;
@@ -185,8 +192,11 @@ export default async function MutualFundsIndexPage() {
   }
 
   return (
-    <div className="py-16 sm:py-24">
-      <ProductPageContainer className="space-y-8">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
         <div className="space-y-4">
           <ProductSectionTitle
             eyebrow="Mutual fund hub"
@@ -317,6 +327,10 @@ export default async function MutualFundsIndexPage() {
             ))}
           </div>
         </ProductCard>
+            </div>
+          }
+          right={sidebar}
+        />
       </ProductPageContainer>
     </div>
   );

@@ -35,6 +35,7 @@ import {
   type SaveAdminRecordInput,
 } from "@/lib/admin-operator-store";
 import type { SaveSystemSettingsInput } from "@/lib/user-product-store";
+import { sanitizeSystemHeadCodeInput } from "@/lib/system-head-code";
 import {
   normalizeProductUserCapabilities,
   productUserCapabilityOptions,
@@ -569,6 +570,19 @@ export function sanitizeAdminUserProfileInput(value: {
 export function sanitizeAdminSystemSettingsInput(
   value: Record<string, unknown>,
 ): SaveSystemSettingsInput {
+  let publicHeadCode: string | undefined;
+
+  try {
+    publicHeadCode =
+      value.publicHeadCode === undefined ? undefined : sanitizeSystemHeadCodeInput(value.publicHeadCode) ?? "";
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new AdminOperatorValidationError(error.message);
+    }
+
+    throw error;
+  }
+
   return {
     siteName: cleanOptionalAdminString(value.siteName, 120) ?? undefined,
     defaultMetaTitleSuffix: cleanOptionalAdminString(value.defaultMetaTitleSuffix, 120) ?? undefined,
@@ -577,6 +591,7 @@ export function sanitizeAdminSystemSettingsInput(
     defaultOgImage: sanitizeAdminUrlOrRoute(value.defaultOgImage, "Default OG image") ?? undefined,
     defaultCanonicalBase:
       sanitizeAdminHttpUrl(value.defaultCanonicalBase, "Default canonical base") ?? undefined,
+    publicHeadCode,
     defaultMembershipTier:
       cleanOptionalAdminString(value.defaultMembershipTier, 80) ?? undefined,
     defaultLockedCtaLabel:

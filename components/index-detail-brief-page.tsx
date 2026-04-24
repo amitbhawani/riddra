@@ -1,4 +1,7 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { ManagedSharedSidebarStack } from "@/components/managed-shared-sidebar-stack";
 import { MarketSnapshotSidebar } from "@/components/market-snapshot-system";
@@ -442,6 +445,7 @@ export function IndexDetailBriefPage({
   componentRouteMap,
   viewerSignedIn,
   premiumAnalyticsUnlocked,
+  globalSidebarRail,
 }: {
   snapshot: IndexSnapshot;
   sourceLabel: string;
@@ -450,6 +454,7 @@ export function IndexDetailBriefPage({
   componentRouteMap: Record<string, string>;
   viewerSignedIn: boolean;
   premiumAnalyticsUnlocked: boolean;
+  globalSidebarRail?: ReactNode;
 }) {
   const truthState = getIndexTruthState(snapshot);
   const componentRows = [...snapshot.components].sort((left, right) => right.weight - left.weight);
@@ -1061,6 +1066,7 @@ export function IndexDetailBriefPage({
                   ),
                 }}
               />
+              {globalSidebarRail}
             </>
           }
         />
@@ -1085,6 +1091,7 @@ export function IndexDetailUnavailablePage({
   roster,
   readFailureDetail,
   marketSnapshotGroups,
+  globalSidebarRail,
 }: {
   title: string;
   path: string;
@@ -1092,6 +1099,7 @@ export function IndexDetailUnavailablePage({
   roster: IndexWeightRoster | null;
   readFailureDetail: string | null;
   marketSnapshotGroups: MarketSnapshotGroup[];
+  globalSidebarRail?: ReactNode;
 }) {
   const truthState: ProductTruthState = readFailureDetail ? "read_failed" : "unavailable";
   const rosterItems = roster?.components ?? [];
@@ -1249,6 +1257,7 @@ export function IndexDetailUnavailablePage({
                 brand={{ name: title }}
               />
               <MarketSnapshotSidebar groups={marketSnapshotGroups} />
+              {globalSidebarRail}
               <CategoryRankBadge
                 title="Route status"
                 rankLabel={readFailureDetail ? "Read failed" : "Unavailable"}
@@ -1326,6 +1335,7 @@ export async function IndexDetailRoutePage({
   }
 
   const source = await getSourceByCode(snapshot?.sourceCode ?? roster?.sourceCode ?? config.sourceCode);
+  const globalSidebarRail = await getGlobalSidebarRail("indices");
   const sourceLabel = source?.sourceName ?? "Verified source unavailable";
   const breadcrumbs = [
     { name: "Home", href: "/" },
@@ -1352,6 +1362,7 @@ export async function IndexDetailRoutePage({
           componentRouteMap={componentRouteMap}
           viewerSignedIn={Boolean(currentUser)}
           premiumAnalyticsUnlocked={premiumAnalyticsUnlocked}
+          globalSidebarRail={globalSidebarRail}
         />
       ) : (
         <IndexDetailUnavailablePage
@@ -1361,6 +1372,7 @@ export async function IndexDetailRoutePage({
           roster={roster}
           readFailureDetail={readFailureDetail}
           marketSnapshotGroups={marketSnapshotGroups}
+          globalSidebarRail={globalSidebarRail}
         />
       )}
     </>

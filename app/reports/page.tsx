@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import {
   ProductBreadcrumbs,
   ProductCard,
   ProductPageContainer,
+  ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
 import { getPublicTruthCopy } from "@/lib/public-route-truth";
@@ -34,7 +36,8 @@ const reportCards = [
   },
 ];
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const sidebar = await getGlobalSidebarRail("reports");
   const truthCopy = getPublicTruthCopy({
     continuitySubject: "report usage",
     handoffLabel: "reports-to-workspace handoff",
@@ -56,49 +59,56 @@ export default function ReportsPage() {
           path: "/reports",
         })}
       />
-      <ProductPageContainer className="space-y-6">
-        <ProductBreadcrumbs items={breadcrumbs.map((item) => ({ label: item.name, href: item.href }))} />
-        <ProductCard tone="primary" className="space-y-4 p-4 sm:p-5">
-          <div className="space-y-2">
-            <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
-              Report hub
-            </p>
-            <h1 className="riddra-product-body text-[28px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[36px]">
-              Market reports
-            </h1>
-            <p className="riddra-product-body max-w-3xl text-[14px] leading-7 text-[rgba(107,114,128,0.88)] sm:text-[15px]">
-              Use report-led pages for recurring institutional, event, and market-structure follow-through instead of hunting across disconnected hubs.
-            </p>
-          </div>
-        </ProductCard>
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="space-y-6">
+              <ProductBreadcrumbs items={breadcrumbs.map((item) => ({ label: item.name, href: item.href }))} />
+              <ProductCard tone="primary" className="space-y-4 p-4 sm:p-5">
+                <div className="space-y-2">
+                  <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
+                    Report hub
+                  </p>
+                  <h1 className="riddra-product-body text-[28px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[36px]">
+                    Market reports
+                  </h1>
+                  <p className="riddra-product-body max-w-3xl text-[14px] leading-7 text-[rgba(107,114,128,0.88)] sm:text-[15px]">
+                    Use report-led pages for recurring institutional, event, and market-structure follow-through instead of hunting across disconnected hubs.
+                  </p>
+                </div>
+              </ProductCard>
 
-        <PublicSurfaceTruthSection
-          eyebrow="Report truth"
-          title="This report hub is useful for recurring market follow-through, but deeper continuity still depends on launch activation"
-          description="Use reports confidently for public market follow-through, while keeping auth continuity, premium promises, and support follow-through honest until those live paths are fully verified."
-          authReady={truthCopy.authReady}
-          authPending={truthCopy.authPending}
-          billingReady={truthCopy.billingReady}
-          billingPending={truthCopy.billingPending}
-          supportReady={truthCopy.supportReady}
-          supportPending={truthCopy.supportPending}
-          href="/launch-readiness"
-          hrefLabel="Open launch readiness"
+              <PublicSurfaceTruthSection
+                eyebrow="Report truth"
+                title="This report hub is useful for recurring market follow-through, but deeper continuity still depends on launch activation"
+                description="Use reports confidently for public market follow-through, while keeping auth continuity, premium promises, and support follow-through honest until those live paths are fully verified."
+                authReady={truthCopy.authReady}
+                authPending={truthCopy.authPending}
+                billingReady={truthCopy.billingReady}
+                billingPending={truthCopy.billingPending}
+                supportReady={truthCopy.supportReady}
+                supportPending={truthCopy.supportPending}
+                href="/launch-readiness"
+                hrefLabel="Open launch readiness"
+              />
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {reportCards.map((item) => (
+                  <ProductCard key={item.href} tone="secondary" className="space-y-4 p-4">
+                    <ProductSectionTitle title={item.title} description={item.description} eyebrow={item.status} />
+                    <Link
+                      href={item.href}
+                      className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
+                    >
+                      Open report
+                    </Link>
+                  </ProductCard>
+                ))}
+              </div>
+            </div>
+          }
+          right={sidebar}
         />
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {reportCards.map((item) => (
-            <ProductCard key={item.href} tone="secondary" className="space-y-4 p-4">
-              <ProductSectionTitle title={item.title} description={item.description} eyebrow={item.status} />
-              <Link
-                href={item.href}
-                className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
-              >
-                Open report
-              </Link>
-            </ProductCard>
-          ))}
-        </div>
       </ProductPageContainer>
     </div>
   );

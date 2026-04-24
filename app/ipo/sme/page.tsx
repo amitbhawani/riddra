@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getIpos } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default async function SmeIpoIndexPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="ipo">
         <div className="space-y-5">
           <Eyebrow>IPO lifecycle</Eyebrow>
           <SectionHeading
@@ -89,7 +90,7 @@ export default async function SmeIpoIndexPage() {
             </Link>
           ))}
         </div>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

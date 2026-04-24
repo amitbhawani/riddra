@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { UserPortfolioPanel } from "@/components/user-portfolio-panel";
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { requireUser } from "@/lib/auth";
-import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 import { getUserPortfolioHoldings } from "@/lib/user-product-store";
 
 export const metadata: Metadata = {
@@ -26,10 +24,7 @@ function formatCurrency(value: number) {
 
 export default async function PortfolioPage() {
   const user = await requireUser();
-  const [holdings, sharedSidebarRailData] = await Promise.all([
-    getUserPortfolioHoldings(user),
-    getSharedSidebarRailData({ pageCategory: "portfolio" }),
-  ]);
+  const holdings = await getUserPortfolioHoldings(user);
 
   const investedTotal = holdings.reduce((sum, holding) => sum + holding.investedValue, 0);
   const currentTotal = holdings.reduce(
@@ -56,8 +51,7 @@ export default async function PortfolioPage() {
           />
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
-          <div className="space-y-8">
+        <div className="space-y-8">
             <div className="grid gap-4 md:grid-cols-3">
               <GlowCard>
                 <p className="text-sm text-[rgba(75,85,99,0.84)]">Current value</p>
@@ -111,43 +105,6 @@ export default async function PortfolioPage() {
                 <UserPortfolioPanel initialHoldings={holdings} />
               </div>
             </GlowCard>
-          </div>
-
-          <aside className="space-y-4 xl:sticky xl:top-24">
-            {sharedSidebarRailData.enabledOnPageType ? (
-              <SharedMarketSidebarRail
-                visibleBlocks={sharedSidebarRailData.visibleBlocks}
-                marketSnapshotItems={sharedSidebarRailData.marketSnapshotItems}
-                topGainers={sharedSidebarRailData.topGainers}
-                topLosers={sharedSidebarRailData.topLosers}
-                popularStocks={sharedSidebarRailData.popularStocks}
-              />
-            ) : null}
-                  <GlowCard className="space-y-3">
-                    <p className="text-sm font-semibold text-[#1B3A6B]">Portfolio actions</p>
-                    <div className="space-y-2 text-sm leading-6 text-[rgba(75,85,99,0.84)]">
-                      <Link href="/portfolio/import" className="block font-medium text-[#1B3A6B] underline">
-                        Import holdings from CSV
-                      </Link>
-                      <Link href="/account/watchlists" className="block font-medium text-[#1B3A6B] underline">
-                        Open watchlists
-                      </Link>
-                      <Link href="/account" className="block font-medium text-[#1B3A6B] underline">
-                        Return to account
-                      </Link>
-                    </div>
-                  </GlowCard>
-                ),
-                workflow_checklist: (
-                  <GlowCard className="space-y-3">
-                    <p className="text-sm font-semibold text-[#1B3A6B]">Portfolio checklist</p>
-                    <ul className="space-y-2 text-sm leading-6 text-[rgba(75,85,99,0.84)]">
-                      <li>Review the quote-backed value before making decisions.</li>
-                      <li>Use import when you have many holdings to add at once.</li>
-                      <li>Keep your watchlist nearby for ideas you have not bought yet.</li>
-                    </ul>
-                  </GlowCard>
-          </aside>
         </div>
       </Container>
     </div>

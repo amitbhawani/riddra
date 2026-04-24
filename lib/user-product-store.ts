@@ -179,6 +179,7 @@ export type SystemSettings = {
   defaultMetaDescription: string;
   defaultOgImage: string;
   defaultCanonicalBase: string;
+  publicHeadCode: string;
   defaultNoIndex: boolean;
   defaultMembershipTier: string;
   defaultLockedCtaLabel: string;
@@ -388,6 +389,7 @@ function defaultSettings(): SystemSettings {
     defaultMetaDescription: "Riddra is a market intelligence and research platform for Indian investors.",
     defaultOgImage: "",
     defaultCanonicalBase: "",
+    publicHeadCode: "",
     defaultNoIndex: false,
     defaultMembershipTier: "free",
     defaultLockedCtaLabel: "Unlock with membership",
@@ -1991,6 +1993,7 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
         cleanString(input.defaultMetaDescription) || currentSettings.defaultMetaDescription,
       defaultOgImage: cleanString(input.defaultOgImage),
       defaultCanonicalBase: cleanString(input.defaultCanonicalBase),
+      publicHeadCode: cleanString(input.publicHeadCode),
       defaultMembershipTier:
         cleanString(input.defaultMembershipTier) || currentSettings.defaultMembershipTier,
       defaultLockedCtaLabel:
@@ -2032,6 +2035,7 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
         cleanString(input.defaultMetaDescription) || store.settings.defaultMetaDescription,
       defaultOgImage: cleanString(input.defaultOgImage),
       defaultCanonicalBase: cleanString(input.defaultCanonicalBase),
+      publicHeadCode: cleanString(input.publicHeadCode),
       defaultMembershipTier:
         cleanString(input.defaultMembershipTier) || store.settings.defaultMembershipTier,
       defaultLockedCtaLabel:

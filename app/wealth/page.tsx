@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getWealthFamilyOverviews, wealthFamilyMeta, wealthProducts } from "@/lib/wealth-products";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default function WealthHubPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="home">
         <div className="space-y-5">
           <Eyebrow>Wealth expansion</Eyebrow>
           <SectionHeading
@@ -91,7 +92,7 @@ export default function WealthHubPage() {
             </Link>
           ))}
         </div>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

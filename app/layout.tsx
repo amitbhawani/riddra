@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { REQUEST_PATH_HEADER } from "@/lib/open-access";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 import { siteConfig } from "@/lib/site";
+import { normalizeSystemHeadCode } from "@/lib/system-head-code";
 import { getSystemSettings } from "@/lib/user-product-store";
 
 import "./globals.css";
@@ -74,9 +75,16 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const route = requestHeaders.get(REQUEST_PATH_HEADER) ?? "/";
   const isAdminRoute = route === "/admin" || route.startsWith("/admin/");
+  const settings = await getSystemSettings();
+  const publicHeadCode = isAdminRoute ? "" : normalizeSystemHeadCode(settings.publicHeadCode);
 
   return (
     <html lang="en">
+      {publicHeadCode ? (
+        <head suppressHydrationWarning dangerouslySetInnerHTML={{ __html: publicHeadCode }} />
+      ) : (
+        <head />
+      )}
       <body
         className={`${riddraBodyFont.variable} ${riddraDisplayFont.variable} ${riddraMonoFont.variable} ${isAdminRoute ? "bg-[#f3f4f6] text-[#111827]" : "bg-ink text-white"} antialiased`}
       >

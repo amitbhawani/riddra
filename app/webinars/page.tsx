@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { educationTracks } from "@/lib/education-library";
@@ -15,9 +17,14 @@ export const metadata: Metadata = {
 export default async function WebinarsPage() {
   const publishedWebinarSlugs = await getPublishableCmsSlugSet("webinar");
   const visibleWebinars = webinars.filter((item) => publishedWebinarSlugs.has(item.slug));
+  const sidebar = await getGlobalSidebarRail("webinars");
+
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <Container>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
         <div className="space-y-5">
           <Eyebrow>Creator engine</Eyebrow>
           <SectionHeading
@@ -130,6 +137,10 @@ export default async function WebinarsPage() {
             ))}
           </div>
         </GlowCard>
+            </div>
+          }
+          right={sidebar}
+        />
       </Container>
     </div>
   );

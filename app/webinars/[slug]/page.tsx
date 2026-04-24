@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { Container, Eyebrow, GlowCard } from "@/components/ui";
 import { educationTracks } from "@/lib/education-library";
@@ -60,10 +62,14 @@ export default async function WebinarDetailPage({ params }: PageProps) {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
+  const sidebar = await getGlobalSidebarRail("webinars");
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-8">
+    <div className="riddra-product-page py-3 sm:py-4">
+      <Container>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{webinar.format}</Eyebrow>
@@ -235,6 +241,10 @@ export default async function WebinarDetailPage({ params }: PageProps) {
             </div>
           </GlowCard>
         </div>
+            </div>
+          }
+          right={sidebar}
+        />
       </Container>
     </div>
   );

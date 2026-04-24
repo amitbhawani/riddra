@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function LegalTosPage() {
 
   return (
     <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="legal">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Legal</Eyebrow>
@@ -52,7 +53,7 @@ export default function LegalTosPage() {
               : "Questions about current access or legal placeholders can be directed through the current launch support channel."}
           </p>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

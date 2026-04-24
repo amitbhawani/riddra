@@ -4,10 +4,11 @@ import Link from "next/link";
 
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import {
   describeStockCompareCandidate,
   getCanonicalStockCompareHref,
@@ -172,7 +173,7 @@ export default async function SectorDetailPage({ params }: PageProps) {
           path: `/sectors/${sector.hub.slug}`,
         })}
       />
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="sectors">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Sector hub</Eyebrow>
@@ -263,7 +264,7 @@ export default async function SectorDetailPage({ params }: PageProps) {
             )}
           </div>
         </GlowCard>
-      </Container>
+      </GlobalSidebarPageShell>
     </div>
   );
 }

@@ -1,16 +1,14 @@
 {
   "version": 1,
-  "status": "starting",
-  "pid": 68453,
-  "childPid": 68454,
+  "status": "running",
+  "pid": 24167,
+  "childPid": 24168,
   "cwd": "/Users/amitbhawani/Documents/Ai FinTech Platform",
-  "url": "http://localhost:3000",
-  "startedAt": "Apr 24, 2026 12:06 PM IST",
-  "lastReadyAt": null,
+  "url": null,
+  "startedAt": "Apr 24, 2026 03:21 PM IST",
+  "lastReadyAt": "Apr 24, 2026 03:21 PM IST",
   "lastHealthcheckAt": null,
   "stoppedAt": null,
-  "note": "Guarded local dev server is bound to http://localhost:3000.",
+  "note": "Guarded local dev server is ready on the detected localhost URL.",
   "routes": []
-}
-": []
 }

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { mentorshipLadderStages } from "@/lib/mentorship-ladders";
 import { mentorshipRules, mentorshipSummary, mentorshipTracks } from "@/lib/mentorship";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
@@ -14,20 +16,25 @@ export const metadata: Metadata = {
   description: "Riddra mentorship and guided-learning view for cohort programs, creator-led tracks, and subscriber learning ladders.",
 };
 
-export default function MentorshipPage() {
+export default async function MentorshipPage() {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
+  const sidebar = await getGlobalSidebarRail("mentorship");
+
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
-        <div className="space-y-5">
-          <Eyebrow>Guided learning</Eyebrow>
-          <SectionHeading
-            title="Mentorship and cohorts"
-            description="Follow guided tracks, mentorship loops, and cohort-style programs designed to take learning beyond one-off lessons."
-          />
-        </div>
+    <div className="riddra-product-page py-3 sm:py-4">
+      <ProductPageContainer>
+        <ProductPageTwoColumnLayout
+          left={
+            <div className="riddra-legacy-light-surface space-y-6">
+              <div className="space-y-5">
+                <Eyebrow>Guided learning</Eyebrow>
+                <SectionHeading
+                  title="Mentorship and cohorts"
+                  description="Follow guided tracks, mentorship loops, and cohort-style programs designed to take learning beyond one-off lessons."
+                />
+              </div>
 
         <SubscriberTruthNotice
           eyebrow="Mentorship truth"
@@ -132,7 +139,11 @@ export default function MentorshipPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
+            </div>
+          }
+          right={sidebar}
+        />
+      </ProductPageContainer>
     </div>
   );
 }
