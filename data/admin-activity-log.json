@@ -1,0 +1,4436 @@
+{
+  "entries": [
+    {
+      "id": "admin_activity_1_3d002f48-0f2b-4a7c-a955-c8631ed1ebd2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.rejected",
+      "targetType": "content_record",
+      "targetId": "approval_1_e82dd994-04a6-4647-a0c3-a618674f37bc",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Rejected the queued editor change for Editor Approval Audit 798216 B.",
+      "metadata": {
+        "approvalId": "approval_1_e82dd994-04a6-4647-a0c3-a618674f37bc",
+        "targetStatus": "draft",
+        "actionType": "content_change"
+      },
+      "createdAt": "2026-04-24T03:41:29.645Z"
+    },
+    {
+      "id": "admin_activity_1_f6c4b842-1e81-406c-97cc-f7066ca7929b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.deleted",
+      "targetType": "user_profile",
+      "targetId": "audit-editor-043989@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Removed user audit-editor-043989@example.com from the user registry.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-24T03:41:03.494Z"
+    },
+    {
+      "id": "admin_activity_1_965a4e33-5ce1-4770-9c92-31fe1cd50735",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c013ba14-2d9f-4925-974f-305ce353f9a1",
+      "targetFamily": "mutual-funds",
+      "targetSlug": "audit-import-fund-043989",
+      "summary": "Deleted Audit Import Fund 043989 from mutual-funds.",
+      "metadata": {
+        "title": "Audit Import Fund 043989",
+        "publicHref": "/mutual-funds/audit-import-fund-043989",
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:41:03.286Z"
+    },
+    {
+      "id": "admin_activity_1_538c37f5-0601-4744-940f-a2720e675ae2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.imported",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_719c321d-b49e-4205-b7e3-3876819487bd",
+      "targetFamily": "mutual-funds",
+      "targetSlug": null,
+      "summary": "Imported 1 mutual funds row as draft record from mutual-funds-audit-043989.csv.",
+      "metadata": {
+        "fileName": "mutual-funds-audit-043989.csv",
+        "importMode": "create_new_only",
+        "createdCount": 1,
+        "updatedCount": 0,
+        "queuedCount": 0,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-24T03:41:00.853Z"
+    },
+    {
+      "id": "admin_activity_1_58a02446-fc50-4f4c-b2df-506fbf453a98",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c013ba14-2d9f-4925-974f-305ce353f9a1",
+      "targetFamily": "mutual-funds",
+      "targetSlug": "audit-import-fund-043989",
+      "summary": "Updated override-controlled sections on Audit Import Fund 043989: workflow, identity, publishing, frontend_fields, seo.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "frontend_fields",
+          "seo"
+        ]
+      },
+      "createdAt": "2026-04-24T03:41:00.640Z"
+    },
+    {
+      "id": "admin_activity_1_7ea8d14f-d16e-406a-835f-f49c31453483",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c013ba14-2d9f-4925-974f-305ce353f9a1",
+      "targetFamily": "mutual-funds",
+      "targetSlug": "audit-import-fund-043989",
+      "summary": "Saved Audit Import Fund 043989 in mutual-funds.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:41:00.638Z"
+    },
+    {
+      "id": "admin_activity_1_4958c0fd-3447-49b3-aac5-1993e8091283",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Deleted Tata Motors (Copy) from stocks.",
+      "metadata": {
+        "title": "Tata Motors (Copy)",
+        "publicHref": null,
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:40:55.841Z"
+    },
+    {
+      "id": "admin_activity_1_e0296495-c882-4c15-bfdb-c997fc0a480f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Updated override-controlled sections on Tata Motors (Copy): workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:40:54.968Z"
+    },
+    {
+      "id": "admin_activity_1_2b168be4-670c-45c4-b327-7cbf0dd7e854",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Saved Tata Motors (Copy) in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:54.967Z"
+    },
+    {
+      "id": "admin_activity_1_c4c04d0a-e715-4cea-8b8d-33f58f43be90",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Updated override-controlled sections on Tata Motors (Copy): workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:40:54.734Z"
+    },
+    {
+      "id": "admin_activity_1_f53e86ac-7553-48fc-ac32-ecc77f315ae2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Saved Tata Motors (Copy) in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:54.731Z"
+    },
+    {
+      "id": "admin_activity_1_8870a4e9-a42b-4ab3-bbe7-dee6bbd55fe2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_84ceb904-1274-404f-8702-13a970dcaeaf",
+      "targetFamily": null,
+      "targetSlug": "precise-og-043989.jpg",
+      "summary": "Added media asset Audit OG Precise 043989.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:53.108Z"
+    },
+    {
+      "id": "admin_activity_1_ce09dd51-055e-4fb4-a16a-1d4c73763d06",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.duplicated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_801f78da-a7d3-437c-bf1b-9c5c498dc17b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Duplicated Tata Motors to Tata Motors (Copy).",
+      "metadata": {
+        "sourceSlug": "tata-motors",
+        "duplicateSlug": "tata-motors-copy"
+      },
+      "createdAt": "2026-04-24T03:40:52.193Z"
+    },
+    {
+      "id": "admin_activity_1_393c8775-aa68-41b1-a3ab-fe6231358c2d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Deleted Editor Bulk Approval 043989 B from stocks.",
+      "metadata": {
+        "title": "Editor Bulk Approval 043989 B",
+        "publicHref": null,
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:40:52.179Z"
+    },
+    {
+      "id": "admin_activity_1_92e9b8d8-c469-41e5-a5e1-a0e0234d480d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Deleted Editor Bulk Approval 043989 A from stocks.",
+      "metadata": {
+        "title": "Editor Bulk Approval 043989 A",
+        "publicHref": null,
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:40:52.167Z"
+    },
+    {
+      "id": "admin_activity_1_06bf4093-ea11-460d-b456-8c0ad37498b0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_fdd5fff3-7069-4a4f-8b2d-b6ac56918d4f",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Approved Editor Bulk Approval 043989 B and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_fdd5fff3-7069-4a4f-8b2d-b6ac56918d4f",
+        "targetStatus": "draft",
+        "recordId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+        "actionType": "content_change"
+      },
+      "createdAt": "2026-04-24T03:40:51.539Z"
+    },
+    {
+      "id": "admin_activity_1_d4519cec-c54b-4cb8-9326-52a1c36808b6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Updated override-controlled sections on Editor Bulk Approval 043989 B: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:40:51.537Z"
+    },
+    {
+      "id": "admin_activity_1_a707d733-bca9-4534-b024-fe54a27e0acd",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Saved Editor Bulk Approval 043989 B in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:51.536Z"
+    },
+    {
+      "id": "admin_activity_1_50976012-9f97-43e8-9c60-dabdb6cffe24",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_8c69dbde-444e-4407-9c20-5c826f9e4ccb",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Approved Editor Bulk Approval 043989 A and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_8c69dbde-444e-4407-9c20-5c826f9e4ccb",
+        "targetStatus": "draft",
+        "recordId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+        "actionType": "content_change"
+      },
+      "createdAt": "2026-04-24T03:40:51.530Z"
+    },
+    {
+      "id": "admin_activity_1_e32f0be8-83ab-4c71-9acc-086d72cd438b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Updated override-controlled sections on Editor Bulk Approval 043989 A: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:40:51.528Z"
+    },
+    {
+      "id": "admin_activity_1_2c1153bf-00f1-41bf-becb-bfdd8fc8a96c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Saved Editor Bulk Approval 043989 A in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:51.527Z"
+    },
+    {
+      "id": "admin_activity_1_dfaabc3c-79e2-4e78-8c65-a4b7a5ea4aa5",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_fdd5fff3-7069-4a4f-8b2d-b6ac56918d4f",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Submitted Editor Bulk Approval 043989 B for content approval.",
+      "metadata": {
+        "approvalId": "approval_1_fdd5fff3-7069-4a4f-8b2d-b6ac56918d4f",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:51.293Z"
+    },
+    {
+      "id": "admin_activity_1_0fa60c40-b238-4cbd-9bf2-1a5c6405e193",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_8c69dbde-444e-4407-9c20-5c826f9e4ccb",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Submitted Editor Bulk Approval 043989 A for content approval.",
+      "metadata": {
+        "approvalId": "approval_1_8c69dbde-444e-4407-9c20-5c826f9e4ccb",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "draft"
+      },
+      "createdAt": "2026-04-24T03:40:51.068Z"
+    },
+    {
+      "id": "admin_activity_1_164d211a-91ec-408d-a27d-2258f026aa93",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.duplicated",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Duplicated Tata Motors to Tata Motors (Copy).",
+      "metadata": {
+        "sourceSlug": "tata-motors",
+        "duplicateSlug": "tata-motors-copy-2"
+      },
+      "createdAt": "2026-04-24T03:40:50.621Z"
+    },
+    {
+      "id": "admin_activity_1_b52bb09f-1182-4021-912a-d2face06b675",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.duplicated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Duplicated Tata Motors to Tata Motors (Copy).",
+      "metadata": {
+        "sourceSlug": "tata-motors",
+        "duplicateSlug": "tata-motors-copy"
+      },
+      "createdAt": "2026-04-24T03:40:49.560Z"
+    },
+    {
+      "id": "admin_activity_1_e1bb1f52-2195-47dd-a391-91603e177b12",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "audit-editor-043989@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user audit-editor-043989@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-24T03:40:46.429Z"
+    },
+    {
+      "id": "admin_activity_1_a1754e1f-3ef8-4740-9dfa-1bc2d1835a17",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.deleted",
+      "targetType": "user_profile",
+      "targetId": "audit-viewer-798216@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Removed user audit-viewer-798216@example.com from the user registry.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-24T03:37:06.653Z"
+    },
+    {
+      "id": "admin_activity_1_2723f6d7-95c0-428a-a774-a5ff93a210de",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.deleted",
+      "targetType": "user_profile",
+      "targetId": "audit-editor-798216@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Removed user audit-editor-798216@example.com from the user registry.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-24T03:37:06.642Z"
+    },
+    {
+      "id": "admin_activity_1_ab1c8656-c647-421e-a047-a8a4f255fa66",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_4_b499639a-6781-49c9-82cc-5e79d768b116",
+      "targetFamily": "stocks",
+      "targetSlug": "audit-import-stock-798216",
+      "summary": "Deleted Audit Import Stock 798216 from stocks.",
+      "metadata": {
+        "title": "Audit Import Stock 798216",
+        "publicHref": "/stocks/audit-import-stock-798216",
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:37:06.616Z"
+    },
+    {
+      "id": "admin_activity_1_80ca5d06-e286-46ba-bf76-473f75bc1cb6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_0cf076fa-1a54-4fee-b19b-cb02be62aba8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Deleted Tata Motors (Copy) from stocks.",
+      "metadata": {
+        "title": "Tata Motors (Copy)",
+        "publicHref": null,
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:37:06.603Z"
+    },
+    {
+      "id": "admin_activity_1_b7d08c4c-d772-4b3e-b5b0-54b1462c8143",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.deleted",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Deleted Audit Stock Draft 798216 from stocks.",
+      "metadata": {
+        "title": "Audit Stock Draft 798216",
+        "publicHref": "/stocks/tata-motors-copy",
+        "sourceState": "manual_only"
+      },
+      "createdAt": "2026-04-24T03:37:06.397Z"
+    },
+    {
+      "id": "admin_activity_1_aa66f246-ad75-42e6-9bad-e46cd905b05c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "healthy",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-24T03:37:03.040Z"
+    },
+    {
+      "id": "admin_activity_1_a8bd08b4-4652-4ed6-9832-98913e2b439a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 1,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-24T03:37:01.757Z"
+    },
+    {
+      "id": "admin_activity_1_268d0406-8fe1-41a1-a852-30161d8d2200",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 1,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-24T03:37:01.530Z"
+    },
+    {
+      "id": "admin_activity_1_74114188-0424-4bd2-9a83-66904de5eee7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.imported",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_f1f79bc6-1c1f-4f6d-9437-988c98de55f3",
+      "targetFamily": "mutual-funds",
+      "targetSlug": null,
+      "summary": "Imported 0 mutual funds rows as draft records from mutual-funds-audit-798216.csv.",
+      "metadata": {
+        "fileName": "mutual-funds-audit-798216.csv",
+        "importMode": "create_new_only",
+        "createdCount": 0,
+        "updatedCount": 0,
+        "queuedCount": 0,
+        "failedCount": 1
+      },
+      "createdAt": "2026-04-24T03:37:00.401Z"
+    },
+    {
+      "id": "admin_activity_1_e2faea50-c4ea-4d48-a817-7461316f19e4",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.imported",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_dec166de-2571-4ac0-9b25-b6db668d487d",
+      "targetFamily": "stocks",
+      "targetSlug": null,
+      "summary": "Imported 1 stocks row as draft record from stocks-audit-798216.csv.",
+      "metadata": {
+        "fileName": "stocks-audit-798216.csv",
+        "importMode": "create_new_only",
+        "createdCount": 1,
+        "updatedCount": 0,
+        "queuedCount": 0,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-24T03:36:59.375Z"
+    },
+    {
+      "id": "admin_activity_1_158d6112-0277-4399-9635-0c05aaaf0d2e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_4_b499639a-6781-49c9-82cc-5e79d768b116",
+      "targetFamily": "stocks",
+      "targetSlug": "audit-import-stock-798216",
+      "summary": "Updated override-controlled sections on Audit Import Stock 798216: workflow, identity, publishing, frontend_fields, seo.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "frontend_fields",
+          "seo"
+        ]
+      },
+      "createdAt": "2026-04-24T03:36:59.169Z"
+    },
+    {
+      "id": "admin_activity_1_f0c238f0-6fe1-4f63-8d86-8f9361a34b6c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_4_b499639a-6781-49c9-82cc-5e79d768b116",
+      "targetFamily": "stocks",
+      "targetSlug": "audit-import-stock-798216",
+      "summary": "Saved Audit Import Stock 798216 in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:36:58.968Z"
+    },
+    {
+      "id": "admin_activity_1_7becd75b-7ad9-41b4-b2dc-cb7ae741746c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_e82dd994-04a6-4647-a0c3-a618674f37bc",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Submitted Editor Approval Audit 798216 B for content approval.",
+      "metadata": {
+        "approvalId": "approval_1_e82dd994-04a6-4647-a0c3-a618674f37bc",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "draft"
+      },
+      "createdAt": "2026-04-24T03:36:54.167Z"
+    },
+    {
+      "id": "admin_activity_1_96ceb6df-fb7d-4238-8922-d71fe32c57ec",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Updated override-controlled sections on Audit Stock Draft 798216: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:36:53.470Z"
+    },
+    {
+      "id": "admin_activity_1_bb63a97e-8916-4215-9fbd-6e01cfc1bc19",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Saved Audit Stock Draft 798216 in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:36:53.469Z"
+    },
+    {
+      "id": "admin_activity_1_b8b65054-1e66-4c9e-adc2-c1f22b40c7a5",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Updated override-controlled sections on Audit Stock Draft 798216: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-24T03:36:52.314Z"
+    },
+    {
+      "id": "admin_activity_1_c1a6e010-5cf5-4084-ab5a-e7f5b7273814",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Saved Audit Stock Draft 798216 in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-24T03:36:52.310Z"
+    },
+    {
+      "id": "admin_activity_1_ed98e667-bfd2-42ed-96e1-46f5d2aeee49",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_e564cfcc-2ba5-4d60-90f6-d7064c700a9f",
+      "targetFamily": null,
+      "targetSlug": "audit-og-798216.jpg",
+      "summary": "Added media asset Audit OG Asset 798216.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-24T03:36:50.874Z"
+    },
+    {
+      "id": "admin_activity_1_21946954-5cc5-4b0a-ab74-cab86f2dac5a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.quick_edited",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Quick edited Audit Stock Draft 798216 in stocks.",
+      "metadata": {
+        "title": "Audit Stock Draft 798216",
+        "status": "draft",
+        "accessMode": "public_free"
+      },
+      "createdAt": "2026-04-24T03:36:47.903Z"
+    },
+    {
+      "id": "admin_activity_1_cadbb054-e324-46ad-8ecd-00d50a720e54",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.duplicated",
+      "targetType": "content_record",
+      "targetId": "admin_record_3_0cf076fa-1a54-4fee-b19b-cb02be62aba8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy-2",
+      "summary": "Duplicated Tata Motors to Tata Motors (Copy).",
+      "metadata": {
+        "sourceSlug": "tata-motors",
+        "duplicateSlug": "tata-motors-copy-2"
+      },
+      "createdAt": "2026-04-24T03:36:47.685Z"
+    },
+    {
+      "id": "admin_activity_1_9a308a64-9abe-4861-829b-ff586b31e873",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.duplicated",
+      "targetType": "content_record",
+      "targetId": "admin_record_2_c728e85e-e2e7-4cd0-811b-2b1004ea0132",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors-copy",
+      "summary": "Duplicated Tata Motors to Tata Motors (Copy).",
+      "metadata": {
+        "sourceSlug": "tata-motors",
+        "duplicateSlug": "tata-motors-copy"
+      },
+      "createdAt": "2026-04-24T03:36:46.682Z"
+    },
+    {
+      "id": "admin_activity_1_66c07a38-6dfd-49ce-b053-dc3e0beb6061",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "audit-editor-798216@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user audit-editor-798216@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-24T03:36:40.087Z"
+    },
+    {
+      "id": "admin_activity_1_9bf4d24a-4088-467e-91f6-57749b6b905e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "audit-viewer-798216@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user audit-viewer-798216@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-24T03:36:40.075Z"
+    },
+    {
+      "id": "admin_activity_1_cf12195d-5bde-4c28-a6c1-d9cef56e86d8",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "audit-editor-798216@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user audit-editor-798216@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-24T03:36:39.857Z"
+    },
+    {
+      "id": "admin_activity_1_b4e8de92-e077-446d-9505-daee24d4f2c9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.quick_edited",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Quick edited Tata Motors in stocks.",
+      "metadata": {
+        "title": "Tata Motors",
+        "status": "published",
+        "accessMode": "public_free"
+      },
+      "createdAt": "2026-04-23T17:08:22.638Z"
+    },
+    {
+      "id": "admin_activity_1_d3dc5a67-ef82-4fa3-b777-af76124c6167",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.quick_edited",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Quick edited Tata Motors in stocks.",
+      "metadata": {
+        "title": "Tata Motors",
+        "status": "published",
+        "accessMode": "public_free"
+      },
+      "createdAt": "2026-04-23T17:02:04.946Z"
+    },
+    {
+      "id": "admin_activity_1_933364ab-62c1-49b3-876e-3724fd87889b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "amitbhawani@gmail.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user amitbhawani@gmail.com with role admin and tier pro-max.",
+      "metadata": {
+        "role": "admin",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T15:39:01.002Z"
+    },
+    {
+      "id": "admin_activity_1_3dc63071-fdef-484f-b04e-b1c33843a9f6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "amitest@gmail.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user amitest@gmail.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T15:08:04.605Z"
+    },
+    {
+      "id": "admin_activity_1_2c0b8c5d-bba6-4012-bca3-6202762fbae3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "amitest@gmail.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user amitest@gmail.com with role admin and tier pro-max.",
+      "metadata": {
+        "role": "admin",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T15:07:56.188Z"
+    },
+    {
+      "id": "admin_activity_1_b703ffbc-50fe-45f1-886e-26f9af86d28d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "amitest@gmail.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user amitest@gmail.com with role editor and tier pro-max.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T15:03:25.563Z"
+    },
+    {
+      "id": "admin_activity_1_61c99677-3a61-4b45-86bd-98e6167998b2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.updated",
+      "targetType": "media_asset",
+      "targetId": "asset_5067fe1c-3d13-4fc7-91d6-95768c10bcf9",
+      "targetFamily": null,
+      "targetSlug": "wp-og-1776835701786.png",
+      "summary": "Updated media asset WP OG Asset 1776835701786.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "upload",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-22T05:32:49.537Z"
+    },
+    {
+      "id": "admin_activity_1_a1aaeba8-b66c-4a40-bdb7-4150724b75d7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_5067fe1c-3d13-4fc7-91d6-95768c10bcf9",
+      "targetFamily": null,
+      "targetSlug": "wp-og-1776835701786.png",
+      "summary": "Added media asset WP OG Asset 1776835701786.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "upload",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-22T05:28:27.785Z"
+    },
+    {
+      "id": "admin_activity_1_8ea3d2f5-7003-4291-9dc3-34cb5ccda9c0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "cms-editor-final@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user cms-editor-final@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T05:28:24.299Z"
+    },
+    {
+      "id": "admin_activity_1_7f5e4b9b-93af-4ff2-bc83-aee96f6e5cc1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.import_submitted",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_964539ba-913d-4e3e-ba01-381a1fbe6c59",
+      "targetFamily": "mutual-funds",
+      "targetSlug": null,
+      "summary": "Saved 1 mutual funds draft row from mutual-funds-closure-1776833099387.csv and sent it for approval.",
+      "metadata": {
+        "fileName": "mutual-funds-closure-1776833099387.csv",
+        "importMode": "create_or_update",
+        "createdCount": 0,
+        "updatedCount": 0,
+        "queuedCount": 1,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-22T04:45:09.757Z"
+    },
+    {
+      "id": "admin_activity_1_cd36537f-2b0c-4740-b312-ae7fee3a17e5",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor-import@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor-import@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T04:44:20.375Z"
+    },
+    {
+      "id": "admin_activity_1_c7897d10-946b-4e0d-8da9-38cb0cbf322f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_10b200ec-2aa0-4fc4-863c-b97687187e9b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_10b200ec-2aa0-4fc4-863c-b97687187e9b",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T04:25:48.449Z"
+    },
+    {
+      "id": "admin_activity_1_26aece7d-bbad-433f-af47-9b454b09f807",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T04:25:48.446Z"
+    },
+    {
+      "id": "admin_activity_1_b97734d4-e345-42c2-aad9-fc7db39b9fa6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T04:25:48.445Z"
+    },
+    {
+      "id": "admin_activity_1_4ac30d8b-6952-4efd-bc2e-49a22bfa1ed1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.import_submitted",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_66e81bfa-97c0-4a77-8bac-616e717e552a",
+      "targetFamily": "mutual-funds",
+      "targetSlug": null,
+      "summary": "Submitted 1 mutual funds row from mutual-funds-precheck.csv for approval.",
+      "metadata": {
+        "fileName": "mutual-funds-precheck.csv",
+        "importMode": "create_or_update",
+        "createdCount": 0,
+        "updatedCount": 0,
+        "queuedCount": 1,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-22T04:25:45.197Z"
+    },
+    {
+      "id": "admin_activity_1_2ebd0665-c597-4e2b-a604-f77799bdd1ca",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.imported",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_51cb7984-7140-4cb6-852b-ea1e1d1bc193",
+      "targetFamily": "mutual-funds",
+      "targetSlug": null,
+      "summary": "Imported 1 mutual funds row from admin-fund-import.csv.",
+      "metadata": {
+        "fileName": "admin-fund-import.csv",
+        "importMode": "create_or_update",
+        "createdCount": 1,
+        "updatedCount": 0,
+        "queuedCount": 0,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-22T04:13:34.059Z"
+    },
+    {
+      "id": "admin_activity_1_ef794477-0d80-4ef6-88dc-f66489f1dac7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.imported",
+      "targetType": "content_import_batch",
+      "targetId": "admin_import_44fdcb6c-b1da-45eb-85d3-e1097b230179",
+      "targetFamily": "stocks",
+      "targetSlug": null,
+      "summary": "Imported 1 stocks row from admin-stock-import.csv.",
+      "metadata": {
+        "fileName": "admin-stock-import.csv",
+        "importMode": "create_or_update",
+        "createdCount": 1,
+        "updatedCount": 0,
+        "queuedCount": 0,
+        "failedCount": 0
+      },
+      "createdAt": "2026-04-22T04:13:28.664Z"
+    },
+    {
+      "id": "admin_activity_1_b6193e0d-9a7e-4a3a-a10a-16a229706127",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user-import@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user-import@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T04:12:48.197Z"
+    },
+    {
+      "id": "admin_activity_1_aad856dd-2f0e-4c78-b1dd-241431679caf",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor-import@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor-import@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T04:12:47.867Z"
+    },
+    {
+      "id": "admin_activity_1_aee4bc9d-0e6a-4a8c-8add-a89fa5627c3c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_44707db1-da35-4475-ab23-132c53988c1d",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_44707db1-da35-4475-ab23-132c53988c1d",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:30:45.926Z"
+    },
+    {
+      "id": "admin_activity_1_4ee56582-b2d3-482b-8d4b-c67bd9000d8b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-22T02:30:45.923Z"
+    },
+    {
+      "id": "admin_activity_1_198b004b-3a65-491c-8c9e-6bfe8525593a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:30:45.921Z"
+    },
+    {
+      "id": "admin_activity_1_a086cdb7-1248-4760-bb0f-6fa2916a9e20",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_974cfc86-c7de-40ad-853d-be9155e92555",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_974cfc86-c7de-40ad-853d-be9155e92555",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:30:45.296Z"
+    },
+    {
+      "id": "admin_activity_1_00f8a759-27dc-4498-a0b5-f5ee8a640eee",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-22T02:30:45.294Z"
+    },
+    {
+      "id": "admin_activity_1_e881371f-9350-4b87-9f27-b2de7cedaec2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:30:45.293Z"
+    },
+    {
+      "id": "admin_activity_1_8fc119e2-a962-4699-8b2a-72cedcf784fb",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_44707db1-da35-4475-ab23-132c53988c1d",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_44707db1-da35-4475-ab23-132c53988c1d",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:30:45.273Z"
+    },
+    {
+      "id": "admin_activity_1_3a0aeecb-251f-4947-a4ae-4f3bfe4e9f15",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_974cfc86-c7de-40ad-853d-be9155e92555",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_974cfc86-c7de-40ad-853d-be9155e92555",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:30:45.253Z"
+    },
+    {
+      "id": "admin_activity_1_1718bfb9-c8d6-499d-baf9-424511da837d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_5f127ca8-3d38-495f-a330-0d5ea3ee7041",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_5f127ca8-3d38-495f-a330-0d5ea3ee7041",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:30:44.318Z"
+    },
+    {
+      "id": "admin_activity_1_6b2efd93-ed06-4359-a305-c0cd1c7ead0d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: workflow, identity, publishing, data_sources, frontend_fields, seo, documents_links, refresh_automation.",
+      "metadata": {
+        "overrideSections": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ]
+      },
+      "createdAt": "2026-04-22T02:30:44.316Z"
+    },
+    {
+      "id": "admin_activity_1_154d82ae-9f8f-4a7b-aec9-6de086836107",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:30:44.315Z"
+    },
+    {
+      "id": "admin_activity_1_04d68cb5-2589-440d-8ab4-39d91f054332",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_5f127ca8-3d38-495f-a330-0d5ea3ee7041",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_5f127ca8-3d38-495f-a330-0d5ea3ee7041",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:30:43.796Z"
+    },
+    {
+      "id": "admin_activity_1_2396bfc7-7321-4c3a-8971-9dbf77cebd01",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.audit.1776825040950@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.audit.1776825040950@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:30:41.032Z"
+    },
+    {
+      "id": "admin_activity_1_ef507e19-1dbc-4b27-b95b-7e4d7e93ecf4",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.two.1776825040950@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.two.1776825040950@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:30:41.021Z"
+    },
+    {
+      "id": "admin_activity_1_67590f88-46ae-4180-8631-bc6e854726fe",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.one.1776825040950@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.one.1776825040950@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:30:41.007Z"
+    },
+    {
+      "id": "admin_activity_1_a03e402b-3b8b-45a4-83ab-b7ebfffc7452",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:29:30.766Z"
+    },
+    {
+      "id": "admin_activity_1_ad659108-2e73-47bb-9b8d-216304d15ef1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:29:30.764Z"
+    },
+    {
+      "id": "admin_activity_1_6818d04b-b1e2-4e28-84c6-fef9ffd981c6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:29:30.763Z"
+    },
+    {
+      "id": "admin_activity_1_73c2a32a-4c30-4e66-914a-37fccee58391",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:29:30.740Z"
+    },
+    {
+      "id": "admin_activity_1_c05b3350-9a13-4ffc-a2cf-7ebd441ea1e0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:29:30.725Z"
+    },
+    {
+      "id": "admin_activity_1_26eafa45-1aee-40bf-bdb3-67e7c7d81f88",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_5a0b40db-92fe-4964-85c2-54c028a212ab",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_5a0b40db-92fe-4964-85c2-54c028a212ab",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:29:29.736Z"
+    },
+    {
+      "id": "admin_activity_1_a78f59af-0e6e-4511-a818-1a9ad9205393",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:29:29.734Z"
+    },
+    {
+      "id": "admin_activity_1_e4b8aad9-c411-46d1-ac4e-bb6859fe8fc4",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:29:29.732Z"
+    },
+    {
+      "id": "admin_activity_1_f317878c-a689-4b3c-affb-0c62694914ec",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_5a0b40db-92fe-4964-85c2-54c028a212ab",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_5a0b40db-92fe-4964-85c2-54c028a212ab",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:29:29.045Z"
+    },
+    {
+      "id": "admin_activity_1_1409d49a-cdb2-414b-a417-b3f626bfc599",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-22T02:29:28.182Z"
+    },
+    {
+      "id": "admin_activity_1_1a0f52e8-dbdf-49e9-9e9c-2b262e9664f7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:29:28.120Z"
+    },
+    {
+      "id": "admin_activity_1_2e8be358-a3b2-49a2-bfcc-224b26699051",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:29:28.119Z"
+    },
+    {
+      "id": "admin_activity_1_13cd955c-bcc3-44de-94d7-fb4a339df560",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:29:26.228Z"
+    },
+    {
+      "id": "admin_activity_1_9dfed765-8101-41fe-a39b-edcc96849b18",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:29:26.227Z"
+    },
+    {
+      "id": "admin_activity_1_daecfeba-a7bb-40ad-974e-b7a3f52ed989",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_f3161a56-3f80-4dff-b166-bb40ad3bf8d3",
+      "targetFamily": null,
+      "targetSlug": "1776824963944.jpg",
+      "summary": "Added media asset Media QA 1776824963944.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-22T02:29:26.178Z"
+    },
+    {
+      "id": "admin_activity_1_d013e317-b63d-4bb4-83e4-162e20b326f9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: defaultLockedCtaLabel.",
+      "metadata": {
+        "changedFields": [
+          "defaultLockedCtaLabel"
+        ]
+      },
+      "createdAt": "2026-04-22T02:29:26.137Z"
+    },
+    {
+      "id": "admin_activity_1_74bf3205-0f25-44e6-a804-c8fb33e1a44a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824963944@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user user.final.1776824963944@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T02:29:26.086Z"
+    },
+    {
+      "id": "admin_activity_1_3fce9028-b466-4451-9ea9-b13b8c0b91bf",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824963944@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.final.1776824963944@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:29:26.075Z"
+    },
+    {
+      "id": "admin_activity_1_ad081580-588a-442a-a78b-358e8c66eaf3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.final.1776824963944@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.final.1776824963944@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:29:26.063Z"
+    },
+    {
+      "id": "admin_activity_1_1526fdb0-9abe-4644-b2c4-4f3778ee737f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_d4937078-16d0-4628-b9a8-078a0ab72637",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_d4937078-16d0-4628-b9a8-078a0ab72637",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:27:58.291Z"
+    },
+    {
+      "id": "admin_activity_1_aed912ed-0a1d-4ea0-bceb-e22d31cbe9a5",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:27:58.290Z"
+    },
+    {
+      "id": "admin_activity_1_6fe21ca1-9952-40f5-848b-0a7595114615",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:27:58.289Z"
+    },
+    {
+      "id": "admin_activity_1_2b458468-80e6-4800-b8aa-1d50c92d11ac",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_d4937078-16d0-4628-b9a8-078a0ab72637",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_d4937078-16d0-4628-b9a8-078a0ab72637",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:27:57.726Z"
+    },
+    {
+      "id": "admin_activity_1_93bf49bf-3689-4c17-b400-824c62104d2e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-22T02:27:57.111Z"
+    },
+    {
+      "id": "admin_activity_1_c96269af-43a8-4c7f-92b2-3f91ff34af91",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:27:56.818Z"
+    },
+    {
+      "id": "admin_activity_1_bf0ca17b-bbe8-41af-98a9-98e0fa6bb0bc",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:27:56.813Z"
+    },
+    {
+      "id": "admin_activity_1_fd7c42c3-e9d5-4e43-9292-9b433b451e89",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:27:54.791Z"
+    },
+    {
+      "id": "admin_activity_1_68511c4a-0462-4465-b513-221dfd13613b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:27:54.789Z"
+    },
+    {
+      "id": "admin_activity_1_1b8bf059-90dc-4d1c-a5d9-24c43b3da179",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_0f88b92b-f717-43e7-9424-2a573fc63b91",
+      "targetFamily": null,
+      "targetSlug": "1776824872123.jpg",
+      "summary": "Added media asset Media QA 1776824872123.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-22T02:27:54.312Z"
+    },
+    {
+      "id": "admin_activity_1_f8cdc32b-eb76-4d55-805d-bdc7ed4c9b54",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: defaultLockedCtaLabel.",
+      "metadata": {
+        "changedFields": [
+          "defaultLockedCtaLabel"
+        ]
+      },
+      "createdAt": "2026-04-22T02:27:54.250Z"
+    },
+    {
+      "id": "admin_activity_1_352b70e7-8918-40e3-b67e-a6ca0164f9b6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824872123@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user user.final.1776824872123@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T02:27:54.164Z"
+    },
+    {
+      "id": "admin_activity_1_508bdd59-efa1-4d0b-aa1b-efc83d5bd7f3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824872123@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.final.1776824872123@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:27:54.153Z"
+    },
+    {
+      "id": "admin_activity_1_607d5f1a-3b4b-4439-9954-47c792d07d8b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.final.1776824872123@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.final.1776824872123@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:27:54.141Z"
+    },
+    {
+      "id": "admin_activity_1_bde4d734-5964-41d6-8ba8-efab034e6b01",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_10b200ec-2aa0-4fc4-863c-b97687187e9b",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_10b200ec-2aa0-4fc4-863c-b97687187e9b",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:26:25.112Z"
+    },
+    {
+      "id": "admin_activity_1_25c5b2ff-691d-433d-b2b0-9f5562fbd1d9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-22T02:26:21.642Z"
+    },
+    {
+      "id": "admin_activity_1_c97a3abb-3da3-4f98-94f2-97a423d025c6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:26:16.127Z"
+    },
+    {
+      "id": "admin_activity_1_54522525-f595-4ef4-9a67-90988af856c5",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:26:15.870Z"
+    },
+    {
+      "id": "admin_activity_1_cb543c56-8353-4ce9-b8f1-1474bcf03238",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:26:09.672Z"
+    },
+    {
+      "id": "admin_activity_1_c92d8b2a-ba5a-407c-9316-714830f467f0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:26:09.462Z"
+    },
+    {
+      "id": "admin_activity_1_ca5378bc-377a-47f4-a1c3-47d10774fb8e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_7a46b1ed-f02d-482c-9d5b-10a3a125f6de",
+      "targetFamily": null,
+      "targetSlug": "1776824744359.jpg",
+      "summary": "Added media asset Media QA 1776824744359.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-22T02:26:03.333Z"
+    },
+    {
+      "id": "admin_activity_1_dbc4b01a-41f3-4358-b1fa-a9f8ef174927",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: defaultLockedCtaLabel.",
+      "metadata": {
+        "changedFields": [
+          "defaultLockedCtaLabel"
+        ]
+      },
+      "createdAt": "2026-04-22T02:25:59.762Z"
+    },
+    {
+      "id": "admin_activity_1_17461a78-de13-4cc9-8ffe-fa9d81b4e8ef",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824744359@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user user.final.1776824744359@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T02:25:56.902Z"
+    },
+    {
+      "id": "admin_activity_1_1516f548-d344-48ce-8c79-8a83a9e6d644",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824744359@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.final.1776824744359@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:25:56.882Z"
+    },
+    {
+      "id": "admin_activity_1_7f4b2d6e-1c46-449c-bcab-be1c4ba8a3c7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.final.1776824744359@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.final.1776824744359@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:25:56.658Z"
+    },
+    {
+      "id": "admin_activity_1_6781b111-2be5-4b7b-8cf1-4fc3864927e0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:23:54.642Z"
+    },
+    {
+      "id": "admin_activity_1_f6c0482e-59fc-41d6-a291-e2e7fbdd7f15",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:23:54.441Z"
+    },
+    {
+      "id": "admin_activity_1_6001b709-272f-4c2a-a5bb-d93d5df7ab7b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_4f682cb2-adbd-47a1-a934-faebbe09596b",
+      "targetFamily": null,
+      "targetSlug": "1776824621012.jpg",
+      "summary": "Added media asset Media QA 1776824621012.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-22T02:23:50.036Z"
+    },
+    {
+      "id": "admin_activity_1_ffe89716-7aa0-4187-838f-626d3aa84d68",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: defaultLockedCtaLabel.",
+      "metadata": {
+        "changedFields": [
+          "defaultLockedCtaLabel"
+        ]
+      },
+      "createdAt": "2026-04-22T02:23:46.608Z"
+    },
+    {
+      "id": "admin_activity_1_6e309299-5717-419a-a838-e63f062d2faa",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824621012@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user user.final.1776824621012@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-22T02:23:44.486Z"
+    },
+    {
+      "id": "admin_activity_1_24c78cf7-5d3d-4308-8cb4-19b0099bfb2e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.final.1776824621012@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.final.1776824621012@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:23:44.473Z"
+    },
+    {
+      "id": "admin_activity_1_d4cb683d-a341-48b8-9f8d-1dcc667fe96d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.final.1776824621012@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.final.1776824621012@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:23:44.256Z"
+    },
+    {
+      "id": "admin_activity_1_a998768f-b6a4-432c-87b7-5d965a7a877b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:17:59.967Z"
+    },
+    {
+      "id": "admin_activity_1_27c3d626-d76a-4b19-9837-6bfc8ea30652",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:17:59.763Z"
+    },
+    {
+      "id": "admin_activity_1_90cd31ff-50a2-4567-8043-c023e3fb3573",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_1ff7ebbd-512d-4878-ab81-a94f1a3da9bb",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_1ff7ebbd-512d-4878-ab81-a94f1a3da9bb",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:17:57.184Z"
+    },
+    {
+      "id": "admin_activity_1_ef7790c2-ed43-423b-b72f-84ffecf69fe2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:17:57.180Z"
+    },
+    {
+      "id": "admin_activity_1_8cc402b1-546f-4c83-b62b-92b2ab023361",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:17:56.977Z"
+    },
+    {
+      "id": "admin_activity_1_32ea611d-96a0-412c-9842-b67d455b41fa",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_1ff7ebbd-512d-4878-ab81-a94f1a3da9bb",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_1ff7ebbd-512d-4878-ab81-a94f1a3da9bb",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:17:51.546Z"
+    },
+    {
+      "id": "admin_activity_1_2df7d481-abf9-413d-ad06-7a5f6a10c83d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:17:46.384Z"
+    },
+    {
+      "id": "admin_activity_1_6b770ac6-3ad4-42d6-9448-1e293ad5b6c9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:17:46.175Z"
+    },
+    {
+      "id": "admin_activity_1_57463582-1470-410d-b7b0-0abb3a54f6c9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_81e2b967-1285-4ee3-85af-67e202bbc309",
+      "targetFamily": null,
+      "targetSlug": "audit-media.jpg",
+      "summary": "Added media asset Audit Media 2026-04-22T02:17:35.455Z.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-22T02:17:41.641Z"
+    },
+    {
+      "id": "admin_activity_1_3ce677b3-9218-4440-9f5e-5fb9516fe1aa",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: siteName, defaultMetaTitleSuffix, defaultMetaDescription, defaultOgImage, defaultCanonicalBase, defaultNoIndex, defaultMembershipTier, defaultLockedCtaLabel, supportEmail, supportRoute, previewEnabled, mediaUploadsEnabled, watchlistEnabled, portfolioEnabled, updatedAt.",
+      "metadata": {
+        "changedFields": [
+          "siteName",
+          "defaultMetaTitleSuffix",
+          "defaultMetaDescription",
+          "defaultOgImage",
+          "defaultCanonicalBase",
+          "defaultNoIndex",
+          "defaultMembershipTier",
+          "defaultLockedCtaLabel",
+          "supportEmail",
+          "supportRoute",
+          "previewEnabled",
+          "mediaUploadsEnabled",
+          "watchlistEnabled",
+          "portfolioEnabled",
+          "updatedAt"
+        ]
+      },
+      "createdAt": "2026-04-22T02:17:38.720Z"
+    },
+    {
+      "id": "admin_activity_1_1dfad0ae-d6b2-4f1b-85dd-1016354c7fd1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "user.audit@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user user.audit@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:17:36.673Z"
+    },
+    {
+      "id": "admin_activity_1_31225353-839b-4962-a3d9-dbc46e95a2f1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.audit@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.audit@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:17:36.446Z"
+    },
+    {
+      "id": "admin_activity_1_01d4c31e-4e1a-4182-9256-d6c606484225",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:13:46.319Z"
+    },
+    {
+      "id": "admin_activity_1_7482b7e5-0edc-4999-964e-931659b1fd39",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-22T02:13:46.111Z"
+    },
+    {
+      "id": "admin_activity_1_1abcfe3a-e2c3-4b06-89ed-b624c2772f46",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_da8b93ba-ef4c-4dc6-9aa9-470d6109b458",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_da8b93ba-ef4c-4dc6-9aa9-470d6109b458",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-22T02:13:43.547Z"
+    },
+    {
+      "id": "admin_activity_1_ae94482f-8140-4d35-a50e-175d3ae41105",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:13:43.544Z"
+    },
+    {
+      "id": "admin_activity_1_00d3e5c7-545d-47c3-89b6-33bc853dbdb2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:13:43.342Z"
+    },
+    {
+      "id": "admin_activity_1_2700e9d2-1ef2-4a1e-9129-48c6804d9254",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_da8b93ba-ef4c-4dc6-9aa9-470d6109b458",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_da8b93ba-ef4c-4dc6-9aa9-470d6109b458",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-22T02:13:36.982Z"
+    },
+    {
+      "id": "admin_activity_1_5bdcd4b3-2d5b-4ac8-b67e-7fd37ce10977",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-22T02:13:30.626Z"
+    },
+    {
+      "id": "admin_activity_1_71423ded-effd-451b-9053-e8162a86cf9a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-22T02:13:30.413Z"
+    },
+    {
+      "id": "admin_activity_1_572ee84a-c8a5-41e0-9e49-6b7ac9a3af87",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_2f46be3d-544e-4b32-9ccb-6a8fd63a937c",
+      "targetFamily": null,
+      "targetSlug": "audit-media.jpg",
+      "summary": "Added media asset Audit Media 2026-04-22T02:13:18.634Z.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-22T02:13:25.759Z"
+    },
+    {
+      "id": "admin_activity_1_19c5a02b-4d08-4ef1-9679-d48d7b4b0df3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: siteName, defaultMetaTitleSuffix, defaultMetaDescription, defaultOgImage, defaultCanonicalBase, defaultNoIndex, defaultMembershipTier, defaultLockedCtaLabel, supportEmail, supportRoute, previewEnabled, mediaUploadsEnabled, watchlistEnabled, portfolioEnabled, updatedAt.",
+      "metadata": {
+        "changedFields": [
+          "siteName",
+          "defaultMetaTitleSuffix",
+          "defaultMetaDescription",
+          "defaultOgImage",
+          "defaultCanonicalBase",
+          "defaultNoIndex",
+          "defaultMembershipTier",
+          "defaultLockedCtaLabel",
+          "supportEmail",
+          "supportRoute",
+          "previewEnabled",
+          "mediaUploadsEnabled",
+          "watchlistEnabled",
+          "portfolioEnabled",
+          "updatedAt"
+        ]
+      },
+      "createdAt": "2026-04-22T02:13:22.884Z"
+    },
+    {
+      "id": "admin_activity_1_8f0a4203-1539-477b-882e-0b967c1a77e3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "user.audit@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user user.audit@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-22T02:13:20.056Z"
+    },
+    {
+      "id": "admin_activity_1_19e55b94-34ab-495c-bc1a-fa7ad830ba6e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.audit@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.audit@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-22T02:13:19.817Z"
+    },
+    {
+      "id": "admin_activity_1_a86a959b-838c-46c5-8c77-5f9fb5823019",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T17:03:30.338Z"
+    },
+    {
+      "id": "admin_activity_1_088e5ba9-95a6-4eae-9e9b-11aa30a774a1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T17:03:30.336Z"
+    },
+    {
+      "id": "admin_activity_1_828c4e61-3c3b-4789-b971-dce05646e247",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T17:03:30.099Z"
+    },
+    {
+      "id": "admin_activity_1_28cf1e1e-6b37-4187-8674-a9d72057e948",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T17:03:29.601Z"
+    },
+    {
+      "id": "admin_activity_1_8cc64191-e423-4e14-8561-8a4ed3a31977",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-21T17:02:46.134Z"
+    },
+    {
+      "id": "admin_activity_1_68e3e08d-97fa-49d7-8a69-d3028545bb1a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_e1b2f420-721d-403c-8f58-ae1e8492b003",
+      "targetFamily": null,
+      "targetSlug": "final-closure-asset.pdf",
+      "summary": "Added media asset Media final 2026-04-21T17:02:25.237Z.",
+      "metadata": {
+        "assetType": "document",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-21T17:02:43.132Z"
+    },
+    {
+      "id": "admin_activity_1_14dc82f8-74fe-4614-8d62-b2f55fbde6bb",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T17:02:39.834Z"
+    },
+    {
+      "id": "admin_activity_1_ea79d617-bd05-4219-903b-b9c7ce40d26d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T17:02:39.611Z"
+    },
+    {
+      "id": "admin_activity_1_9da17da4-490a-4f53-bf07-d3714fef743c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T17:02:34.468Z"
+    },
+    {
+      "id": "admin_activity_1_f46b1d0a-14aa-4265-a6ac-b674c2a7ff3f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T17:02:34.266Z"
+    },
+    {
+      "id": "admin_activity_1_b4a4cbe9-d4d8-4398-ab4d-78b8713fc861",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "closure.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user closure.user@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T17:02:30.082Z"
+    },
+    {
+      "id": "admin_activity_1_112860ef-57d6-4948-b08d-4e8d50ab0247",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "closure.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user closure.user@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T17:02:30.071Z"
+    },
+    {
+      "id": "admin_activity_1_3b1db9ac-3189-4611-bade-8a387703e3aa",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "member.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user member.one@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-21T17:02:30.058Z"
+    },
+    {
+      "id": "admin_activity_1_cc1290d5-98f0-403a-b789-99523d2ec197",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.two@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.two@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T17:02:29.826Z"
+    },
+    {
+      "id": "admin_activity_1_7480e41f-9c98-422d-99f5-fc67dab13be0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.one@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T17:02:29.176Z"
+    },
+    {
+      "id": "admin_activity_1_016a31b3-0906-4bf7-96a2-41f35376bb22",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:59:22.444Z"
+    },
+    {
+      "id": "admin_activity_1_a9991609-a451-44dd-808b-0abba721b64f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:59:22.443Z"
+    },
+    {
+      "id": "admin_activity_1_b50b292b-6da6-4c88-9727-4441fe602e53",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_f8126f18-45c6-481b-9deb-642a9374fbfc",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_f8126f18-45c6-481b-9deb-642a9374fbfc",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-21T16:59:19.710Z"
+    },
+    {
+      "id": "admin_activity_1_9da68229-b2dd-4440-848b-3aca4a69dc8b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:59:19.707Z"
+    },
+    {
+      "id": "admin_activity_1_e39ec5c6-fbe4-4999-95e6-85d1f7bb1320",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:59:19.705Z"
+    },
+    {
+      "id": "admin_activity_1_ff78ee41-148d-4ac1-8f13-17798ac8b191",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_81b9928b-3a99-49f5-9b62-e7826474a889",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_81b9928b-3a99-49f5-9b62-e7826474a889",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-21T16:59:19.089Z"
+    },
+    {
+      "id": "admin_activity_1_01de6786-f912-425f-bdc4-e8056ec4d82e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:59:19.088Z"
+    },
+    {
+      "id": "admin_activity_1_61861489-00fe-4c56-ba49-fcaa79055be6",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:59:19.087Z"
+    },
+    {
+      "id": "admin_activity_1_d3df6d27-a3d3-485a-ba1a-83e4ee5a6286",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_f8126f18-45c6-481b-9deb-642a9374fbfc",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_f8126f18-45c6-481b-9deb-642a9374fbfc",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-21T16:59:19.069Z"
+    },
+    {
+      "id": "admin_activity_1_2bf94a17-0177-4794-8953-9c7b5fc9dd81",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_81b9928b-3a99-49f5-9b62-e7826474a889",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_81b9928b-3a99-49f5-9b62-e7826474a889",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-21T16:59:19.052Z"
+    },
+    {
+      "id": "admin_activity_1_68fc6347-8340-426d-a496-0ff0382629e7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.approved",
+      "targetType": "content_record",
+      "targetId": "approval_1_287f5c5f-09da-436e-a906-757420ff70d9",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Approved Tata Motors and applied the queued editor change.",
+      "metadata": {
+        "approvalId": "approval_1_287f5c5f-09da-436e-a906-757420ff70d9",
+        "targetStatus": "published",
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8"
+      },
+      "createdAt": "2026-04-21T16:59:18.053Z"
+    },
+    {
+      "id": "admin_activity_1_1ea4e6b0-cdac-4b2c-892a-ea3a33057e23",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:59:18.050Z"
+    },
+    {
+      "id": "admin_activity_1_9f67d348-0a4d-4058-8c5a-e1e9a38f1685",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:59:18.049Z"
+    },
+    {
+      "id": "admin_activity_1_f427e2e5-6180-4d16-8c10-cca75870e6eb",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "approval.submitted",
+      "targetType": "content_record",
+      "targetId": "approval_1_287f5c5f-09da-436e-a906-757420ff70d9",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Submitted Tata Motors for publish approval.",
+      "metadata": {
+        "approvalId": "approval_1_287f5c5f-09da-436e-a906-757420ff70d9",
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "targetStatus": "published"
+      },
+      "createdAt": "2026-04-21T16:59:15.276Z"
+    },
+    {
+      "id": "admin_activity_1_973d6564-7890-4694-9999-eb351acf3172",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.two@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.two@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:59:14.231Z"
+    },
+    {
+      "id": "admin_activity_1_82b9a029-46f7-47c6-a97f-18c527416bc9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.one@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:59:14.218Z"
+    },
+    {
+      "id": "admin_activity_1_a6ad26bf-7c5f-4bca-ad43-a5aa02f946ca",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:59:09.993Z"
+    },
+    {
+      "id": "admin_activity_1_c6af4db2-cef6-4667-8a73-397485dd5fcb",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:59:09.991Z"
+    },
+    {
+      "id": "admin_activity_1_c1999345-6339-4f86-baf6-60afd05b26f7",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:47:17.286Z"
+    },
+    {
+      "id": "admin_activity_1_8a2c80ed-e3dd-45c0-a3d4-089656f30448",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:47:17.285Z"
+    },
+    {
+      "id": "admin_activity_1_e8ad9618-76b0-4d22-b105-a9494cc9fbc0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:47:17.067Z"
+    },
+    {
+      "id": "admin_activity_1_785dfea7-6c89-45f1-9f1b-4a02596f96b8",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:47:17.065Z"
+    },
+    {
+      "id": "admin_activity_1_a2c717e3-d066-4e28-9bcb-e63bc6fee40f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-21T16:46:55.271Z"
+    },
+    {
+      "id": "admin_activity_1_676dacc7-dc0f-42a7-a747-3f60fd8e67f2",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_f1e33e64-8bf6-4348-9de9-d035d0f88913",
+      "targetFamily": null,
+      "targetSlug": "final-backend-verification.pdf",
+      "summary": "Added media asset Media verification 2026-04-21T16:46:48.643Z.",
+      "metadata": {
+        "assetType": "document",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-21T16:46:55.181Z"
+    },
+    {
+      "id": "admin_activity_1_1500a0c3-9753-4ed2-957f-bba6e782f08e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:46:54.823Z"
+    },
+    {
+      "id": "admin_activity_1_46d3f26e-4dcd-4f45-8e7f-3ad63253c334",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:46:54.821Z"
+    },
+    {
+      "id": "admin_activity_1_c9eab949-9272-418a-abcb-5dc2bba30600",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:46:52.607Z"
+    },
+    {
+      "id": "admin_activity_1_0d0cf554-536d-41bc-996c-a092dc55c9ba",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:46:52.604Z"
+    },
+    {
+      "id": "admin_activity_1_61772c9c-ce5c-496a-9789-fc7da4c3848a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "final.backend.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user final.backend.user@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:46:49.925Z"
+    },
+    {
+      "id": "admin_activity_1_baf7e7df-cd70-47b7-be51-c4c91ee0e66e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "final.backend.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user final.backend.user@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:46:49.914Z"
+    },
+    {
+      "id": "admin_activity_1_47a76ab5-47d7-419f-badc-94b33666d497",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "member.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user member.one@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-21T16:46:49.895Z"
+    },
+    {
+      "id": "admin_activity_1_946ec99d-5e89-41a5-9304-003998ce759e",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.two@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.two@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:46:49.884Z"
+    },
+    {
+      "id": "admin_activity_1_3423b8bf-1303-4668-8084-1c2779a29181",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "editor.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user editor.one@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:46:49.868Z"
+    },
+    {
+      "id": "admin_activity_1_86bbf2d3-98b6-4d1f-9166-c3c6138d78df",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-21T16:41:03.118Z"
+    },
+    {
+      "id": "admin_activity_1_12228c45-3dd3-4c1a-b9d9-6642badf54e0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_650bb11d-b706-450e-b20a-021e050aa3f7",
+      "targetFamily": null,
+      "targetSlug": "final-backend-verification.pdf",
+      "summary": "Added media asset Media verification 2026-04-21T16:40:42.148Z.",
+      "metadata": {
+        "assetType": "document",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "published"
+      },
+      "createdAt": "2026-04-21T16:40:59.948Z"
+    },
+    {
+      "id": "admin_activity_1_97fc8913-4bf6-4f3b-b2dd-c633a4966022",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "footer",
+      "targetFamily": null,
+      "targetSlug": "footer",
+      "summary": "Saved global site footer draft.",
+      "metadata": {
+        "section": "footer",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:40:57.306Z"
+    },
+    {
+      "id": "admin_activity_1_82fc8783-6676-4964-a092-b28c6863eb8c",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 20,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T16:40:57.093Z"
+    },
+    {
+      "id": "admin_activity_1_e841294c-0ae1-40bb-87c5-8dccc7119522",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T16:40:53.202Z"
+    },
+    {
+      "id": "admin_activity_1_af7e762d-3b05-4b25-8d2e-e8ffe6536ace",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T16:40:53.201Z"
+    },
+    {
+      "id": "admin_activity_1_2e1fc520-f768-42a4-ad89-607bef792b09",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "final.backend.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user final.backend.user@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:40:48.636Z"
+    },
+    {
+      "id": "admin_activity_1_36558f75-efd4-41a9-9919-6be612bc707d",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "final.backend.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user final.backend.user@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:40:48.623Z"
+    },
+    {
+      "id": "admin_activity_1_cb9d127a-a081-4ba5-b039-891a20f91cb8",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "member.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user member.one@example.com with role user and tier pro-max.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro-max"
+      },
+      "createdAt": "2026-04-21T16:40:48.611Z"
+    },
+    {
+      "id": "admin_activity_1_50dfe977-614d-478c-bfc3-e2b150e27e76",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.two@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.two@example.com with role editor and tier pro.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:40:48.597Z"
+    },
+    {
+      "id": "admin_activity_1_543e9a8b-b3bf-4c04-ac92-33f4cf208ab0",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "editor.one@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user editor.one@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:40:48.382Z"
+    },
+    {
+      "id": "admin_activity_1_b217f840-34eb-4e83-a76e-9c5a653186a1",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "final.e2e.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user final.e2e.user@example.com with role user and tier pro.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "pro"
+      },
+      "createdAt": "2026-04-21T16:38:27.229Z"
+    },
+    {
+      "id": "admin_activity_1_e8d7a256-e4f8-42a9-9f41-0f646955d576",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "final.e2e.user@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user final.e2e.user@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T16:38:27.211Z"
+    },
+    {
+      "id": "admin_activity_1_bfde38c8-52c4-431f-86a4-72d5b3bd00e9",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "global_site.saved",
+      "targetType": "global_site_section",
+      "targetId": "header",
+      "targetFamily": null,
+      "targetSlug": "header",
+      "summary": "Saved global site header draft.",
+      "metadata": {
+        "section": "header",
+        "changedCount": 1,
+        "storageMode": "operator_backbone"
+      },
+      "createdAt": "2026-04-21T15:15:21.371Z"
+    },
+    {
+      "id": "admin_activity_1_8232d97e-c4d5-4716-b461-a79c4bcb3873",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "media_asset.created",
+      "targetType": "media_asset",
+      "targetId": "asset_1a480223-e3b7-4a92-9619-a0f64815d977",
+      "targetFamily": null,
+      "targetSlug": "trust-fix-media-2043.jpg",
+      "summary": "Added media asset Trust Fix Media 21 Apr 2026 08:43 PM IST.",
+      "metadata": {
+        "assetType": "image",
+        "sourceKind": "external_url",
+        "storageMode": "fallback",
+        "status": "draft"
+      },
+      "createdAt": "2026-04-21T15:15:20.596Z"
+    },
+    {
+      "id": "admin_activity_1_1671a656-6ada-4c9b-92b7-79c536ff0723",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "refresh_job.run_requested",
+      "targetType": "refresh_job",
+      "targetId": "stock_quote_session",
+      "targetFamily": "stocks",
+      "targetSlug": "stock_quote_session",
+      "summary": "Requested a manual run for refresh job Stock quote / session refresh.",
+      "metadata": {
+        "outcome": "running",
+        "retriedFromRunId": null
+      },
+      "createdAt": "2026-04-21T14:51:06.621Z"
+    },
+    {
+      "id": "admin_activity_1_9a618c30-18f9-4518-a09b-12fcfa6e5652",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T14:46:06.602Z"
+    },
+    {
+      "id": "admin_activity_1_bade9be1-ec15-4e83-9266-b6b0a6654777",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.published",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Published Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "published"
+      },
+      "createdAt": "2026-04-21T14:46:06.601Z"
+    },
+    {
+      "id": "admin_activity_1_7d198af2-62e7-4f73-a05b-ee0e4e8f1076",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "override.updated",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Updated override-controlled sections on Tata Motors: frontend_fields.",
+      "metadata": {
+        "overrideSections": [
+          "frontend_fields"
+        ]
+      },
+      "createdAt": "2026-04-21T14:45:28.956Z"
+    },
+    {
+      "id": "admin_activity_1_b9056de8-b76d-4410-8518-779939ec9bd4",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "content.saved",
+      "targetType": "content_record",
+      "targetId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "targetFamily": "stocks",
+      "targetSlug": "tata-motors",
+      "summary": "Saved Tata Motors in stocks.",
+      "metadata": {
+        "changedFields": [
+          "workflow",
+          "identity",
+          "publishing",
+          "data_sources",
+          "frontend_fields",
+          "seo",
+          "documents_links",
+          "refresh_automation"
+        ],
+        "publishState": "draft"
+      },
+      "createdAt": "2026-04-21T14:45:28.751Z"
+    },
+    {
+      "id": "admin_activity_1_09af4fce-a4e5-4c77-9423-da9486eb2e28",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.updated",
+      "targetType": "user_profile",
+      "targetId": "testuser1@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated user testuser1@example.com with role user and tier free.",
+      "metadata": {
+        "role": "user",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T14:41:53.448Z"
+    },
+    {
+      "id": "admin_activity_1_e936a348-d8cd-4780-9c23-a4bdf6a3c76b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "testuser1@example.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user testuser1@example.com with role editor and tier free.",
+      "metadata": {
+        "role": "editor",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T14:39:41.277Z"
+    },
+    {
+      "id": "admin_activity_1_9f2cc4dc-dad9-41cd-a1e3-2c322d196133",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "user.created",
+      "targetType": "user_profile",
+      "targetId": "amittest@gmail.com",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Created user amittest@gmail.com with role admin and tier free.",
+      "metadata": {
+        "role": "admin",
+        "membershipTier": "free"
+      },
+      "createdAt": "2026-04-21T14:35:37.806Z"
+    },
+    {
+      "id": "admin_activity_1_e75ba207-ded5-4cad-8413-049b547f24ae",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "settings.updated",
+      "targetType": "system_settings",
+      "targetId": "default",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Updated system settings fields: siteName, defaultMetaTitleSuffix, defaultMetaDescription, defaultOgImage, defaultCanonicalBase, defaultNoIndex, defaultMembershipTier, defaultLockedCtaLabel, supportEmail, supportRoute, previewEnabled, mediaUploadsEnabled, watchlistEnabled, portfolioEnabled, updatedAt.",
+      "metadata": {
+        "changedFields": [
+          "siteName",
+          "defaultMetaTitleSuffix",
+          "defaultMetaDescription",
+          "defaultOgImage",
+          "defaultCanonicalBase",
+          "defaultNoIndex",
+          "defaultMembershipTier",
+          "defaultLockedCtaLabel",
+          "supportEmail",
+          "supportRoute",
+          "previewEnabled",
+          "mediaUploadsEnabled",
+          "watchlistEnabled",
+          "portfolioEnabled",
+          "updatedAt"
+        ]
+      },
+      "createdAt": "2026-04-21T12:03:56.838Z"
+    }
+  ]
+}

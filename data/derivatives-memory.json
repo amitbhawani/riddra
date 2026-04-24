@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "snapshots": [
+    {
+      "symbol": "Fin Nifty",
+      "expiry": "Apr 30, 2026 weekly",
+      "snapshotState": "Preview snapshot",
+      "strikeWindow": "24,300 - 24,950",
+      "nextRefresh": "Archive-backed derivatives replay",
+      "note": "Snapshot saved during backend closure verification."
+    }
+  ],
+  "analyticsLanes": [
+    {
+      "lane": "OI history and strike-ladder snapshots",
+      "status": "In progress",
+      "retainedSessions": 3,
+      "nextJob": "Write expiry-aware strike snapshots into one durable store",
+      "note": "The first memory layer now tracks which strike windows and expiry clusters matter, but it still needs provider-backed OI history instead of preview-only posture."
+    },
+    {
+      "lane": "PCR, max-pain, and dominance analytics",
+      "status": "In progress",
+      "retainedSessions": 2,
+      "nextJob": "Persist derived analytics alongside chain snapshots",
+      "note": "Interpretation should come from stored analytics tables rather than recalculating everything from transient page state."
+    },
+    {
+      "lane": "IV and Greeks retention",
+      "status": "In progress",
+      "retainedSessions": 1,
+      "nextJob": "Persist first verified Greeks bundle",
+      "note": "Analytics lane saved during backend closure verification."
+    }
+  ],
+  "backlogLanes": [
+    {
+      "lane": "Derivatives refresh jobs",
+      "status": "Blocked",
+      "note": "Recurring option-chain refresh, expiry rollover, and replay jobs still need true worker execution outside the current preview layer."
+    },
+    {
+      "lane": "Trader workstation linkage",
+      "status": "In progress",
+      "note": "Charts, indices, scanner presets, and option-chain reads should all point at one derivatives memory layer instead of keeping separate static interpretation copy."
+    },
+    {
+      "lane": "Expiry and contract audit history",
+      "status": "Planned",
+      "note": "Operators still need durable expiry rotation history and contract-level auditability before derivatives can be trusted beyond a controlled preview."
+    }
+  ]
+}

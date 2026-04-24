@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "requests": [
+    {
+      "id": "contact-request-qa-example-com-trigger-local-test-1776429408338",
+      "requestedAt": "2026-04-17T12:36:48.338Z",
+      "name": "QA User",
+      "email": "qa@example.com",
+      "topic": "Trigger local test",
+      "note": "Verifying durable contact queue.",
+      "source": "/contact",
+      "status": "Needs review",
+      "lastJobRunId": "run_cmo2w7cmz27p20oolsu2xwr3l",
+      "acknowledgementEmailState": "Skipped",
+      "inboxEmailState": "Skipped",
+      "lastEmailError": "Resend is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL first.",
+      "lastEmailAt": "2026-04-17T12:36:50.277Z"
+    }
+  ]
+}

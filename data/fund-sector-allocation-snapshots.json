@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "fundSlug": "hdfc-mid-cap-opportunities",
+      "sourceLabel": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-13",
+      "referenceUrl": "https://dhan.co/mutual-funds/hdfc-midcap-opportunities-fund-direct-growth/",
+      "rows": [
+        { "name": "Financials", "weight": "18.74%" },
+        { "name": "Industrials", "weight": "16.31%" },
+        { "name": "Consumer Discretionary", "weight": "12.48%" },
+        { "name": "Technology", "weight": "10.27%" },
+        { "name": "Healthcare", "weight": "8.15%" }
+      ]
+    },
+    {
+      "fundSlug": "sbi-bluechip-fund",
+      "sourceLabel": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-17",
+      "referenceUrl": "https://dhan.co/mutual-funds/sbi-blue-chip-fund-direct-growth",
+      "rows": [
+        { "name": "Financials", "weight": "31.62%" },
+        { "name": "Technology", "weight": "13.58%" },
+        { "name": "Energy", "weight": "11.44%" },
+        { "name": "Consumer Discretionary", "weight": "10.21%" },
+        { "name": "Telecom", "weight": "7.96%" }
+      ]
+    }
+  ]
+}

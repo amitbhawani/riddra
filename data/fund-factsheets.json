@@ -1,0 +1,32 @@
+{
+  "entries": [
+    {
+      "slug": "hdfc-mid-cap-opportunities",
+      "fundName": "HDFC Mid-Cap Opportunities Fund",
+      "amcName": "HDFC Mutual Fund",
+      "benchmarkLabel": "Nifty Midcap 150 TRI",
+      "benchmarkIndexSlug": "niftymidcap150",
+      "aum": "₹85,357.90 Cr",
+      "expenseRatio": "0.76%",
+      "fundManagerName": "Chirag Setalvad, Dhruv Muchhal",
+      "source": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-13",
+      "referenceUrl": "https://dhan.co/mutual-funds/hdfc-midcap-opportunities-fund-direct-growth/",
+      "documentLabel": "Fund factsheet snapshot"
+    },
+    {
+      "slug": "sbi-bluechip-fund",
+      "fundName": "SBI Bluechip Fund",
+      "amcName": "SBI Mutual Fund",
+      "benchmarkLabel": "Nifty 100 TRI",
+      "benchmarkIndexSlug": "nifty100",
+      "aum": "₹48,925.70 Cr",
+      "expenseRatio": "0.84%",
+      "fundManagerName": "Sohini Andani, Saurabh Pant, Pradeep Kesavan",
+      "source": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-17",
+      "referenceUrl": "https://dhan.co/mutual-funds/sbi-blue-chip-fund-direct-growth",
+      "documentLabel": "Fund factsheet snapshot"
+    }
+  ]
+}

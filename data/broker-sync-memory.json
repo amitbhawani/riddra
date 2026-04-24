@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "auth-proof-1776434411196-example-com",
+      "email": "auth-proof-1776434411196@example.com",
+      "updatedAt": "2026-04-17T14:00:14.839Z",
+      "targets": [
+        {
+          "brokerName": "Zerodha",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Strong fit for retail traders and the first broker-connectivity candidate."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Important for full-service investor workflows and long-term portfolio users."
+        },
+        {
+          "brokerName": "Upstox",
+          "status": "Planned",
+          "tokenState": "Pending token",
+          "syncMode": "Manual review queue",
+          "note": "Useful once the import pipeline and account linking model are stable."
+        },
+        {
+          "brokerName": "Groww",
+          "status": "Later",
+          "tokenState": "Review required",
+          "syncMode": "CSV fallback",
+          "note": "Good future addition once the initial brokerage connectivity path is proven."
+        }
+      ],
+      "syncRuns": [
+        {
+          "broker": "Zerodha",
+          "queueState": "Reviewing",
+          "accountScope": "Primary investing account",
+          "nextWindow": "Apr 15, 2026 · 4:30 PM",
+          "note": "Approval-first sync run is waiting on quantity confirmation before holdings are allowed to overwrite the saved portfolio snapshot."
+        },
+        {
+          "broker": "ICICI Direct",
+          "queueState": "Queued",
+          "accountScope": "Long-term account",
+          "nextWindow": "Apr 15, 2026 · 6:00 PM",
+          "note": "One symbol-matching issue pushed this run into the broker review queue instead of silent import."
+        },
+        {
+          "broker": "CSV fallback",
+          "queueState": "Ready to rerun",
+          "accountScope": "Family account import",
+          "nextWindow": "User-triggered",
+          "note": "CSV fallback remains the safest universal path until token storage and broker-linked sync are fully trustworthy."
+        }
+      ],
+      "linkedAccounts": [
+        {
+          "brokerName": "Zerodha",
+          "accountLabel": "Primary investing account",
+          "linkageState": "Needs verification",
+          "lastSyncAt": "Apr 15, 2026 · 3:45 PM",
+          "note": "Token handshake is staged, but one final holdings verification is still required before this account can be treated as a trustworthy linked path."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "accountLabel": "Long-term account",
+          "linkageState": "Sandbox linked",
+          "lastSyncAt": "Apr 14, 2026 · 6:10 PM",
+          "note": "Sandbox linkage exists for posture checks, but symbol and quantity review still runs through the approval-first queue before any overwrite is trusted."
+        },
+        {
+          "brokerName": "CSV fallback",
+          "accountLabel": "Family account import",
+          "linkageState": "CSV fallback",
+          "lastSyncAt": "User-triggered",
+          "note": "CSV fallback remains the dependable account-linking path until live broker adapters are verified end to end."
+        }
+      ],
+      "reviewItems": [
+        {
+          "broker": "Zerodha",
+          "issue": "Two holdings changed quantity since the last sync",
+          "action": "User confirmation required before saved portfolio is overwritten.",
+          "reviewState": "Needs approval",
+          "queueLane": "Quantity mismatch review",
+          "sourceRef": "sync_run_zerodha_001"
+        },
+        {
+          "broker": "ICICI Direct",
+          "issue": "One symbol came back with low-confidence matching against canonical assets",
+          "action": "Move the row into review instead of silently importing it.",
+          "reviewState": "Review manually",
+          "queueLane": "Canonical asset match",
+          "sourceRef": "sync_run_icici_004"
+        },
+        {
+          "broker": "CSV fallback",
+          "issue": "Average price missing for one imported row",
+          "action": "Ask user to verify via broker statement or keep the existing saved value.",
+          "reviewState": "Keep existing",
+          "queueLane": "Cost-basis review",
+          "sourceRef": "csv_import_019"
+        }
+      ],
+      "activityLog": [
+        {
+          "scope": "broker_sync",
+          "title": "Broker sync preview ready",
+          "detail": "Seeded connection targets, sync runs, and review rows were attached to the signed-in preview broker workspace.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:00:14.839Z",
+          "id": "broker_sync-broker-sync-preview-ready-2026-04-17T14:00:14.839Z"
+        }
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776434469665-example-com",
+      "email": "auth-proof-1776434469665@example.com",
+      "updatedAt": "2026-04-17T14:01:11.323Z",
+      "targets": [
+        {
+          "brokerName": "Zerodha",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Strong fit for retail traders and the first broker-connectivity candidate."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Important for full-service investor workflows and long-term portfolio users."
+        },
+        {
+          "brokerName": "Upstox",
+          "status": "Planned",
+          "tokenState": "Pending token",
+          "syncMode": "Manual review queue",
+          "note": "Useful once the import pipeline and account linking model are stable."
+        },
+        {
+          "brokerName": "Groww",
+          "status": "Later",
+          "tokenState": "Review required",
+          "syncMode": "CSV fallback",
+          "note": "Good future addition once the initial brokerage connectivity path is proven."
+        }
+      ],
+      "syncRuns": [
+        {
+          "broker": "Zerodha",
+          "queueState": "Reviewing",
+          "accountScope": "Primary investing account",
+          "nextWindow": "Apr 15, 2026 · 4:30 PM",
+          "note": "Approval-first sync run is waiting on quantity confirmation before holdings are allowed to overwrite the saved portfolio snapshot."
+        },
+        {
+          "broker": "ICICI Direct",
+          "queueState": "Queued",
+          "accountScope": "Long-term account",
+          "nextWindow": "Apr 15, 2026 · 6:00 PM",
+          "note": "One symbol-matching issue pushed this run into the broker review queue instead of silent import."
+        },
+        {
+          "broker": "CSV fallback",
+          "queueState": "Ready to rerun",
+          "accountScope": "Family account import",
+          "nextWindow": "User-triggered",
+          "note": "CSV fallback remains the safest universal path until token storage and broker-linked sync are fully trustworthy."
+        }
+      ],
+      "linkedAccounts": [
+        {
+          "brokerName": "Zerodha",
+          "accountLabel": "Primary investing account",
+          "linkageState": "Needs verification",
+          "lastSyncAt": "Apr 15, 2026 · 3:45 PM",
+          "note": "Token handshake is staged, but one final holdings verification is still required before this account can be treated as a trustworthy linked path."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "accountLabel": "Long-term account",
+          "linkageState": "Sandbox linked",
+          "lastSyncAt": "Apr 14, 2026 · 6:10 PM",
+          "note": "Sandbox linkage exists for posture checks, but symbol and quantity review still runs through the approval-first queue before any overwrite is trusted."
+        },
+        {
+          "brokerName": "CSV fallback",
+          "accountLabel": "Family account import",
+          "linkageState": "CSV fallback",
+          "lastSyncAt": "User-triggered",
+          "note": "CSV fallback remains the dependable account-linking path until live broker adapters are verified end to end."
+        }
+      ],
+      "reviewItems": [
+        {
+          "broker": "Zerodha",
+          "issue": "Two holdings changed quantity since the last sync",
+          "action": "User confirmation required before saved portfolio is overwritten.",
+          "reviewState": "Needs approval",
+          "queueLane": "Quantity mismatch review",
+          "sourceRef": "sync_run_zerodha_001"
+        },
+        {
+          "broker": "ICICI Direct",
+          "issue": "One symbol came back with low-confidence matching against canonical assets",
+          "action": "Move the row into review instead of silently importing it.",
+          "reviewState": "Review manually",
+          "queueLane": "Canonical asset match",
+          "sourceRef": "sync_run_icici_004"
+        },
+        {
+          "broker": "CSV fallback",
+          "issue": "Average price missing for one imported row",
+          "action": "Ask user to verify via broker statement or keep the existing saved value.",
+          "reviewState": "Keep existing",
+          "queueLane": "Cost-basis review",
+          "sourceRef": "csv_import_019"
+        }
+      ],
+      "activityLog": [
+        {
+          "scope": "broker_sync",
+          "title": "Broker sync preview ready",
+          "detail": "Seeded connection targets, sync runs, and review rows were attached to the signed-in preview broker workspace.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:01:11.323Z",
+          "id": "broker_sync-broker-sync-preview-ready-2026-04-17T14:01:11.323Z"
+        }
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:48.349Z",
+      "targets": [
+        {
+          "brokerName": "Zerodha",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Strong fit for retail traders and the first broker-connectivity candidate."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "status": "Priority",
+          "tokenState": "Sandbox token",
+          "syncMode": "Approval-first API sync",
+          "note": "Important for full-service investor workflows and long-term portfolio users."
+        },
+        {
+          "brokerName": "Upstox",
+          "status": "Planned",
+          "tokenState": "Pending token",
+          "syncMode": "Manual review queue",
+          "note": "Useful once the import pipeline and account linking model are stable."
+        },
+        {
+          "brokerName": "Groww",
+          "status": "Later",
+          "tokenState": "Review required",
+          "syncMode": "CSV fallback",
+          "note": "Good future addition once the initial brokerage connectivity path is proven."
+        }
+      ],
+      "syncRuns": [
+        {
+          "broker": "Zerodha",
+          "queueState": "Reviewing",
+          "accountScope": "Primary investing account",
+          "nextWindow": "Apr 15, 2026 · 4:30 PM",
+          "note": "Approval-first sync run is waiting on quantity confirmation before holdings are allowed to overwrite the saved portfolio snapshot."
+        },
+        {
+          "broker": "ICICI Direct",
+          "queueState": "Queued",
+          "accountScope": "Long-term account",
+          "nextWindow": "Apr 15, 2026 · 6:00 PM",
+          "note": "One symbol-matching issue pushed this run into the broker review queue instead of silent import."
+        },
+        {
+          "broker": "CSV fallback",
+          "queueState": "Ready to rerun",
+          "accountScope": "Family account import",
+          "nextWindow": "User-triggered",
+          "note": "CSV fallback remains the safest universal path until token storage and broker-linked sync are fully trustworthy."
+        }
+      ],
+      "linkedAccounts": [
+        {
+          "brokerName": "Zerodha",
+          "accountLabel": "Primary investing account",
+          "linkageState": "Needs verification",
+          "lastSyncAt": "Apr 15, 2026 · 3:45 PM",
+          "note": "Token handshake is staged, but one final holdings verification is still required before this account can be treated as a trustworthy linked path."
+        },
+        {
+          "brokerName": "ICICI Direct",
+          "accountLabel": "Long-term account",
+          "linkageState": "Sandbox linked",
+          "lastSyncAt": "Apr 14, 2026 · 6:10 PM",
+          "note": "Sandbox linkage exists for posture checks, but symbol and quantity review still runs through the approval-first queue before any overwrite is trusted."
+        },
+        {
+          "brokerName": "CSV fallback",
+          "accountLabel": "Family account import",
+          "linkageState": "CSV fallback",
+          "lastSyncAt": "User-triggered",
+          "note": "CSV fallback remains the dependable account-linking path until live broker adapters are verified end to end."
+        }
+      ],
+      "reviewItems": [
+        {
+          "broker": "Zerodha",
+          "issue": "Two holdings changed quantity since the last sync",
+          "action": "User confirmation required before saved portfolio is overwritten.",
+          "reviewState": "Needs approval",
+          "queueLane": "Quantity mismatch review",
+          "sourceRef": "sync_run_zerodha_001"
+        },
+        {
+          "broker": "ICICI Direct",
+          "issue": "One symbol came back with low-confidence matching against canonical assets",
+          "action": "Move the row into review instead of silently importing it.",
+          "reviewState": "Review manually",
+          "queueLane": "Canonical asset match",
+          "sourceRef": "sync_run_icici_004"
+        },
+        {
+          "broker": "CSV fallback",
+          "issue": "Average price missing for one imported row",
+          "action": "Ask user to verify via broker statement or keep the existing saved value.",
+          "reviewState": "Keep existing",
+          "queueLane": "Cost-basis review",
+          "sourceRef": "csv_import_019"
+        }
+      ],
+      "activityLog": [
+        {
+          "scope": "broker_sync",
+          "title": "Broker sync preview ready",
+          "detail": "Seeded connection targets, sync runs, and review rows were attached to the signed-in preview broker workspace.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:22:48.349Z",
+          "id": "broker_sync-broker-sync-preview-ready-2026-04-17T14:22:48.349Z"
+        }
+      ]
+    }
+  ]
+}

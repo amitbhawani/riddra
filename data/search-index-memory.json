@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "lanes": [
+    {
+      "lane": "Canonical route index",
+      "status": "Ready",
+      "indexedRecords": 445,
+      "aliasGroups": 1995,
+      "typoProtectedRoutes": 353,
+      "filterCoverage": "445 Meilisearch documents are live across 287 asset routes, 91 compare routes, and 67 workflow or learn routes after the latest swap-based rebuild.",
+      "lastRefreshAt": "2026-04-17T15:06:50.130Z",
+      "nextStep": "Canonical route coverage is rebuilt into the live Meilisearch index and ready for the next content-import wave."
+    },
+    {
+      "lane": "Asset and compare alias graph",
+      "status": "In progress",
+      "indexedRecords": 378,
+      "aliasGroups": 1995,
+      "typoProtectedRoutes": 353,
+      "filterCoverage": "6 tracked queries and 0 review rows now influence aliases, synonyms, and compare edges inside the live Meilisearch document graph.",
+      "lastRefreshAt": "2026-04-17T15:06:50.133Z",
+      "nextStep": "Reduce 4 zero-result runs or map them into owned review rows."
+    },
+    {
+      "lane": "Workflow and screener discovery",
+      "status": "In progress",
+      "indexedRecords": 67,
+      "aliasGroups": 11,
+      "typoProtectedRoutes": 8,
+      "filterCoverage": "Workflow routes and screener discovery now have a saved operator posture for route-backed discovery, but durable metric indexing still sits ahead of the lane. The latest durable rebuild also confirmed workflow-route coverage inside the live Meilisearch index. The latest durable rebuild also confirmed workflow-route coverage inside the live Meilisearch index. The latest durable rebuild also confirmed workflow-route coverage inside the live Meilisearch index. The latest durable rebuild also confirmed workflow-route coverage inside the live Meilisearch index. The latest durable rebuild also confirmed workflow-route coverage inside the live Meilisearch index.",
+      "lastRefreshAt": "2026-04-17T15:06:50.133Z",
+      "nextStep": "Persist screener metric slices and alias writes into a dedicated backend table once source-backed filters are available."
+    }
+  ],
+  "backlogLanes": [
+    {
+      "lane": "Typos and phonetic matching",
+      "status": "Planned",
+      "note": "The current route catalog covers curated aliases, but the backend still needs durable typo, phonetic, and ticker-shortcut protection beyond local ranking rules."
+    },
+    {
+      "lane": "Screener filter persistence",
+      "status": "Blocked",
+      "note": "The screener UI is strong, but source-backed metric ingestion and durable filter indexing still need a backend table design."
+    },
+    {
+      "lane": "Search analytics feedback loop",
+      "status": "Planned",
+      "note": "Search quality still needs persistent query logs, zero-result audits, and ranking feedback before it can tune itself from real usage."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+Layer,Recommendation,Why this fits Riddra,Notes
+Frontend web,Next.js on Vercel,Best fit for SEO-heavy dynamic pages and fast product shipping,"Use App Router, ISR and server components for page generation"
+Design system,Tailwind CSS plus shadcn/ui,"Fast to ship, flexible and easy to evolve",Keep a clear brand system so the site does not feel generic
+Auth,Supabase Auth,"Simple email and social sign-in, works well with subscriptions",Gate premium tools with row-level security and entitlement checks
+Core database,Supabase Postgres,Strong default for relational financial data and content metadata,Use partitioned history tables for market time-series
+Realtime cache,Redis or Upstash Redis,"Good for latest quotes, leaderboards and hot dashboards",Do not query Postgres directly for every live tick
+Background ingestion,"Dedicated worker service on Fly.io, Railway, Render or AWS",Vercel is not the best place for persistent feed workers or long-running ingest,This is one of the most important architecture decisions
+Queues,Redis queue or managed queue,"Needed for retries, imports, page refresh jobs and AI tasks",Separate ingestion jobs from user-facing requests
+Search,"Postgres search first, then Meilisearch or Typesense","Fast enough early, easy to scale later","Search matters a lot for stocks, funds, IPOs and screeners"
+File storage,Supabase Storage or S3,"Useful for reports, course assets and generated exports",Keep originals plus optimized web versions
+Payments,Razorpay,India-friendly subscription handling,"Track plan, trial, renewal and failed payment state clearly"
+AI layer,OpenAI API with retrieval over your own structured datasets,"AI should explain your own data, not hallucinate market facts","Start with summaries, compare flows and insight generation"
+Analytics,PostHog or Vercel Analytics plus custom events,You need to see which pages convert visitors into subscribers,"Track search pages, watchlist use, screener use and IPO funnel events"

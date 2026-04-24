@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "history": [
+    {
+      "at": "Apr 09, 2026 09:30 PM IST",
+      "percent": 68,
+      "buildSidePercent": 86,
+      "launchReadinessPercent": 14,
+      "note": "The public product shell, launch tracker, and first operator desks were in place, but the launch view was still fragmented and much of the backend truth was preview-heavy."
+    },
+    {
+      "at": "Apr 11, 2026 11:10 PM IST",
+      "percent": 71,
+      "buildSidePercent": 89,
+      "launchReadinessPercent": 17,
+      "note": "Launch-config, source-readiness, and the first real backend mutation lanes made activation and operator work more concrete instead of living only in static setup notes."
+    },
+    {
+      "at": "Apr 13, 2026 10:20 PM IST",
+      "percent": 73,
+      "buildSidePercent": 91,
+      "launchReadinessPercent": 19,
+      "note": "Subscriber, billing, delivery, source-job, archive, and portfolio lanes gained broader write or cleanup coverage, reducing the gap between built surfaces and working backend behavior."
+    },
+    {
+      "at": "Apr 15, 2026 09:05 PM IST",
+      "percent": 74,
+      "buildSidePercent": 92,
+      "launchReadinessPercent": 20,
+      "note": "The build tracker became the one pending-first launch control page, with launch blockers, checklist, pending audit, and operator links merged into one place instead of scattered desks."
+    },
+    {
+      "at": "Apr 16, 2026 01:49 PM IST",
+      "percent": 75,
+      "buildSidePercent": 92,
+      "launchReadinessPercent": 25,
+      "note": "Launch-control, owner-inbox, and more launch-governance boards now write into the shared revision backend, and the tracker now explains the real missing 25% in plain English."
+    },
+    {
+      "at": "Apr 16, 2026 02:52 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 35,
+      "note": "Stabilized local launch ops and tracker truth together by changing the guarded dev runner into a preflight-only tsconfig normalizer instead of a runtime rewrite loop, adding a lightweight localhost healthcheck script, and moving `/build-tra..."
+    },
+    {
+      "at": "Apr 16, 2026 08:25 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened tracker truth again by teaching the real-progress strip to record fresh execution snapshots even when the rounded overall percent stays flat, so the top changelog no longer freezes at the last numeric move."
+    },
+    {
+      "at": "Apr 16, 2026 08:28 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the market-history lane by adding a dedicated protected admin market-history registry export and repointing the market-data admin desk to it, then removing the stale generic CSV route so retained-series audit no longer depends on..."
+    },
+    {
+      "at": "Apr 16, 2026 08:31 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the market-data lane again by adding dedicated protected admin derivatives and market-data-target registry exports, repointing the market-data desk to those admin routes, and removing the stale generic CSV endpoints so the operato..."
+    },
+    {
+      "at": "Apr 16, 2026 08:32 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the support-ops lane again by repointing the admin support desk to the dedicated protected admin support-ops registry export and removing the stale generic CSV route, so operator audit no longer depends on a shared export path."
+    },
+    {
+      "at": "Apr 16, 2026 08:33 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the provider-onboarding lane again by moving its activation registry onto a dedicated protected admin export and removing the stale generic CSV route, so provider audit no longer depends on a shared launch-facing export path."
+    },
+    {
+      "at": "Apr 16, 2026 08:35 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the payment-readiness lane again by moving its billing-activation registry onto a dedicated protected admin export and removing the stale generic CSV route, so payment audit no longer depends on a shared launch-facing export path."
+    },
+    {
+      "at": "Apr 16, 2026 08:36 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the communication-readiness, trust-signoff, and announcement-readiness lanes together by moving their registries onto dedicated protected admin exports and removing the stale generic CSV routes, so those launch-facing audits no lo..."
+    },
+    {
+      "at": "Apr 16, 2026 08:38 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the launch-evidence cluster by moving the shared proof export onto one dedicated protected admin route and repointing launch-evidence-board, go-no-go, public-launch-qa, launch-signoff-packet, and release-gate-board to it, so those..."
+    },
+    {
+      "at": "Apr 16, 2026 08:42 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the preflight and QA cluster by moving preflight-checklist, public-launch-qa, mobile-qa, launch-day-runbook, chart-verification, reliability, and placeholder-honesty exports onto dedicated protected admin routes, so those launch-s..."
+    },
+    {
+      "at": "Apr 16, 2026 08:44 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the source and archive cluster by moving source-mapping, source-jobs, and research-archive registries onto dedicated protected admin exports, so those operator desks no longer depend on generic source or archive export paths."
+    },
+    {
+      "at": "Apr 16, 2026 08:46 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the provider and launch-decision cluster by moving provider-configs, provider-fallbacks, launch-approvals, and go-no-go registries onto dedicated protected admin exports, so those launch-control desks no longer depend on generic p..."
+    },
+    {
+      "at": "Apr 16, 2026 08:48 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the editorial and search cluster by moving reference-parity, ai-ops, conversion-path-audit, revisions, and search-screener-truth registries onto dedicated protected admin exports, so those operator desks no longer depend on generi..."
+    },
+    {
+      "at": "Apr 16, 2026 08:53 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the launch packet and canonical coverage cluster by moving release-checks, smoke-test-journeys, subscriber-activation-packet, launch-blocker-ledger, launch-rehearsal-packet, canonical-coverage, and canonical-compare-coverage onto..."
+    },
+    {
+      "at": "Apr 16, 2026 08:57 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the market-data operator cluster by adding protected admin sample-payload, validate, refresh, ingest, and provider-sync routes, then repointing the admin tester, market-data desk, provider-onboarding, source-jobs, and external-act..."
+    },
+    {
+      "at": "Apr 16, 2026 09:01 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the launch command-board cluster by adding write-through readiness panels to launch-day-console, launch-evidence-board, and public-launch-backlog, so the last top-level launch summary pages can now append real revision rows instea..."
+    },
+    {
+      "at": "Apr 16, 2026 09:59 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the screener and index workflow lane by surfacing auth, billing, support, and continuity truth directly on `/screener`, `/banknifty`, `/nifty50`, `/finnifty`, `/sensex`, and `/index-replay`, so those market-intelligence and trader..."
+    },
+    {
+      "at": "Apr 16, 2026 10:02 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the preset, chart-layout, mentorship, and source-readiness lane by surfacing auth, billing, support, and continuity truth directly on `/scanner-presets`, `/trader-presets`, `/chart-layouts`, `/mentorship`, and `/source-readiness`,..."
+    },
+    {
+      "at": "Apr 16, 2026 10:04 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the privacy and terms lane by surfacing support, auth, billing, and continuity truth directly on `/privacy` and `/terms`, so those trust pages no longer read softer than the real launch posture allows."
+    },
+    {
+      "at": "Apr 16, 2026 10:16 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the detail-route lane by surfacing auth, billing, support, and continuity truth directly on stock, mutual-fund, IPO, tool, ETF, AIF, PMS, and SIF detail pages, so the deeper research routes no longer read cleaner than the real lau..."
+    },
+    {
+      "at": "Apr 16, 2026 10:20 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the compare and category lane by surfacing auth, billing, support, and continuity truth directly on stock-compare, mutual-fund-compare, sector-detail, and fund-category-detail routes, so those deeper decision flows no longer read..."
+    },
+    {
+      "at": "Apr 16, 2026 10:24 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the learning and participation child-route lane by surfacing auth, billing, support, and continuity truth directly on course detail, lesson, webinar detail, webinar register, webinar replay, newsletter track, community program, an..."
+    },
+    {
+      "at": "Apr 16, 2026 10:37 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Tightened the uncovered public-route lane by surfacing auth, billing, support, and continuity truth directly on `/launch-readiness`, `/ipo/sme`, learn event detail, learn track detail, legal privacy-policy, and legal terms, so those trust a..."
+    },
+    {
+      "at": "Apr 17, 2026 08:50 AM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Extracted one shared subscriber-audit section and rewired `/account/access`, `/account/access/entitlements`, `/account/support`, `/account/billing`, `/account/billing/lifecycle`, `/account/billing/recovery`, `/account/brokers`, `/account/br..."
+    },
+    {
+      "at": "Apr 17, 2026 08:56 AM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Extracted one shared subscriber-rule-list section and expanded the existing subscriber stat-grid and route-link grid across `/account/access`, `/account/access/entitlements`, `/account/billing`, `/account/brokers`, `/account/consents`, `/ac..."
+    },
+    {
+      "at": "Apr 17, 2026 09:03 AM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 36,
+      "note": "Extracted shared subscriber-record-grid and subscriber-activity-log sections and rewired `/account/setup`, `/account/alerts`, `/account/watchlists`, `/account/screens`, `/account/inbox`, `/account/workspace`, `/account/brokers`, and the mai..."
+    },
+    {
+      "at": "Apr 17, 2026 09:38 AM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 32,
+      "note": "Extracted shared subscriber-record-grid and subscriber-activity-log sections and rewired `/account/setup`, `/account/alerts`, `/account/watchlists`, `/account/screens`, `/account/inbox`, `/account/workspace`, `/account/brokers`, and the mai..."
+    },
+    {
+      "at": "Apr 17, 2026 09:44 AM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 32,
+      "note": "Rebased the tracker, roadmap, config priorities, and readiness checklist onto the new `private beta / internal production-ready` target, adding explicit `Build / Private Beta Readiness` versus `Public Launch Readiness` separation, a new pri..."
+    },
+    {
+      "at": "Apr 17, 2026 10:43 AM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 32,
+      "note": "Installed and configured Trigger.dev as the new durable worker layer, added family-based Trigger task structure under `/trigger`, rewired market-data sync and refresh plus portfolio reconciliation and notification follow-up onto queued dura..."
+    },
+    {
+      "at": "Apr 17, 2026 11:51 AM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 32,
+      "note": "Wired in Meilisearch as the real search engine for private beta, added a shared search-engine abstraction plus indexed document mapping from the existing route and content graph, enabled typo tolerance or synonyms or ranking rules, moved Tr..."
+    },
+    {
+      "at": "Apr 17, 2026 12:04 PM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 33,
+      "note": "Wired in Meilisearch as the real search engine for private beta, added a shared search-engine abstraction plus indexed document mapping from the existing route and content graph, enabled typo tolerance or synonyms or ranking rules, moved Tr..."
+    },
+    {
+      "at": "Apr 17, 2026 02:05 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 35,
+      "note": "Ran a repo-wide private-beta readiness audit and pushed the blunt truth back into `/build-tracker`: the page now has a dedicated final audit section with a `67/100` private-beta score, explicit `ready now` or `partially ready` or `fake or p..."
+    },
+    {
+      "at": "Apr 17, 2026 05:27 PM IST",
+      "percent": 83,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 30,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 06:18 PM IST",
+      "percent": 84,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 35,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 08:50 PM IST",
+      "percent": 85,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 40,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 09:56 PM IST",
+      "percent": 86,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 42,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 10:19 PM IST",
+      "percent": 86,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 43,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 10:24 PM IST",
+      "percent": 86,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 44,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 10:28 PM IST",
+      "percent": 86,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 45,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 10:32 PM IST",
+      "percent": 88,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 50,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 10:36 PM IST",
+      "percent": 89,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 55,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 17, 2026 11:24 PM IST",
+      "percent": 92,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 66,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 18, 2026 01:17 AM IST",
+      "percent": 93,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 71,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    },
+    {
+      "at": "Apr 18, 2026 01:43 AM IST",
+      "percent": 100,
+      "buildSidePercent": 100,
+      "launchReadinessPercent": 100,
+      "note": "Tightened the private-beta runtime configuration story by making launch-mode resolution honor stored launch-config instead of an env default override, adding first-class `private_beta` mode handling across launch-state and go-or-no-go surfa..."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+Module,What it does,Who it serves,Traffic model,Monetization model,Priority,Build now or later,Why it matters
+SEO stock pages,"Dynamic pages for every listed stock with price, charts, ratios, forecasts, peers, news and filings",Retail investors and organic search visitors,Very high,"Ads, lead capture, subscription upsell",P0,Now,This is the biggest long-term traffic moat
+Live market dashboard,"Indices, top gainers, losers, sectors, FII/DII, heatmaps and sentiment panels",Daily active traders,High,Subscription plus habit loop,P0,Now,Creates repeat visits and freshness
+Option chain and OI analytics,"Strike data, OI changes, PCR, max pain, buildup and unwind dashboards",Options traders,Medium,Core paid plan driver,P0,Now,Most direct reason people pay recurring subscriptions
+Advanced charts,"Trading-style charts, drawings, indicators, multi-timeframe and compare mode",Active traders,Medium,Paid feature or freemium lock,P0,Now,Needed if the brand wants to compete with GoCharting-like behavior
+Fundamental screener,"Filter stocks by ratios, growth, valuation, ownership, quality and custom formulas",Investors and swing traders,High,Paid plus SEO landing pages,P0,Now,Screener-style utility has very high stickiness
+Mutual fund pages,"Fund pages with NAV, holdings, sector allocation, risk, manager and compare view",Mutual fund investors,Very high,"Ads, affiliate, subscription upsell",P0,Now,Search demand is strong and content scales well
+IPO hub,"Upcoming, open, allotment, GMP, subscription, listing day and archive pages",IPO-focused users,Very high,"Ads, subscriptions, broker affiliate",P0,Now,Fastest SEO win and easy repeat traffic
+PMS and AIF discovery,"Directory pages, performance summaries, manager info and filters",High net worth and serious investors,Medium,Premium research and leads,P1,Later,"Useful for trust and premium positioning, but data sourcing is harder"
+Courses and learning,"Recorded lessons, cohort training, webinars and certification-like journeys",Beginners and upgrading users,Medium,One-time revenue and bundle upsell,P1,Later,Strong fit with your creator-led go-to-market
+AI copilot,"Ask questions on stocks, compare companies, summarize results and explain signals",Subscribers,Low direct SEO,Premium differentiator,P1,After the data foundation,AI is most valuable after structured data and pages exist
+Broker execution and baskets,"Connect brokers, push watchlists or baskets, trade from screeners or charts",Power users,Low,"Premium, affiliate or execution revenue",P2,Later,High complexity and compliance burden

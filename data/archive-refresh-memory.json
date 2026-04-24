@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "runs": [
+    {
+      "family": "Results archive",
+      "sourceClass": "NSE / BSE corporate actions",
+      "cadence": "Quarterly cadence",
+      "status": "In progress",
+      "pendingWrites": 6,
+      "documentBacklog": 4,
+      "lastWriteAt": "2026-04-15T09:10:00.000Z",
+      "nextWindow": "Next market close cycle",
+      "coveragePosture": "Results-calendar routes and event pages exist, but durable write-through archive history is still only partially automated.",
+      "nextStep": "Persist results-event entries as structured archive rows and link them into company and learn-event memory chains."
+    },
+    {
+      "family": "FII / DII archive",
+      "sourceClass": "NSE FII/DII report",
+      "cadence": "Daily end-of-day",
+      "status": "Ready",
+      "pendingWrites": 1,
+      "documentBacklog": 0,
+      "lastWriteAt": "2026-04-15T12:58:13.014Z",
+      "nextWindow": "Next published daily report",
+      "coveragePosture": "The route is live, but recurring report ingestion and long-range archive tables are still not durable.",
+      "nextStep": "Archive verification pass saved during backend closure."
+    },
+    {
+      "family": "Fund factsheets and commentary",
+      "sourceClass": "AMC factsheets / AMFI references",
+      "cadence": "Monthly plus event-driven",
+      "status": "In progress",
+      "pendingWrites": 3,
+      "documentBacklog": 7,
+      "lastWriteAt": "2026-04-15T15:48:42.818Z",
+      "nextWindow": "Next monthly factsheet verification window",
+      "coveragePosture": "Factsheet evidence is entering through source-entry, but recurring archive writes and historical commentary snapshots still need a dedicated backend pass.",
+      "nextStep": "Latest execution: Factsheet archive run recorded during backend closure verification."
+    },
+    {
+      "family": "IPO filings and lifecycle archive",
+      "sourceClass": "SEBI / exchange documents",
+      "cadence": "Event-driven",
+      "status": "Blocked",
+      "pendingWrites": 7,
+      "documentBacklog": 10,
+      "lastWriteAt": "2026-04-11T12:00:00.000Z",
+      "nextWindow": "On next DRHP/RHP publication",
+      "coveragePosture": "IPO route families are broad, but archive continuity still depends on manual seeding and needs durable filing-history persistence.",
+      "nextStep": "Connect official filing ingest and document archive persistence before IPO-to-listed-stock lifecycle memory can be considered durable."
+    }
+  ],
+  "continuityLanes": [
+    {
+      "lane": "Results and event history",
+      "continuityStatus": "Partial",
+      "retainedEvents": 9,
+      "note": "Event routes now exist, but historical write-through still needs recurring source refresh plus retained archive rows."
+    },
+    {
+      "lane": "FII / DII daily tape",
+      "continuityStatus": "Healthy",
+      "retainedEvents": 3,
+      "note": "Operator-updated archive run now treats this lane as healthier preview continuity while official-source automation is still being hardened."
+    },
+    {
+      "lane": "Fund factsheet memory",
+      "continuityStatus": "Partial",
+      "retainedEvents": 7,
+      "note": "Factsheet evidence lanes are present, but monthly archive continuity still depends on manual evidence entry."
+    },
+    {
+      "lane": "IPO filing archive",
+      "continuityStatus": "Cold",
+      "retainedEvents": 4,
+      "note": "IPO issue pages exist, but recurring filing capture and document archive writes are still not automated."
+    }
+  ]
+}

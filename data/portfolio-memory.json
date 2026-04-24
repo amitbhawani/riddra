@@ -1,0 +1,341 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "auth-proof-1776434411196-example-com",
+      "email": "auth-proof-1776434411196@example.com",
+      "updatedAt": "2026-04-17T14:00:14.837Z",
+      "importRuns": [
+        {
+          "sourceLabel": "Zerodha export",
+          "fileName": "zerodha-holdings-apr.csv",
+          "importedRows": 11,
+          "unresolvedRows": 2,
+          "status": "Needs action",
+          "createdAt": "2026-04-15T07:45:00.000Z",
+          "id": "import-run-zerodha-holdings-apr-csv-2026-04-15T07:45:00.000Z",
+          "sourceKind": "Broker export",
+          "initiatedBy": "auth-proof-1776434411196@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        },
+        {
+          "sourceLabel": "Manual spreadsheet",
+          "fileName": "family-account-review.csv",
+          "importedRows": 6,
+          "unresolvedRows": 0,
+          "status": "Reviewed",
+          "createdAt": "2026-04-12T11:20:00.000Z",
+          "id": "import-run-family-account-review-csv-2026-04-12T11:20:00.000Z",
+          "sourceKind": "Spreadsheet",
+          "initiatedBy": "auth-proof-1776434411196@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        }
+      ],
+      "reconciliations": [],
+      "reviewQueue": [
+        {
+          "importedValue": "TATA MOTR",
+          "suggestedMatch": "Tata Motors / TATAMOTORS",
+          "issue": "Ticker text appears truncated in the uploaded file.",
+          "action": "Ask user to confirm the suggested match before saving.",
+          "confidence": "High",
+          "decisionState": "Accepted"
+        },
+        {
+          "importedValue": "HDFC Bk",
+          "suggestedMatch": "HDFC Bank / HDFCBANK",
+          "issue": "Broker shorthand does not match the canonical instrument name directly.",
+          "action": "Show a review queue item with one-click accept or manual correction.",
+          "confidence": "Medium",
+          "decisionState": "Pending"
+        },
+        {
+          "importedValue": "Qty 400 @ ₹0",
+          "suggestedMatch": "Needs broker verification",
+          "issue": "Average price appears invalid or missing for the imported row.",
+          "action": "Prompt user to recheck against broker contract note or demat statement.",
+          "confidence": "Low",
+          "decisionState": "Pending"
+        }
+      ],
+      "portfolioSnapshot": [
+        {
+          "symbol": "TATAMOTORS",
+          "assetName": "Tata Motors",
+          "quantity": "120",
+          "avgCost": "₹925.40",
+          "currentPrice": "₹948.20",
+          "marketValue": "₹1,13,784",
+          "pnl": "+₹2,736",
+          "weight": "34.8%"
+        },
+        {
+          "symbol": "RELIANCE",
+          "assetName": "Reliance Industries",
+          "quantity": "24",
+          "avgCost": "₹2,921.00",
+          "currentPrice": "₹2,987.50",
+          "marketValue": "₹71,700",
+          "pnl": "+₹1,596",
+          "weight": "21.9%"
+        },
+        {
+          "symbol": "HDFCBANK",
+          "assetName": "HDFC Bank",
+          "quantity": "40",
+          "avgCost": "₹1,612.25",
+          "currentPrice": "₹1,645.10",
+          "marketValue": "₹65,804",
+          "pnl": "+₹1,314",
+          "weight": "20.1%"
+        }
+      ],
+      "manualDraft": {
+        "symbol": "TATAMOTORS",
+        "quantity": "40",
+        "avgCost": "945",
+        "portfolioTag": "Long term, swing, family account...",
+        "draftState": "Draft ready",
+        "updatedAt": "2026-04-17T14:00:14.837Z"
+      },
+      "activityLog": [
+        {
+          "scope": "portfolio",
+          "title": "Portfolio snapshot ready",
+          "detail": "Seeded import runs, review queue, holdings snapshot, and manual draft were attached to the signed-in preview portfolio.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:00:14.837Z",
+          "id": "portfolio-portfolio-snapshot-ready-2026-04-17T14:00:14.837Z"
+        }
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776434469665-example-com",
+      "email": "auth-proof-1776434469665@example.com",
+      "updatedAt": "2026-04-17T14:01:11.322Z",
+      "importRuns": [
+        {
+          "sourceLabel": "Zerodha export",
+          "fileName": "zerodha-holdings-apr.csv",
+          "importedRows": 11,
+          "unresolvedRows": 2,
+          "status": "Needs action",
+          "createdAt": "2026-04-15T07:45:00.000Z",
+          "id": "import-run-zerodha-holdings-apr-csv-2026-04-15T07:45:00.000Z",
+          "sourceKind": "Broker export",
+          "initiatedBy": "auth-proof-1776434469665@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        },
+        {
+          "sourceLabel": "Manual spreadsheet",
+          "fileName": "family-account-review.csv",
+          "importedRows": 6,
+          "unresolvedRows": 0,
+          "status": "Reviewed",
+          "createdAt": "2026-04-12T11:20:00.000Z",
+          "id": "import-run-family-account-review-csv-2026-04-12T11:20:00.000Z",
+          "sourceKind": "Spreadsheet",
+          "initiatedBy": "auth-proof-1776434469665@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        }
+      ],
+      "reconciliations": [],
+      "reviewQueue": [
+        {
+          "importedValue": "TATA MOTR",
+          "suggestedMatch": "Tata Motors / TATAMOTORS",
+          "issue": "Ticker text appears truncated in the uploaded file.",
+          "action": "Ask user to confirm the suggested match before saving.",
+          "confidence": "High",
+          "decisionState": "Accepted"
+        },
+        {
+          "importedValue": "HDFC Bk",
+          "suggestedMatch": "HDFC Bank / HDFCBANK",
+          "issue": "Broker shorthand does not match the canonical instrument name directly.",
+          "action": "Show a review queue item with one-click accept or manual correction.",
+          "confidence": "Medium",
+          "decisionState": "Pending"
+        },
+        {
+          "importedValue": "Qty 400 @ ₹0",
+          "suggestedMatch": "Needs broker verification",
+          "issue": "Average price appears invalid or missing for the imported row.",
+          "action": "Prompt user to recheck against broker contract note or demat statement.",
+          "confidence": "Low",
+          "decisionState": "Pending"
+        }
+      ],
+      "portfolioSnapshot": [
+        {
+          "symbol": "TATAMOTORS",
+          "assetName": "Tata Motors",
+          "quantity": "120",
+          "avgCost": "₹925.40",
+          "currentPrice": "₹948.20",
+          "marketValue": "₹1,13,784",
+          "pnl": "+₹2,736",
+          "weight": "34.8%"
+        },
+        {
+          "symbol": "RELIANCE",
+          "assetName": "Reliance Industries",
+          "quantity": "24",
+          "avgCost": "₹2,921.00",
+          "currentPrice": "₹2,987.50",
+          "marketValue": "₹71,700",
+          "pnl": "+₹1,596",
+          "weight": "21.9%"
+        },
+        {
+          "symbol": "HDFCBANK",
+          "assetName": "HDFC Bank",
+          "quantity": "40",
+          "avgCost": "₹1,612.25",
+          "currentPrice": "₹1,645.10",
+          "marketValue": "₹65,804",
+          "pnl": "+₹1,314",
+          "weight": "20.1%"
+        }
+      ],
+      "manualDraft": {
+        "symbol": "TATAMOTORS",
+        "quantity": "40",
+        "avgCost": "945",
+        "portfolioTag": "Long term, swing, family account...",
+        "draftState": "Draft ready",
+        "updatedAt": "2026-04-17T14:01:11.322Z"
+      },
+      "activityLog": [
+        {
+          "scope": "portfolio",
+          "title": "Portfolio snapshot ready",
+          "detail": "Seeded import runs, review queue, holdings snapshot, and manual draft were attached to the signed-in preview portfolio.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:01:11.322Z",
+          "id": "portfolio-portfolio-snapshot-ready-2026-04-17T14:01:11.322Z"
+        }
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:48.348Z",
+      "importRuns": [
+        {
+          "sourceLabel": "Zerodha export",
+          "fileName": "zerodha-holdings-apr.csv",
+          "importedRows": 11,
+          "unresolvedRows": 2,
+          "status": "Needs action",
+          "createdAt": "2026-04-15T07:45:00.000Z",
+          "id": "import-run-zerodha-holdings-apr-csv-2026-04-15T07:45:00.000Z",
+          "sourceKind": "Broker export",
+          "initiatedBy": "auth-proof-1776435766357@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        },
+        {
+          "sourceLabel": "Manual spreadsheet",
+          "fileName": "family-account-review.csv",
+          "importedRows": 6,
+          "unresolvedRows": 0,
+          "status": "Reviewed",
+          "createdAt": "2026-04-12T11:20:00.000Z",
+          "id": "import-run-family-account-review-csv-2026-04-12T11:20:00.000Z",
+          "sourceKind": "Spreadsheet",
+          "initiatedBy": "auth-proof-1776435766357@example.com",
+          "lastReconciledAt": null,
+          "lastReconciliationStatus": null,
+          "reconciliationDelta": null
+        }
+      ],
+      "reconciliations": [],
+      "reviewQueue": [
+        {
+          "importedValue": "TATA MOTR",
+          "suggestedMatch": "Tata Motors / TATAMOTORS",
+          "issue": "Ticker text appears truncated in the uploaded file.",
+          "action": "Ask user to confirm the suggested match before saving.",
+          "confidence": "High",
+          "decisionState": "Accepted"
+        },
+        {
+          "importedValue": "HDFC Bk",
+          "suggestedMatch": "HDFC Bank / HDFCBANK",
+          "issue": "Broker shorthand does not match the canonical instrument name directly.",
+          "action": "Show a review queue item with one-click accept or manual correction.",
+          "confidence": "Medium",
+          "decisionState": "Pending"
+        },
+        {
+          "importedValue": "Qty 400 @ ₹0",
+          "suggestedMatch": "Needs broker verification",
+          "issue": "Average price appears invalid or missing for the imported row.",
+          "action": "Prompt user to recheck against broker contract note or demat statement.",
+          "confidence": "Low",
+          "decisionState": "Pending"
+        }
+      ],
+      "portfolioSnapshot": [
+        {
+          "symbol": "TATAMOTORS",
+          "assetName": "Tata Motors",
+          "quantity": "120",
+          "avgCost": "₹925.40",
+          "currentPrice": "₹948.20",
+          "marketValue": "₹1,13,784",
+          "pnl": "+₹2,736",
+          "weight": "34.8%"
+        },
+        {
+          "symbol": "RELIANCE",
+          "assetName": "Reliance Industries",
+          "quantity": "24",
+          "avgCost": "₹2,921.00",
+          "currentPrice": "₹2,987.50",
+          "marketValue": "₹71,700",
+          "pnl": "+₹1,596",
+          "weight": "21.9%"
+        },
+        {
+          "symbol": "HDFCBANK",
+          "assetName": "HDFC Bank",
+          "quantity": "40",
+          "avgCost": "₹1,612.25",
+          "currentPrice": "₹1,645.10",
+          "marketValue": "₹65,804",
+          "pnl": "+₹1,314",
+          "weight": "20.1%"
+        }
+      ],
+      "manualDraft": {
+        "symbol": "TATAMOTORS",
+        "quantity": "40",
+        "avgCost": "945",
+        "portfolioTag": "Long term, swing, family account...",
+        "draftState": "Draft ready",
+        "updatedAt": "2026-04-17T14:22:48.348Z"
+      },
+      "activityLog": [
+        {
+          "scope": "portfolio",
+          "title": "Portfolio snapshot ready",
+          "detail": "Seeded import runs, review queue, holdings snapshot, and manual draft were attached to the signed-in preview portfolio.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:22:48.348Z",
+          "id": "portfolio-portfolio-snapshot-ready-2026-04-17T14:22:48.348Z"
+        }
+      ]
+    }
+  ]
+}

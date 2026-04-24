@@ -1,0 +1,342 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "amitbhawani-gmail-com",
+      "email": "amitbhawani@gmail.com",
+      "updatedAt": "2026-04-15T13:21:23.079Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1204",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "15 Apr 2026, 6:51 pm",
+          "paidAt": "15 Apr 2026, 6:51 pm",
+          "note": "Preview invoice row added during backend closure pass."
+        },
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    },
+    {
+      "userKey": "auth-proof-1776434411196-example-com",
+      "email": "auth-proof-1776434411196@example.com",
+      "updatedAt": "2026-04-17T14:00:14.838Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    },
+    {
+      "userKey": "auth-proof-1776434469665-example-com",
+      "email": "auth-proof-1776434469665@example.com",
+      "updatedAt": "2026-04-17T14:01:11.323Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    },
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:48.348Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    },
+    {
+      "userKey": "user-audit-1776825040950-example-com",
+      "email": "user.audit.1776825040950@example.com",
+      "updatedAt": "2026-04-22T02:30:48.488Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    },
+    {
+      "userKey": "editor-import-example-com",
+      "email": "editor-import@example.com",
+      "updatedAt": "2026-04-22T04:43:03.014Z",
+      "invoices": [
+        {
+          "invoiceId": "inv_riddra_1001",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Apr 12, 2026",
+          "paidAt": "Apr 12, 2026",
+          "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+        },
+        {
+          "invoiceId": "inv_riddra_0986",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Paid",
+          "billedAt": "Mar 12, 2026",
+          "paidAt": "Mar 12, 2026",
+          "note": "Renewal completed without any entitlement interruption."
+        },
+        {
+          "invoiceId": "inv_riddra_0944",
+          "planName": "Elite Monthly",
+          "amount": "Rs. 999",
+          "status": "Upcoming",
+          "billedAt": "May 12, 2026",
+          "paidAt": "Pending",
+          "note": "This should later convert into a real next-renewal card with retry and grace-period messaging."
+        }
+      ],
+      "currentPlan": "Elite Monthly",
+      "lifecycleState": "Healthy"
+    }
+  ],
+  "ledgerRows": [
+    {
+      "userRef": "editor-import@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+    },
+    {
+      "userRef": "user.audit.1776825040950@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+    },
+    {
+      "userRef": "auth-proof-1776435766357@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+    },
+    {
+      "userRef": "auth-proof-1776434469665@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+    },
+    {
+      "userRef": "auth-proof-1776434411196@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Access stays on track with full charts, alerts, and portfolio workflows."
+    },
+    {
+      "userRef": "amitbhawani@gmail.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1204",
+      "note": "Preview invoice row added during backend closure pass."
+    },
+    {
+      "userRef": "amit@riddra.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_1001",
+      "note": "Everything is in good standing and entitlement access should remain stable."
+    },
+    {
+      "userRef": "subscriber@example.com",
+      "planName": "Elite Monthly",
+      "status": "Active",
+      "renewalState": "Healthy",
+      "latestInvoice": "inv_riddra_0992",
+      "note": "Recent charge succeeded, so no intervention is needed."
+    },
+    {
+      "userRef": "review@riddra.com",
+      "planName": "Pro Monthly",
+      "status": "Grace period",
+      "renewalState": "Needs review",
+      "latestInvoice": "inv_riddra_0978",
+      "note": "Payment failed. Support and alert systems should coordinate downgrade timing carefully."
+    }
+  ],
+  "eventRows": [
+    {
+      "id": "evt_inv_riddra_1204",
+      "event": "subscription.charged",
+      "status": "Processed",
+      "subject": "Elite Monthly · inv_riddra_1204",
+      "userRef": "amitbhawani@gmail.com",
+      "occurredAt": "15 Apr 2026, 6:51 pm",
+      "note": "Preview invoice row added during backend closure pass."
+    },
+    {
+      "id": "evt_riddra_001",
+      "event": "subscription.activated",
+      "status": "Processed",
+      "subject": "elite-monthly-plan",
+      "userRef": "amit@riddra.com",
+      "occurredAt": "Apr 13, 2026 • 8:12 AM",
+      "note": "Subscriber should move from build-mode fallback toward real Elite entitlements."
+    },
+    {
+      "id": "evt_riddra_002",
+      "event": "subscription.charged",
+      "status": "Processed",
+      "subject": "elite-monthly-plan",
+      "userRef": "subscriber@example.com",
+      "occurredAt": "Apr 12, 2026 • 10:04 PM",
+      "note": "Renewal success should preserve alerts, charts, and portfolio access without interruption."
+    },
+    {
+      "id": "evt_riddra_003",
+      "event": "payment.failed",
+      "status": "Needs follow-up",
+      "subject": "pro-monthly-plan",
+      "userRef": "review@riddra.com",
+      "occurredAt": "Apr 12, 2026 • 5:36 PM",
+      "note": "Queue billing-warning communication and mark the account for grace-period review."
+    }
+  ]
+}

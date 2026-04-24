@@ -1,0 +1,289 @@
+{
+  "version": 1,
+  "historyRows": [
+    {
+      "id": "ent_sync_10",
+      "userRef": "editor-import@example.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_editor-import-example-com",
+      "changedAt": "2026-04-22T04:43:03.014Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_9",
+      "userRef": "user.audit.1776825040950@example.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_user-audit-1776825040950-example-com",
+      "changedAt": "2026-04-22T02:30:48.488Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_8",
+      "userRef": "auth-proof-1776435766357@example.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_auth-proof-1776435766357-example-com",
+      "changedAt": "2026-04-17T14:22:48.348Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_7",
+      "userRef": "auth-proof-1776434469665@example.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_auth-proof-1776434469665-example-com",
+      "changedAt": "2026-04-17T14:01:11.323Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_6",
+      "userRef": "auth-proof-1776434411196@example.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_auth-proof-1776434411196-example-com",
+      "changedAt": "2026-04-17T14:00:14.838Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_5",
+      "userRef": "amitbhawani@gmail.com",
+      "featureCode": "advanced_charts_and_proprietary_indicator",
+      "previousLevel": "elite",
+      "nextLevel": "elite",
+      "reason": "Manual override saved during backend closure verification.",
+      "actorType": "support",
+      "actorRef": "manual_amitbhawani-gmail-com",
+      "changedAt": "2026-04-15T12:50:09.378Z",
+      "syncState": "Needs review"
+    },
+    {
+      "id": "ent_sync_4",
+      "userRef": "amitbhawani@gmail.com",
+      "featureCode": "stock_ipo_fund_and_learning_pages",
+      "previousLevel": "preview_only",
+      "nextLevel": "elite",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "acct_amitbhawani-gmail-com",
+      "changedAt": "2026-04-15T08:50:05.412Z",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_1",
+      "userRef": "amit@riddra.com",
+      "featureCode": "advanced_charts_and_proprietary_indicator",
+      "previousLevel": "build_mode",
+      "nextLevel": "elite",
+      "reason": "subscription.activated",
+      "actorType": "system",
+      "actorRef": "evt_riddra_001",
+      "changedAt": "Apr 13, 2026 • 8:12 AM",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_2",
+      "userRef": "subscriber@example.com",
+      "featureCode": "portfolio_tracker_and_import_review",
+      "previousLevel": "starter",
+      "nextLevel": "pro",
+      "reason": "subscription.charged",
+      "actorType": "system",
+      "actorRef": "evt_riddra_002",
+      "changedAt": "Apr 12, 2026 • 10:04 PM",
+      "syncState": "Synced"
+    },
+    {
+      "id": "ent_sync_3",
+      "userRef": "review@riddra.com",
+      "featureCode": "portfolio_tracker_and_import_review",
+      "previousLevel": "starter",
+      "nextLevel": "pro",
+      "reason": "payment.failed",
+      "actorType": "system",
+      "actorRef": "evt_riddra_003",
+      "changedAt": "Apr 12, 2026 • 5:36 PM",
+      "syncState": "Needs review"
+    }
+  ],
+  "accounts": [
+    {
+      "userKey": "auth-proof-1776434411196-example-com",
+      "email": "auth-proof-1776434411196@example.com",
+      "updatedAt": "2026-04-17T14:00:14.849Z",
+      "plan": "elite",
+      "planLabel": "Elite",
+      "lifecycleState": "Healthy",
+      "syncState": "Synced",
+      "entitlements": [
+        {
+          "featureCode": "stock_ipo_fund_and_learning_pages",
+          "accessLevel": "elite",
+          "route": "/markets",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "saved_watchlists_and_workspace_memory",
+          "accessLevel": "elite",
+          "route": "/account/watchlists",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "portfolio_tracker_and_import_review",
+          "accessLevel": "elite",
+          "route": "/portfolio",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "advanced_charts_and_proprietary_indicator",
+          "accessLevel": "elite",
+          "route": "/advanced-charts",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "priority_alerts_and_ai_summaries",
+          "accessLevel": "elite",
+          "route": "/account/alerts",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "derivatives_oi_and_trader_workstation_tools",
+          "accessLevel": "planned",
+          "route": "/trader-workstation",
+          "sourceEvent": "Manual override saved during backend closure verification.",
+          "syncState": "Synced"
+        }
+      ],
+      "recentHistory": []
+    },
+    {
+      "userKey": "auth-proof-1776434469665-example-com",
+      "email": "auth-proof-1776434469665@example.com",
+      "updatedAt": "2026-04-17T14:01:11.328Z",
+      "plan": "elite",
+      "planLabel": "Elite",
+      "lifecycleState": "Healthy",
+      "syncState": "Synced",
+      "entitlements": [
+        {
+          "featureCode": "stock_ipo_fund_and_learning_pages",
+          "accessLevel": "elite",
+          "route": "/markets",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "saved_watchlists_and_workspace_memory",
+          "accessLevel": "elite",
+          "route": "/account/watchlists",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "portfolio_tracker_and_import_review",
+          "accessLevel": "elite",
+          "route": "/portfolio",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "advanced_charts_and_proprietary_indicator",
+          "accessLevel": "elite",
+          "route": "/advanced-charts",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "priority_alerts_and_ai_summaries",
+          "accessLevel": "elite",
+          "route": "/account/alerts",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "derivatives_oi_and_trader_workstation_tools",
+          "accessLevel": "planned",
+          "route": "/trader-workstation",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        }
+      ],
+      "recentHistory": []
+    },
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:48.354Z",
+      "plan": "elite",
+      "planLabel": "Elite",
+      "lifecycleState": "Healthy",
+      "syncState": "Synced",
+      "entitlements": [
+        {
+          "featureCode": "stock_ipo_fund_and_learning_pages",
+          "accessLevel": "elite",
+          "route": "/markets",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "saved_watchlists_and_workspace_memory",
+          "accessLevel": "elite",
+          "route": "/account/watchlists",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "portfolio_tracker_and_import_review",
+          "accessLevel": "elite",
+          "route": "/portfolio",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "advanced_charts_and_proprietary_indicator",
+          "accessLevel": "elite",
+          "route": "/advanced-charts",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "priority_alerts_and_ai_summaries",
+          "accessLevel": "elite",
+          "route": "/account/alerts",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        },
+        {
+          "featureCode": "derivatives_oi_and_trader_workstation_tools",
+          "accessLevel": "planned",
+          "route": "/trader-workstation",
+          "sourceEvent": "subscription.charged",
+          "syncState": "Synced"
+        }
+      ],
+      "recentHistory": []
+    }
+  ]
+}

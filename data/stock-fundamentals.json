@@ -1,0 +1,56 @@
+{
+  "entries": [
+    {
+      "slug": "tata-motors",
+      "companyName": "Tata Motors",
+      "marketCap": "₹1,60,255 Cr",
+      "peRatio": "61.40",
+      "pbRatio": "15.40",
+      "roe": "-362.96%",
+      "roce": "-362.96%",
+      "dividendYield": null,
+      "source": "Dhan fundamentals snapshot",
+      "sourceDate": "2026-04-15",
+      "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/"
+    },
+    {
+      "slug": "infosys",
+      "companyName": "Infosys",
+      "marketCap": "₹5,29,350 Cr",
+      "peRatio": "18.50",
+      "pbRatio": "6.93",
+      "roe": "27.81%",
+      "roce": "35.85%",
+      "dividendYield": "1.80%",
+      "source": "Dhan fundamentals snapshot",
+      "sourceDate": "2026-04-15",
+      "sourceUrl": "https://dhan.co/stocks/infosys-ltd-fundamental-analysis/"
+    },
+    {
+      "slug": "hdfc-bank",
+      "companyName": "HDFC Bank",
+      "marketCap": "₹12,46,597 Cr",
+      "peRatio": "15.80",
+      "pbRatio": "2.18",
+      "roe": "13.65%",
+      "roce": "6.38%",
+      "dividendYield": "0.63%",
+      "source": "Dhan fundamentals snapshot",
+      "sourceDate": "2026-04-15",
+      "sourceUrl": "https://dhan.co/stocks/hdfc-bank-ltd-fundamental-analysis/"
+    },
+    {
+      "slug": "reliance-industries",
+      "companyName": "Reliance Industries",
+      "marketCap": "₹18,18,900 Cr",
+      "peRatio": "18.20",
+      "pbRatio": "2.03",
+      "roe": "8.00%",
+      "roce": "8.71%",
+      "dividendYield": "0.42%",
+      "source": "Dhan fundamentals snapshot",
+      "sourceDate": "2026-04-15",
+      "sourceUrl": "https://dhan.co/stocks/reliance-industries-ltd-fundamental-analysis/"
+    }
+  ]
+}

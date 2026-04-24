@@ -1,0 +1,20 @@
+import { NextResponse } from "next/server";
+
+import { requireAdmin } from "@/lib/auth";
+import {
+  getLaunchApprovalRegistryRows,
+  toLaunchApprovalRegistryCsv,
+} from "@/lib/launch-approval-registry";
+
+export async function GET() {
+  await requireAdmin();
+  const rows = getLaunchApprovalRegistryRows();
+  const csv = toLaunchApprovalRegistryCsv(rows);
+
+  return new NextResponse(csv, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="admin-launch-approval-registry.csv"',
+    },
+  });
+}

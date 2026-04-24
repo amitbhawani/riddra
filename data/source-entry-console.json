@@ -1,0 +1,144 @@
+{
+  "indexEntries": [],
+  "routeOverrides": [],
+  "stockCloseEntries": [
+    {
+      "slug": "tata-motors",
+      "companyName": "Tata Motors",
+      "symbol": "TATAMOTORS",
+      "price": 345.1,
+      "changePercent": 0.74,
+      "source": "Business Standard delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:09.000Z"
+    },
+    {
+      "slug": "itc",
+      "companyName": "ITC",
+      "symbol": "ITC",
+      "price": 298.8,
+      "changePercent": -1.79,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:08.000Z"
+    },
+    {
+      "slug": "state-bank-of-india",
+      "companyName": "State Bank of India",
+      "symbol": "SBIN",
+      "price": 1061.85,
+      "changePercent": -0.45,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:07.000Z"
+    },
+    {
+      "slug": "axis-bank",
+      "companyName": "Axis Bank",
+      "symbol": "AXISBANK",
+      "price": 1352.8,
+      "changePercent": 0.15,
+      "source": "HDFC Sky Bank Nifty delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:06.000Z"
+    },
+    {
+      "slug": "icici-bank",
+      "companyName": "ICICI Bank",
+      "symbol": "ICICIBANK",
+      "price": 1349.7,
+      "changePercent": 2.1,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:05.000Z"
+    },
+    {
+      "slug": "hdfc-bank",
+      "companyName": "HDFC Bank",
+      "symbol": "HDFCBANK",
+      "price": 793,
+      "changePercent": -2.14,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:04.000Z"
+    },
+    {
+      "slug": "tcs",
+      "companyName": "TCS",
+      "symbol": "TCS",
+      "price": 2470.5,
+      "changePercent": -2.13,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:03.000Z"
+    },
+    {
+      "slug": "infosys",
+      "companyName": "Infosys",
+      "symbol": "INFY",
+      "price": 1276,
+      "changePercent": -1.28,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:02.000Z"
+    },
+    {
+      "slug": "reliance-industries",
+      "companyName": "Reliance Industries",
+      "symbol": "RELIANCE",
+      "price": 1314,
+      "changePercent": -2.68,
+      "source": "HDFC Sky delayed close reference",
+      "sourceDate": "2026-04-13",
+      "createdAt": "2026-04-15T00:00:01.000Z"
+    }
+  ],
+  "stockChartEntries": [
+    {
+      "slug": "tata-motors",
+      "companyName": "Tata Motors",
+      "symbol": "TATAMOTORS",
+      "timeframe": "1D",
+      "source": "Manual delayed OHLCV audit",
+      "sourceDate": "2026-04-14",
+      "createdAt": "2026-04-15T02:40:00.000Z",
+      "bars": [
+        {
+          "time": "2026-04-08",
+          "open": 648.4,
+          "high": 656.8,
+          "low": 644.9,
+          "close": 653.2
+        },
+        {
+          "time": "2026-04-09",
+          "open": 653.6,
+          "high": 662.1,
+          "low": 650.8,
+          "close": 659.4
+        },
+        {
+          "time": "2026-04-10",
+          "open": 659.2,
+          "high": 664.7,
+          "low": 654.5,
+          "close": 657.1
+        },
+        {
+          "time": "2026-04-11",
+          "open": 656.8,
+          "high": 668.3,
+          "low": 655.9,
+          "close": 665.5
+        },
+        {
+          "time": "2026-04-14",
+          "open": 665.9,
+          "high": 671.2,
+          "low": 661.4,
+          "close": 668.8
+        }
+      ]
+    }
+  ]
+}

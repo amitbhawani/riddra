@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "revisions": [
+    {
+      "id": "rev_10",
+      "asset": "Tata Motors",
+      "assetType": "Stock page",
+      "editor": "Ops Editor",
+      "action": "Logged backend closure revision",
+      "changedFields": "backend_lane_summary, operator_note",
+      "time": "15 Apr 2026, 6:28 pm",
+      "reason": "Persisted revision entry added during backend closure pass.",
+      "revisionState": "Published",
+      "rollbackReady": "Yes",
+      "routeTarget": "/stocks/tata-motors"
+    },
+    {
+      "id": "rev_001",
+      "asset": "Hero Fincorp IPO",
+      "assetType": "IPO page",
+      "editor": "Staff Editor",
+      "action": "Updated GMP note and issue-size card",
+      "changedFields": "gmp_note, issue_size_card",
+      "time": "April 12, 2026 • 5:20 PM IST",
+      "reason": "Source note adjusted after internal review",
+      "revisionState": "Published",
+      "rollbackReady": "Yes",
+      "routeTarget": "/ipo/hero-fincorp"
+    },
+    {
+      "id": "rev_002",
+      "asset": "Tata Motors",
+      "assetType": "Stock page",
+      "editor": "Admin",
+      "action": "Revised summary block and added chart-first CTA",
+      "changedFields": "hero_summary, chart_cta",
+      "time": "April 12, 2026 • 4:45 PM IST",
+      "reason": "Improve landing-page flow before chart-route deepening",
+      "revisionState": "Published",
+      "rollbackReady": "Yes",
+      "routeTarget": "/stocks/tata-motors"
+    },
+    {
+      "id": "rev_003",
+      "asset": "Nifty50",
+      "assetType": "Index tracker",
+      "editor": "Staff Editor",
+      "action": "Adjusted sentiment description and puller labels",
+      "changedFields": "sentiment_description, puller_labels",
+      "time": "April 12, 2026 • 3:10 PM IST",
+      "reason": "Clarify intraday tracker presentation",
+      "revisionState": "Rollback staged",
+      "rollbackReady": "Yes",
+      "routeTarget": "/nifty50"
+    },
+    {
+      "id": "rev_block_1",
+      "asset": "Hero FinCorp IPO",
+      "assetType": "Editorial block",
+      "editor": "Editor Queue",
+      "action": "Queued hero_summary block for controlled edit",
+      "changedFields": "hero_summary",
+      "time": "April 11, 2026 • 3:15 PM IST",
+      "reason": "Manual company overview, issue framing, and decision-support copy should be editable without touching source-fed cards.",
+      "revisionState": "Review ready",
+      "rollbackReady": "Needs capture",
+      "routeTarget": "/ipo/hero-fincorp"
+    },
+    {
+      "id": "rev_block_2",
+      "asset": "Tata Motors",
+      "assetType": "Hybrid block",
+      "editor": "Editor Queue",
+      "action": "Queued news_filings block for controlled edit",
+      "changedFields": "news_filings",
+      "time": "April 10, 2026 • 4:15 PM IST",
+      "reason": "Editors should be able to pin or enrich important updates while keeping the feed-backed chronology separate.",
+      "revisionState": "Published",
+      "rollbackReady": "Yes",
+      "routeTarget": "/stocks/tata-motors"
+    },
+    {
+      "id": "rev_block_3",
+      "asset": "HDFC Mid-Cap Opportunities",
+      "assetType": "Hybrid block",
+      "editor": "Editor Queue",
+      "action": "Queued fund_manager block for controlled edit",
+      "changedFields": "fund_manager",
+      "time": "April 9, 2026 • 5:15 PM IST",
+      "reason": "Fund-manager notes can be enriched manually, but benchmark and category context should stay tied to structured records.",
+      "revisionState": "Published",
+      "rollbackReady": "Yes",
+      "routeTarget": "/mutual-funds/hdfc-mid-cap-opportunities"
+    },
+    {
+      "id": "rev_flow_1",
+      "asset": "stock:tata-motors/editorial_review",
+      "assetType": "editorial block",
+      "editor": "editor@riddra.com",
+      "action": "Workflow moved into review",
+      "changedFields": "editorial_review",
+      "time": "Apr 14, 2026 • editorial queue",
+      "reason": "Company review block should be verified before it becomes the default editorial layer for listed stocks.",
+      "revisionState": "Rollback staged",
+      "rollbackReady": "Yes",
+      "routeTarget": "/stocks/tata-motors"
+    },
+    {
+      "id": "rev_flow_2",
+      "asset": "ipo:hero-fincorp/listing_update",
+      "assetType": "announcement",
+      "editor": "newsdesk@riddra.com",
+      "action": "Workflow moved into draft",
+      "changedFields": "listing_update",
+      "time": "Apr 15, 2026 • editorial queue",
+      "reason": "IPO lifecycle announcement should be ready for manual publication if listing details change before source automation is live.",
+      "revisionState": "Published",
+      "rollbackReady": "Needs capture",
+      "routeTarget": "/ipo/hero-fincorp"
+    },
+    {
+      "id": "rev_flow_3",
+      "asset": "stock:tata-motors/annual_report",
+      "assetType": "document",
+      "editor": "docs@riddra.com",
+      "action": "Workflow moved into publish_ready",
+      "changedFields": "annual_report",
+      "time": "Apr 13, 2026 • editorial queue",
+      "reason": "Annual report metadata and document visibility are ready to move live after final review.",
+      "revisionState": "Review ready",
+      "rollbackReady": "Yes",
+      "routeTarget": "/admin/documents"
+    }
+  ],
+  "rollbackScenarios": [
+    {
+      "id": "rollback_001",
+      "asset": "Hero Fincorp IPO",
+      "change": "Issue review and GMP explanation updated",
+      "risk": "Medium",
+      "fallback": "Restore previous editorial block version",
+      "lastKnownGood": "Revision snapshot from Apr 11, 2026",
+      "queueState": "Ready",
+      "routeTarget": "/ipo/hero-fincorp"
+    },
+    {
+      "id": "rollback_002",
+      "asset": "Tata Motors",
+      "change": "Pinned filings summary adjusted for homepage cross-linking",
+      "risk": "Low",
+      "fallback": "Revert block content and re-run announcement sync",
+      "lastKnownGood": "Revision snapshot from Apr 11, 2026",
+      "queueState": "Ready",
+      "routeTarget": "/stocks/tata-motors"
+    },
+    {
+      "id": "rollback_003",
+      "asset": "Nifty50",
+      "change": "Sentiment wording override modified intraday",
+      "risk": "High",
+      "fallback": "Return to source-backed sentiment description",
+      "lastKnownGood": "Source-backed sentiment packet from Apr 12, 2026",
+      "queueState": "Ready",
+      "routeTarget": "/nifty50"
+    },
+    {
+      "id": "rollback_004",
+      "asset": "HDFC Mid-Cap Opportunities",
+      "change": "Fund-manager block enriched with manual commentary",
+      "risk": "Medium",
+      "fallback": "Restore last hybrid block revision and keep factsheet evidence attached",
+      "lastKnownGood": "Revision snapshot from Apr 10, 2026",
+      "queueState": "Needs approval",
+      "routeTarget": "/mutual-funds/hdfc-mid-cap-opportunities"
+    }
+  ],
+  "familyLanes": [
+    {
+      "family": "Stocks",
+      "trackedAssets": 2,
+      "rollbackReadyAssets": 4,
+      "latestState": "Growing",
+      "note": "This family now has persisted revision rows and rollback posture instead of relying only on admin planning cards."
+    },
+    {
+      "family": "IPOs",
+      "trackedAssets": 3,
+      "rollbackReadyAssets": 1,
+      "latestState": "Growing",
+      "note": "This family now has persisted revision rows and rollback posture instead of relying only on admin planning cards."
+    },
+    {
+      "family": "Funds",
+      "trackedAssets": 1,
+      "rollbackReadyAssets": 1,
+      "latestState": "Growing",
+      "note": "This family now has persisted revision rows and rollback posture instead of relying only on admin planning cards."
+    },
+    {
+      "family": "Indices and markets",
+      "trackedAssets": 1,
+      "rollbackReadyAssets": 1,
+      "latestState": "Growing",
+      "note": "This family now has persisted revision rows and rollback posture instead of relying only on admin planning cards."
+    },
+    {
+      "family": "Editorial admin",
+      "trackedAssets": 1,
+      "rollbackReadyAssets": 1,
+      "latestState": "Needs deeper coverage",
+      "note": "This family now has persisted revision rows and rollback posture instead of relying only on admin planning cards."
+    }
+  ]
+}

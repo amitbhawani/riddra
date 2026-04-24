@@ -1,0 +1,1626 @@
+{
+  "gold": [
+    {
+      "date": "2026-01-20",
+      "gold24": 15489,
+      "gold22": 14198,
+      "gold18": 11617,
+      "xauusd": 4796.17,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-21",
+      "gold24": 15438,
+      "gold22": 14152,
+      "gold18": 11579,
+      "xauusd": 4780.41,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-22",
+      "gold24": 15381,
+      "gold22": 14099,
+      "gold18": 11536,
+      "xauusd": 4762.81,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-23",
+      "gold24": 15291,
+      "gold22": 14017,
+      "gold18": 11468,
+      "xauusd": 4743.63,
+      "usdinr": 91.83,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-24",
+      "gold24": 15200,
+      "gold22": 13933,
+      "gold18": 11400,
+      "xauusd": 4723.22,
+      "usdinr": 91.68,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-25",
+      "gold24": 15109,
+      "gold22": 13850,
+      "gold18": 11332,
+      "xauusd": 4701.95,
+      "usdinr": 91.54,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-26",
+      "gold24": 15022,
+      "gold22": 13770,
+      "gold18": 11267,
+      "xauusd": 4680.27,
+      "usdinr": 91.44,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-27",
+      "gold24": 14940,
+      "gold22": 13695,
+      "gold18": 11205,
+      "xauusd": 4658.64,
+      "usdinr": 91.36,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-28",
+      "gold24": 14864,
+      "gold22": 13625,
+      "gold18": 11148,
+      "xauusd": 4637.53,
+      "usdinr": 91.31,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-29",
+      "gold24": 14796,
+      "gold22": 13563,
+      "gold18": 11097,
+      "xauusd": 4617.44,
+      "usdinr": 91.29,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-30",
+      "gold24": 14740,
+      "gold22": 13512,
+      "gold18": 11055,
+      "xauusd": 4598.82,
+      "usdinr": 91.31,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-31",
+      "gold24": 14695,
+      "gold22": 13470,
+      "gold18": 11021,
+      "xauusd": 4582.14,
+      "usdinr": 91.36,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-01",
+      "gold24": 14661,
+      "gold22": 13439,
+      "gold18": 10996,
+      "xauusd": 4567.8,
+      "usdinr": 91.44,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-02",
+      "gold24": 14643,
+      "gold22": 13423,
+      "gold18": 10982,
+      "xauusd": 4556.17,
+      "usdinr": 91.56,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-03",
+      "gold24": 14640,
+      "gold22": 13420,
+      "gold18": 10980,
+      "xauusd": 4547.58,
+      "usdinr": 91.71,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-04",
+      "gold24": 14651,
+      "gold22": 13430,
+      "gold18": 10988,
+      "xauusd": 4542.28,
+      "usdinr": 91.89,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-05",
+      "gold24": 14663,
+      "gold22": 13441,
+      "gold18": 10997,
+      "xauusd": 4540.49,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-06",
+      "gold24": 14669,
+      "gold22": 13447,
+      "gold18": 11002,
+      "xauusd": 4542.33,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-07",
+      "gold24": 14687,
+      "gold22": 13463,
+      "gold18": 11015,
+      "xauusd": 4547.88,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-08",
+      "gold24": 14717,
+      "gold22": 13491,
+      "gold18": 11038,
+      "xauusd": 4557.11,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-09",
+      "gold24": 14758,
+      "gold22": 13528,
+      "gold18": 11069,
+      "xauusd": 4569.96,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-10",
+      "gold24": 14811,
+      "gold22": 13577,
+      "gold18": 11108,
+      "xauusd": 4586.26,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-11",
+      "gold24": 14874,
+      "gold22": 13635,
+      "gold18": 11156,
+      "xauusd": 4605.79,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-12",
+      "gold24": 14946,
+      "gold22": 13701,
+      "gold18": 11210,
+      "xauusd": 4628.23,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-13",
+      "gold24": 15027,
+      "gold22": 13775,
+      "gold18": 11270,
+      "xauusd": 4653.22,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-14",
+      "gold24": 15115,
+      "gold22": 13855,
+      "gold18": 11336,
+      "xauusd": 4680.3,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-15",
+      "gold24": 15207,
+      "gold22": 13940,
+      "gold18": 11405,
+      "xauusd": 4708.97,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-16",
+      "gold24": 15303,
+      "gold22": 14028,
+      "gold18": 11477,
+      "xauusd": 4738.67,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-17",
+      "gold24": 15400,
+      "gold22": 14117,
+      "gold18": 11550,
+      "xauusd": 4768.81,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-18",
+      "gold24": 15497,
+      "gold22": 14206,
+      "gold18": 11623,
+      "xauusd": 4798.76,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-19",
+      "gold24": 15591,
+      "gold22": 14292,
+      "gold18": 11693,
+      "xauusd": 4827.9,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-20",
+      "gold24": 15681,
+      "gold22": 14374,
+      "gold18": 11761,
+      "xauusd": 4855.6,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-21",
+      "gold24": 15764,
+      "gold22": 14450,
+      "gold18": 11823,
+      "xauusd": 4881.27,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-22",
+      "gold24": 15838,
+      "gold22": 14518,
+      "gold18": 11879,
+      "xauusd": 4904.39,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-23",
+      "gold24": 15903,
+      "gold22": 14578,
+      "gold18": 11927,
+      "xauusd": 4924.48,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-24",
+      "gold24": 15957,
+      "gold22": 14627,
+      "gold18": 11968,
+      "xauusd": 4941.16,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-25",
+      "gold24": 15999,
+      "gold22": 14666,
+      "gold18": 11999,
+      "xauusd": 4954.16,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-26",
+      "gold24": 16029,
+      "gold22": 14693,
+      "gold18": 12022,
+      "xauusd": 4963.31,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-27",
+      "gold24": 16046,
+      "gold22": 14709,
+      "gold18": 12035,
+      "xauusd": 4968.58,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-28",
+      "gold24": 16050,
+      "gold22": 14713,
+      "gold18": 12038,
+      "xauusd": 4970.02,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-01",
+      "gold24": 16043,
+      "gold22": 14706,
+      "gold18": 12032,
+      "xauusd": 4967.83,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-02",
+      "gold24": 16025,
+      "gold22": 14690,
+      "gold18": 12019,
+      "xauusd": 4962.26,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-03",
+      "gold24": 15997,
+      "gold22": 14664,
+      "gold18": 11998,
+      "xauusd": 4953.68,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-04",
+      "gold24": 15961,
+      "gold22": 14631,
+      "gold18": 11971,
+      "xauusd": 4942.51,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-05",
+      "gold24": 15918,
+      "gold22": 14592,
+      "gold18": 11939,
+      "xauusd": 4929.21,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-06",
+      "gold24": 15870,
+      "gold22": 14548,
+      "gold18": 11903,
+      "xauusd": 4914.27,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-07",
+      "gold24": 15818,
+      "gold22": 14500,
+      "gold18": 11864,
+      "xauusd": 4898.17,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-08",
+      "gold24": 15764,
+      "gold22": 14450,
+      "gold18": 11823,
+      "xauusd": 4881.38,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-09",
+      "gold24": 15709,
+      "gold22": 14400,
+      "gold18": 11782,
+      "xauusd": 4864.35,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-10",
+      "gold24": 15654,
+      "gold22": 14350,
+      "gold18": 11741,
+      "xauusd": 4847.48,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-11",
+      "gold24": 15602,
+      "gold22": 14302,
+      "gold18": 11702,
+      "xauusd": 4831.1,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-12",
+      "gold24": 15551,
+      "gold22": 14255,
+      "gold18": 11663,
+      "xauusd": 4815.52,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-13",
+      "gold24": 15504,
+      "gold22": 14212,
+      "gold18": 11628,
+      "xauusd": 4800.94,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-14",
+      "gold24": 15461,
+      "gold22": 14173,
+      "gold18": 11596,
+      "xauusd": 4787.53,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-15",
+      "gold24": 15422,
+      "gold22": 14137,
+      "gold18": 11567,
+      "xauusd": 4775.38,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-16",
+      "gold24": 15387,
+      "gold22": 14105,
+      "gold18": 11540,
+      "xauusd": 4764.51,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-17",
+      "gold24": 15356,
+      "gold22": 14076,
+      "gold18": 11517,
+      "xauusd": 4754.92,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-18",
+      "gold24": 15328,
+      "gold22": 14051,
+      "gold18": 11496,
+      "xauusd": 4746.51,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-19",
+      "gold24": 15305,
+      "gold22": 14030,
+      "gold18": 11479,
+      "xauusd": 4739.19,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-20",
+      "gold24": 15284,
+      "gold22": 14010,
+      "gold18": 11463,
+      "xauusd": 4732.82,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-21",
+      "gold24": 15266,
+      "gold22": 13994,
+      "gold18": 11450,
+      "xauusd": 4727.21,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-22",
+      "gold24": 15250,
+      "gold22": 13979,
+      "gold18": 11438,
+      "xauusd": 4722.22,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-23",
+      "gold24": 15235,
+      "gold22": 13965,
+      "gold18": 11426,
+      "xauusd": 4717.66,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-24",
+      "gold24": 15221,
+      "gold22": 13953,
+      "gold18": 11416,
+      "xauusd": 4713.37,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-25",
+      "gold24": 15208,
+      "gold22": 13941,
+      "gold18": 11406,
+      "xauusd": 4709.21,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-26",
+      "gold24": 15195,
+      "gold22": 13929,
+      "gold18": 11396,
+      "xauusd": 4705.08,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-27",
+      "gold24": 15181,
+      "gold22": 13916,
+      "gold18": 11386,
+      "xauusd": 4700.91,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-28",
+      "gold24": 15167,
+      "gold22": 13903,
+      "gold18": 11375,
+      "xauusd": 4696.66,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-29",
+      "gold24": 15154,
+      "gold22": 13891,
+      "gold18": 11366,
+      "xauusd": 4692.36,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-30",
+      "gold24": 15140,
+      "gold22": 13878,
+      "gold18": 11355,
+      "xauusd": 4688.07,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-31",
+      "gold24": 15126,
+      "gold22": 13866,
+      "gold18": 11345,
+      "xauusd": 4683.9,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-01",
+      "gold24": 15114,
+      "gold22": 13855,
+      "gold18": 11336,
+      "xauusd": 4680.01,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-02",
+      "gold24": 15103,
+      "gold22": 13844,
+      "gold18": 11327,
+      "xauusd": 4676.6,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-03",
+      "gold24": 15094,
+      "gold22": 13836,
+      "gold18": 11321,
+      "xauusd": 4673.87,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-04",
+      "gold24": 15088,
+      "gold22": 13831,
+      "gold18": 11316,
+      "xauusd": 4672.09,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-05",
+      "gold24": 15086,
+      "gold22": 13829,
+      "gold18": 11315,
+      "xauusd": 4671.49,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-06",
+      "gold24": 15089,
+      "gold22": 13832,
+      "gold18": 11317,
+      "xauusd": 4672.35,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-07",
+      "gold24": 15097,
+      "gold22": 13839,
+      "gold18": 11323,
+      "xauusd": 4674.9,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-08",
+      "gold24": 15112,
+      "gold22": 13853,
+      "gold18": 11334,
+      "xauusd": 4679.38,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-09",
+      "gold24": 15133,
+      "gold22": 13872,
+      "gold18": 11350,
+      "xauusd": 4685.98,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-10",
+      "gold24": 15162,
+      "gold22": 13899,
+      "gold18": 11372,
+      "xauusd": 4694.87,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-11",
+      "gold24": 15198,
+      "gold22": 13932,
+      "gold18": 11399,
+      "xauusd": 4706.16,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-12",
+      "gold24": 15242,
+      "gold22": 13972,
+      "gold18": 11432,
+      "xauusd": 4719.89,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-13",
+      "gold24": 15295,
+      "gold22": 14020,
+      "gold18": 11471,
+      "xauusd": 4736.08,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-14",
+      "gold24": 15761,
+      "gold22": 14437,
+      "gold18": 11821,
+      "xauusd": 4809.5,
+      "usdinr": 93.356769,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-15",
+      "gold24": 15797,
+      "gold22": 14470,
+      "gold18": 11848,
+      "xauusd": 4825.600098,
+      "usdinr": 93.261159,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-16",
+      "gold24": 15707,
+      "gold22": 14388,
+      "gold18": 11780,
+      "xauusd": 4788.799805,
+      "usdinr": 93.44,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-17",
+      "gold24": 15949,
+      "gold22": 14609,
+      "gold18": 11962,
+      "xauusd": 4872.600098,
+      "usdinr": 93.245552,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-19",
+      "gold24": 15759,
+      "gold22": 14435,
+      "gold18": 11819,
+      "xauusd": 4831.399902,
+      "usdinr": 92.92,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-22",
+      "gold24": 15538,
+      "gold22": 14233,
+      "gold18": 11654,
+      "xauusd": 4728.899902,
+      "usdinr": 93.605785,
+      "source": "Live"
+    }
+  ],
+  "silver": [
+    {
+      "date": "2026-01-17",
+      "silver999": 248.438,
+      "silver925": 229.805,
+      "silver900": 223.594,
+      "xagusd": 76.93,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-18",
+      "silver999": 247.414,
+      "silver925": 228.858,
+      "silver900": 222.673,
+      "xagusd": 76.614,
+      "usdinr": 91.999,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-19",
+      "silver999": 245.819,
+      "silver925": 227.383,
+      "silver900": 221.237,
+      "xagusd": 76.261,
+      "usdinr": 91.829,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-20",
+      "silver999": 244.175,
+      "silver925": 225.862,
+      "silver900": 219.758,
+      "xagusd": 75.878,
+      "usdinr": 91.675,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-21",
+      "silver999": 242.515,
+      "silver925": 224.326,
+      "silver900": 218.264,
+      "xagusd": 75.471,
+      "usdinr": 91.543,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-22",
+      "silver999": 240.871,
+      "silver925": 222.806,
+      "silver900": 216.784,
+      "xagusd": 75.047,
+      "usdinr": 91.436,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-23",
+      "silver999": 239.281,
+      "silver925": 221.335,
+      "silver900": 215.353,
+      "xagusd": 74.617,
+      "usdinr": 91.356,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-24",
+      "silver999": 237.778,
+      "silver925": 219.945,
+      "silver900": 214,
+      "xagusd": 74.188,
+      "usdinr": 91.307,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-25",
+      "silver999": 236.397,
+      "silver925": 218.667,
+      "silver900": 212.757,
+      "xagusd": 73.771,
+      "usdinr": 91.29,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-26",
+      "silver999": 235.169,
+      "silver925": 217.531,
+      "silver900": 211.652,
+      "xagusd": 73.374,
+      "usdinr": 91.307,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-27",
+      "silver999": 234.129,
+      "silver925": 216.569,
+      "silver900": 210.716,
+      "xagusd": 73.008,
+      "usdinr": 91.359,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-28",
+      "silver999": 233.294,
+      "silver925": 215.797,
+      "silver900": 209.965,
+      "xagusd": 72.68,
+      "usdinr": 91.444,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-29",
+      "silver999": 232.695,
+      "silver925": 215.243,
+      "silver900": 209.426,
+      "xagusd": 72.399,
+      "usdinr": 91.563,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-30",
+      "silver999": 232.342,
+      "silver925": 214.916,
+      "silver900": 209.108,
+      "xagusd": 72.171,
+      "usdinr": 91.713,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-01-31",
+      "silver999": 232.253,
+      "silver925": 214.834,
+      "silver900": 209.028,
+      "xagusd": 72.003,
+      "usdinr": 91.892,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-01",
+      "silver999": 232.191,
+      "silver925": 214.777,
+      "silver900": 208.972,
+      "xagusd": 71.899,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-02",
+      "silver999": 232.078,
+      "silver925": 214.672,
+      "silver900": 208.87,
+      "xagusd": 71.864,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-03",
+      "silver999": 232.194,
+      "silver925": 214.779,
+      "silver900": 208.975,
+      "xagusd": 71.9,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-04",
+      "silver999": 232.546,
+      "silver925": 215.105,
+      "silver900": 209.291,
+      "xagusd": 72.009,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-05",
+      "silver999": 233.127,
+      "silver925": 215.642,
+      "silver900": 209.814,
+      "xagusd": 72.189,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-06",
+      "silver999": 233.941,
+      "silver925": 216.395,
+      "silver900": 210.547,
+      "xagusd": 72.441,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-07",
+      "silver999": 234.974,
+      "silver925": 217.351,
+      "silver900": 211.477,
+      "xagusd": 72.761,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-08",
+      "silver999": 236.214,
+      "silver925": 218.498,
+      "silver900": 212.593,
+      "xagusd": 73.145,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-09",
+      "silver999": 237.642,
+      "silver925": 219.819,
+      "silver900": 213.878,
+      "xagusd": 73.587,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-10",
+      "silver999": 239.237,
+      "silver925": 221.294,
+      "silver900": 215.313,
+      "xagusd": 74.081,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-11",
+      "silver999": 240.968,
+      "silver925": 222.895,
+      "silver900": 216.871,
+      "xagusd": 74.617,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-12",
+      "silver999": 242.809,
+      "silver925": 224.598,
+      "silver900": 218.528,
+      "xagusd": 75.187,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-13",
+      "silver999": 244.721,
+      "silver925": 226.367,
+      "silver900": 220.249,
+      "xagusd": 75.779,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-14",
+      "silver999": 246.665,
+      "silver925": 228.165,
+      "silver900": 221.999,
+      "xagusd": 76.381,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-15",
+      "silver999": 248.606,
+      "silver925": 229.961,
+      "silver900": 223.745,
+      "xagusd": 76.982,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-16",
+      "silver999": 250.498,
+      "silver925": 231.711,
+      "silver900": 225.448,
+      "xagusd": 77.568,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-17",
+      "silver999": 252.303,
+      "silver925": 233.38,
+      "silver900": 227.073,
+      "xagusd": 78.127,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-18",
+      "silver999": 253.979,
+      "silver925": 234.931,
+      "silver900": 228.581,
+      "xagusd": 78.646,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-19",
+      "silver999": 255.494,
+      "silver925": 236.332,
+      "silver900": 229.945,
+      "xagusd": 79.115,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-20",
+      "silver999": 256.811,
+      "silver925": 237.55,
+      "silver900": 231.13,
+      "xagusd": 79.523,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-21",
+      "silver999": 257.909,
+      "silver925": 238.566,
+      "silver900": 232.118,
+      "xagusd": 79.863,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-22",
+      "silver999": 258.765,
+      "silver925": 239.358,
+      "silver900": 232.889,
+      "xagusd": 80.128,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-23",
+      "silver999": 259.369,
+      "silver925": 239.916,
+      "silver900": 233.432,
+      "xagusd": 80.315,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-24",
+      "silver999": 259.718,
+      "silver925": 240.239,
+      "silver900": 233.746,
+      "xagusd": 80.423,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-25",
+      "silver999": 259.815,
+      "silver925": 240.329,
+      "silver900": 233.834,
+      "xagusd": 80.453,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-26",
+      "silver999": 259.669,
+      "silver925": 240.194,
+      "silver900": 233.702,
+      "xagusd": 80.408,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-27",
+      "silver999": 259.301,
+      "silver925": 239.853,
+      "silver900": 233.371,
+      "xagusd": 80.294,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-02-28",
+      "silver999": 258.736,
+      "silver925": 239.331,
+      "silver900": 232.862,
+      "xagusd": 80.119,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-01",
+      "silver999": 258,
+      "silver925": 238.65,
+      "silver900": 232.2,
+      "xagusd": 79.891,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-02",
+      "silver999": 257.125,
+      "silver925": 237.841,
+      "silver900": 231.413,
+      "xagusd": 79.62,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-03",
+      "silver999": 256.143,
+      "silver925": 236.932,
+      "silver900": 230.529,
+      "xagusd": 79.316,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-04",
+      "silver999": 255.087,
+      "silver925": 235.955,
+      "silver900": 229.578,
+      "xagusd": 78.989,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-05",
+      "silver999": 253.986,
+      "silver925": 234.937,
+      "silver900": 228.587,
+      "xagusd": 78.648,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-06",
+      "silver999": 252.875,
+      "silver925": 233.909,
+      "silver900": 227.588,
+      "xagusd": 78.304,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-07",
+      "silver999": 251.774,
+      "silver925": 232.891,
+      "silver900": 226.597,
+      "xagusd": 77.963,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-08",
+      "silver999": 250.705,
+      "silver925": 231.902,
+      "silver900": 225.635,
+      "xagusd": 77.632,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-09",
+      "silver999": 249.694,
+      "silver925": 230.967,
+      "silver900": 224.725,
+      "xagusd": 77.319,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-10",
+      "silver999": 248.748,
+      "silver925": 230.092,
+      "silver900": 223.873,
+      "xagusd": 77.026,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-11",
+      "silver999": 247.876,
+      "silver925": 229.285,
+      "silver900": 223.088,
+      "xagusd": 76.756,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-12",
+      "silver999": 247.091,
+      "silver925": 228.559,
+      "silver900": 222.382,
+      "xagusd": 76.513,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-13",
+      "silver999": 246.387,
+      "silver925": 227.908,
+      "silver900": 221.748,
+      "xagusd": 76.295,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-14",
+      "silver999": 245.767,
+      "silver925": 227.334,
+      "silver900": 221.19,
+      "xagusd": 76.103,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-15",
+      "silver999": 245.224,
+      "silver925": 226.832,
+      "silver900": 220.702,
+      "xagusd": 75.935,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-16",
+      "silver999": 244.753,
+      "silver925": 226.397,
+      "silver900": 220.278,
+      "xagusd": 75.789,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-17",
+      "silver999": 244.343,
+      "silver925": 226.017,
+      "silver900": 219.909,
+      "xagusd": 75.662,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-18",
+      "silver999": 243.981,
+      "silver925": 225.682,
+      "silver900": 219.583,
+      "xagusd": 75.55,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-19",
+      "silver999": 243.661,
+      "silver925": 225.386,
+      "silver900": 219.295,
+      "xagusd": 75.451,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-20",
+      "silver999": 243.367,
+      "silver925": 225.114,
+      "silver900": 219.03,
+      "xagusd": 75.36,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-21",
+      "silver999": 243.09,
+      "silver925": 224.858,
+      "silver900": 218.781,
+      "xagusd": 75.274,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-22",
+      "silver999": 242.825,
+      "silver925": 224.613,
+      "silver900": 218.543,
+      "xagusd": 75.192,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-23",
+      "silver999": 242.56,
+      "silver925": 224.368,
+      "silver900": 218.304,
+      "xagusd": 75.11,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-24",
+      "silver999": 242.292,
+      "silver925": 224.12,
+      "silver900": 218.063,
+      "xagusd": 75.027,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-25",
+      "silver999": 242.018,
+      "silver925": 223.867,
+      "silver900": 217.816,
+      "xagusd": 74.942,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-26",
+      "silver999": 241.743,
+      "silver925": 223.612,
+      "silver900": 217.569,
+      "xagusd": 74.857,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-27",
+      "silver999": 241.465,
+      "silver925": 223.355,
+      "silver900": 217.319,
+      "xagusd": 74.771,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-28",
+      "silver999": 241.201,
+      "silver925": 223.111,
+      "silver900": 217.081,
+      "xagusd": 74.689,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-29",
+      "silver999": 240.952,
+      "silver925": 222.881,
+      "silver900": 216.857,
+      "xagusd": 74.612,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-30",
+      "silver999": 240.732,
+      "silver925": 222.677,
+      "silver900": 216.659,
+      "xagusd": 74.544,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-03-31",
+      "silver999": 240.558,
+      "silver925": 222.516,
+      "silver900": 216.502,
+      "xagusd": 74.49,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-01",
+      "silver999": 240.445,
+      "silver925": 222.412,
+      "silver900": 216.401,
+      "xagusd": 74.455,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-02",
+      "silver999": 240.406,
+      "silver925": 222.376,
+      "silver900": 216.365,
+      "xagusd": 74.443,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-03",
+      "silver999": 240.461,
+      "silver925": 222.426,
+      "silver900": 216.415,
+      "xagusd": 74.46,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-04",
+      "silver999": 240.622,
+      "silver925": 222.575,
+      "silver900": 216.56,
+      "xagusd": 74.51,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-05",
+      "silver999": 240.91,
+      "silver925": 222.842,
+      "silver900": 216.819,
+      "xagusd": 74.599,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-06",
+      "silver999": 241.333,
+      "silver925": 223.233,
+      "silver900": 217.2,
+      "xagusd": 74.73,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-07",
+      "silver999": 241.905,
+      "silver925": 223.762,
+      "silver900": 217.715,
+      "xagusd": 74.907,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-08",
+      "silver999": 242.628,
+      "silver925": 224.431,
+      "silver900": 218.365,
+      "xagusd": 75.131,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-09",
+      "silver999": 243.51,
+      "silver925": 225.247,
+      "silver900": 219.159,
+      "xagusd": 75.404,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-10",
+      "silver999": 244.553,
+      "silver925": 226.212,
+      "silver900": 220.098,
+      "xagusd": 75.727,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-11",
+      "silver999": 245.751,
+      "silver925": 227.32,
+      "silver900": 221.176,
+      "xagusd": 76.098,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-12",
+      "silver999": 247.094,
+      "silver925": 228.562,
+      "silver900": 222.385,
+      "xagusd": 76.514,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-13",
+      "silver999": 248.567,
+      "silver925": 229.924,
+      "silver900": 223.71,
+      "xagusd": 76.97,
+      "usdinr": 92,
+      "source": "gold-api.com + open.er-api.com"
+    },
+    {
+      "date": "2026-04-14",
+      "silver999": 251.512,
+      "silver925": 232.649,
+      "silver900": 226.361,
+      "xagusd": 76.75,
+      "usdinr": 93.356769,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-15",
+      "silver999": 262.204,
+      "silver925": 242.539,
+      "silver900": 235.984,
+      "xagusd": 80.095001,
+      "usdinr": 93.261159,
+      "source": "Live"
+    },
+    {
+      "date": "2026-04-17",
+      "silver999": 258.991,
+      "silver925": 239.567,
+      "silver900": 233.092,
+      "xagusd": 79.123001,
+      "usdinr": 93.25,
+      "source": "Live"
+    }
+  ]
+}

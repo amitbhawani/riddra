@@ -1,0 +1,2415 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "approval_1_e82dd994-04a6-4647-a0c3-a618674f37bc",
+      "family": "stocks",
+      "slug": "tata-motors-copy-2",
+      "title": "Editor Approval Audit 798216 B",
+      "recordId": "admin_record_3_0cf076fa-1a54-4fee-b19b-cb02be62aba8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "audit-editor-798216@example.com",
+      "submittedAt": "2026-04-24T03:36:54.166Z",
+      "updatedAt": "2026-04-24T03:41:29.644Z",
+      "decision": "rejected",
+      "reviewedAt": "2026-04-24T03:41:29.644Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": "Audit cleanup reject stale pending item",
+      "actionType": "content_change",
+      "targetStatus": "draft",
+      "summary": "Submitted Editor Approval Audit 798216 B for admin approval.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_3_0cf076fa-1a54-4fee-b19b-cb02be62aba8",
+        "originalSlug": "tata-motors-copy-2",
+        "lastKnownUpdatedAt": "2026-04-24T03:36:47.683Z",
+        "family": "stocks",
+        "slug": "tata-motors-copy-2",
+        "title": "Editor Approval Audit 798216 B",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "draft",
+        "visibility": "private",
+        "publicHref": null,
+        "canonicalRoute": null,
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "17 Apr 2026, 9:30 pm",
+          "lastSuccessfulRefreshAt": "17 Apr 2026, 9:30 pm",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "companyName": "Tata Motors",
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sector": "Unclassified",
+              "sectorIndexSlug": "nse_equities",
+              "indexMemberships": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "publicRoute": "/stocks/tata-motors",
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": "",
+              "truthLabel": "Source-backed stock route",
+              "latestNewsReady": "yes",
+              "publishNote": "This stock route is already part of the public product surface."
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "primarySourceCode": "nse_equities",
+              "sourceState": "source_backed",
+              "sourceUpdatedAt": "17 Apr 2026, 9:30 pm",
+              "snapshotSource": "NSE quote endpoint",
+              "snapshotDate": "17 Apr 2026, 9:30 pm",
+              "fundamentalsSource": "",
+              "fundamentalsDate": "",
+              "shareholdingSource": "",
+              "shareholdingDate": "",
+              "sourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824744359",
+              "thesis": "",
+              "momentumLabel": "",
+              "keyPointsText": "",
+              "quickStatsText": "",
+              "fundamentalsText": "",
+              "shareholdingText": "",
+              "peerConfigText": "",
+              "newsReadinessNote": "",
+              "newsItemsText": "",
+              "faqText": "",
+              "manualNotes": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "Tata Motors Share Price ₹439.15, Charts, Fundamentals & Forecast | Riddra",
+              "metaDescription": "Track Tata Motors share price ₹439.15, charts, quick stats, fundamentals, ownership, forecast and FAQs on Riddra.",
+              "ogImage": "",
+              "canonicalUrl": "/stocks/tata-motors",
+              "noIndex": "no"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": "",
+              "fundamentalsSourceUrl": "",
+              "shareholdingSourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "yes",
+              "laneLabel": "Stock quote / session refresh",
+              "cadence": "Every 15 minutes during market hours",
+              "latestStatus": "healthy",
+              "nextScheduledRunAt": "",
+              "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+              "lastFailureAt": "",
+              "sourceDependency": "Market data provider",
+              "latestError": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": [],
+        "imports": []
+      },
+      "baseRecordUpdatedAt": "2026-04-24T03:36:47.683Z"
+    },
+    {
+      "id": "approval_1_fdd5fff3-7069-4a4f-8b2d-b6ac56918d4f",
+      "family": "stocks",
+      "slug": "tata-motors-copy-2",
+      "title": "Editor Bulk Approval 043989 B",
+      "recordId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "audit-editor-043989@example.com",
+      "submittedAt": "2026-04-24T03:40:51.292Z",
+      "updatedAt": "2026-04-24T03:40:51.538Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-24T03:40:51.538Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": "Bulk approval audit 043989",
+      "actionType": "content_change",
+      "targetStatus": "draft",
+      "summary": "Submitted Editor Bulk Approval 043989 B for admin approval.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_3_770e0dbe-bf70-4226-a675-9c3ac7709984",
+        "originalSlug": "tata-motors-copy-2",
+        "lastKnownUpdatedAt": "2026-04-24T03:40:50.620Z",
+        "family": "stocks",
+        "slug": "tata-motors-copy-2",
+        "title": "Editor Bulk Approval 043989 B",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "draft",
+        "visibility": "private",
+        "publicHref": null,
+        "canonicalRoute": null,
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "17 Apr 2026, 9:30 pm",
+          "lastSuccessfulRefreshAt": "17 Apr 2026, 9:30 pm",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "companyName": "Tata Motors",
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sector": "Unclassified",
+              "sectorIndexSlug": "nse_equities",
+              "indexMemberships": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "publicRoute": "/stocks/tata-motors",
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": "",
+              "truthLabel": "Source-backed stock route",
+              "latestNewsReady": "yes",
+              "publishNote": "This stock route is already part of the public product surface."
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "primarySourceCode": "nse_equities",
+              "sourceState": "source_backed",
+              "sourceUpdatedAt": "17 Apr 2026, 9:30 pm",
+              "snapshotSource": "NSE quote endpoint",
+              "snapshotDate": "17 Apr 2026, 9:30 pm",
+              "fundamentalsSource": "",
+              "fundamentalsDate": "",
+              "shareholdingSource": "",
+              "shareholdingDate": "",
+              "sourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824744359",
+              "thesis": "",
+              "momentumLabel": "",
+              "keyPointsText": "",
+              "quickStatsText": "",
+              "fundamentalsText": "",
+              "shareholdingText": "",
+              "peerConfigText": "",
+              "newsReadinessNote": "",
+              "newsItemsText": "",
+              "faqText": "",
+              "manualNotes": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "Tata Motors Share Price ₹439.15, Charts, Fundamentals & Forecast | Riddra",
+              "metaDescription": "Track Tata Motors share price ₹439.15, charts, quick stats, fundamentals, ownership, forecast and FAQs on Riddra.",
+              "ogImage": "",
+              "canonicalUrl": "/stocks/tata-motors",
+              "noIndex": "no"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": "",
+              "fundamentalsSourceUrl": "",
+              "shareholdingSourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "yes",
+              "laneLabel": "Stock quote / session refresh",
+              "cadence": "Every 15 minutes during market hours",
+              "latestStatus": "healthy",
+              "nextScheduledRunAt": "",
+              "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+              "lastFailureAt": "",
+              "sourceDependency": "Market data provider",
+              "latestError": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": [],
+        "imports": []
+      },
+      "baseRecordUpdatedAt": "2026-04-24T03:40:50.620Z"
+    },
+    {
+      "id": "approval_1_8c69dbde-444e-4407-9c20-5c826f9e4ccb",
+      "family": "stocks",
+      "slug": "tata-motors-copy",
+      "title": "Editor Bulk Approval 043989 A",
+      "recordId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "audit-editor-043989@example.com",
+      "submittedAt": "2026-04-24T03:40:51.066Z",
+      "updatedAt": "2026-04-24T03:40:51.530Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-24T03:40:51.529Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": "Bulk approval audit 043989",
+      "actionType": "content_change",
+      "targetStatus": "draft",
+      "summary": "Submitted Editor Bulk Approval 043989 A for admin approval.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_2_3180c88b-d3ef-4192-8a75-9b6f1a6e6325",
+        "originalSlug": "tata-motors-copy",
+        "lastKnownUpdatedAt": "2026-04-24T03:40:49.555Z",
+        "family": "stocks",
+        "slug": "tata-motors-copy",
+        "title": "Editor Bulk Approval 043989 A",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "draft",
+        "visibility": "private",
+        "publicHref": null,
+        "canonicalRoute": null,
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "17 Apr 2026, 9:30 pm",
+          "lastSuccessfulRefreshAt": "17 Apr 2026, 9:30 pm",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "companyName": "Tata Motors",
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sector": "Unclassified",
+              "sectorIndexSlug": "nse_equities",
+              "indexMemberships": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "publishState": "published",
+              "publicRoute": "/stocks/tata-motors",
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": "",
+              "truthLabel": "Source-backed stock route",
+              "latestNewsReady": "yes",
+              "publishNote": "This stock route is already part of the public product surface."
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "primarySourceCode": "nse_equities",
+              "sourceState": "source_backed",
+              "sourceUpdatedAt": "17 Apr 2026, 9:30 pm",
+              "snapshotSource": "NSE quote endpoint",
+              "snapshotDate": "17 Apr 2026, 9:30 pm",
+              "fundamentalsSource": "",
+              "fundamentalsDate": "",
+              "shareholdingSource": "",
+              "shareholdingDate": "",
+              "sourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824744359",
+              "thesis": "",
+              "momentumLabel": "",
+              "keyPointsText": "",
+              "quickStatsText": "",
+              "fundamentalsText": "",
+              "shareholdingText": "",
+              "peerConfigText": "",
+              "newsReadinessNote": "",
+              "newsItemsText": "",
+              "faqText": "",
+              "manualNotes": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "Tata Motors Share Price ₹439.15, Charts, Fundamentals & Forecast | Riddra",
+              "metaDescription": "Track Tata Motors share price ₹439.15, charts, quick stats, fundamentals, ownership, forecast and FAQs on Riddra.",
+              "ogImage": "",
+              "canonicalUrl": "/stocks/tata-motors",
+              "noIndex": "no"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": "",
+              "fundamentalsSourceUrl": "",
+              "shareholdingSourceUrl": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "yes",
+              "laneLabel": "Stock quote / session refresh",
+              "cadence": "Every 15 minutes during market hours",
+              "latestStatus": "healthy",
+              "nextScheduledRunAt": "",
+              "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+              "lastFailureAt": "",
+              "sourceDependency": "Market data provider",
+              "latestError": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": [],
+        "imports": []
+      },
+      "baseRecordUpdatedAt": "2026-04-24T03:40:49.555Z"
+    },
+    {
+      "id": "approval_1_10b200ec-2aa0-4fc4-863c-b97687187e9b",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.final.1776824744359@example.com",
+      "submittedAt": "2026-04-22T02:26:25.110Z",
+      "updatedAt": "2026-04-22T04:25:48.448Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T04:25:48.448Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:26:09.260Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824744359"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:26:09.260Z"
+    },
+    {
+      "id": "approval_1_44707db1-da35-4475-ab23-132c53988c1d",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.two.1776825040950@example.com",
+      "submittedAt": "2026-04-22T02:30:45.272Z",
+      "updatedAt": "2026-04-22T02:30:45.925Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:30:45.925Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:30:45.261Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sectorIndexSlug": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Bulk approval two 1776825040950"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "",
+              "metaDescription": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "true"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:30:44.312Z"
+    },
+    {
+      "id": "approval_1_974cfc86-c7de-40ad-853d-be9155e92555",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.one.1776825040950@example.com",
+      "submittedAt": "2026-04-22T02:30:45.252Z",
+      "updatedAt": "2026-04-22T02:30:45.295Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:30:45.295Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:30:45.243Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sectorIndexSlug": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Bulk approval one 1776825040950"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "",
+              "metaDescription": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "true"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:30:44.312Z"
+    },
+    {
+      "id": "approval_1_5f127ca8-3d38-495f-a330-0d5ea3ee7041",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.one.1776825040950@example.com",
+      "submittedAt": "2026-04-22T02:30:43.795Z",
+      "updatedAt": "2026-04-22T02:30:44.317Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:30:44.317Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:30:43.778Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "manual_override",
+            "values": {
+              "assignedTo": "",
+              "assignedBy": "",
+              "dueDate": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "manual_override",
+            "values": {
+              "slug": "tata-motors",
+              "symbol": "TMCV",
+              "sectorIndexSlug": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "manual_override",
+            "values": {
+              "scheduledPublishAt": "",
+              "scheduledUnpublishAt": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "manual_override",
+            "values": {
+              "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Single approval 1776825040950"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "manual_override",
+            "values": {
+              "metaTitle": "",
+              "metaDescription": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "manual_override",
+            "values": {
+              "documentLinksText": ""
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "manual_override",
+            "values": {
+              "refreshEnabled": "true"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:29:30.761Z"
+    },
+    {
+      "id": "approval_1_e03987ce-0964-45cb-91a6-fc31072c3a64",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.final.1776824963944@example.com",
+      "submittedAt": "2026-04-22T02:29:30.724Z",
+      "updatedAt": "2026-04-22T02:29:30.765Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:29:30.765Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:29:29.730Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824963944 batch two"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:29:29.730Z"
+    },
+    {
+      "id": "approval_1_5a0b40db-92fe-4964-85c2-54c028a212ab",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.final.1776824963944@example.com",
+      "submittedAt": "2026-04-22T02:29:29.044Z",
+      "updatedAt": "2026-04-22T02:29:29.735Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:29:29.735Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:29:26.225Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824963944"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:29:26.225Z"
+    },
+    {
+      "id": "approval_1_d4937078-16d0-4628-b9a8-078a0ab72637",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.final.1776824872123@example.com",
+      "submittedAt": "2026-04-22T02:27:57.725Z",
+      "updatedAt": "2026-04-22T02:27:58.291Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:27:58.291Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:27:54.582Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Final audit editor summary QA 1776824872123"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:27:54.582Z"
+    },
+    {
+      "id": "approval_1_1ff7ebbd-512d-4878-ab81-a94f1a3da9bb",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.audit@example.com",
+      "submittedAt": "2026-04-22T02:17:51.544Z",
+      "updatedAt": "2026-04-22T02:17:57.183Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:17:57.183Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:17:45.963Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Editor approval summary 2026-04-22T02:17:35.455Z"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:17:45.963Z"
+    },
+    {
+      "id": "approval_1_da8b93ba-ef4c-4dc6-9aa9-470d6109b458",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.audit@example.com",
+      "submittedAt": "2026-04-22T02:13:36.981Z",
+      "updatedAt": "2026-04-22T02:13:43.546Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-22T02:13:43.546Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-22T02:13:30.200Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Editor approval summary 2026-04-22T02:13:18.634Z"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-22T02:13:30.200Z"
+    },
+    {
+      "id": "approval_1_f8126f18-45c6-481b-9deb-642a9374fbfc",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.two@example.com",
+      "submittedAt": "2026-04-21T16:59:19.069Z",
+      "updatedAt": "2026-04-21T16:59:19.708Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-21T16:59:19.708Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-21T16:59:17.846Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Editor bulk approval B 2026-04-21T16:59:03.388Z"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-21T16:59:17.846Z"
+    },
+    {
+      "id": "approval_1_81b9928b-3a99-49f5-9b62-e7826474a889",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.one@example.com",
+      "submittedAt": "2026-04-21T16:59:19.052Z",
+      "updatedAt": "2026-04-21T16:59:19.089Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-21T16:59:19.089Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-21T16:59:17.846Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Editor bulk approval A 2026-04-21T16:59:03.388Z"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-21T16:59:17.846Z"
+    },
+    {
+      "id": "approval_1_287f5c5f-09da-436e-a906-757420ff70d9",
+      "family": "stocks",
+      "slug": "tata-motors",
+      "title": "Tata Motors",
+      "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+      "submittedByUserId": "local-admin-bypass",
+      "submittedByEmail": "editor.one@example.com",
+      "submittedAt": "2026-04-21T16:59:15.274Z",
+      "updatedAt": "2026-04-21T16:59:18.052Z",
+      "decision": "approved",
+      "reviewedAt": "2026-04-21T16:59:18.052Z",
+      "reviewedByUserId": "local-admin-bypass",
+      "reviewedByEmail": "amitbhawani@gmail.com",
+      "reviewNote": null,
+      "actionType": "publish_request",
+      "targetStatus": "published",
+      "summary": "Requested publish approval for Tata Motors.",
+      "changedFields": [
+        "workflow",
+        "identity",
+        "publishing",
+        "data_sources",
+        "frontend_fields",
+        "seo",
+        "documents_links",
+        "refresh_automation"
+      ],
+      "snapshot": {
+        "recordId": "admin_record_1_d2d19ba8-8698-4d55-ba6a-6108cd1d6bd8",
+        "originalSlug": "tata-motors",
+        "lastKnownUpdatedAt": "2026-04-21T16:59:09.766Z",
+        "family": "stocks",
+        "slug": "tata-motors",
+        "title": "Tata Motors",
+        "symbol": "TMCV",
+        "benchmarkMapping": "nse_equities",
+        "status": "published",
+        "visibility": "public",
+        "publicHref": "/stocks/tata-motors",
+        "canonicalRoute": "/stocks/tata-motors",
+        "sourceTable": "stocks_catalog",
+        "sourceRowId": "tata-motors",
+        "sourceLabel": "nse_equities",
+        "sourceDate": "17 Apr 2026, 9:30 pm",
+        "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+        "sourceState": {
+          "sourceLabel": "nse_equities",
+          "sourceDate": "17 Apr 2026, 9:30 pm",
+          "sourceUrl": "https://dhan.co/stocks/tata-motors-ltd-fundamental-analysis/",
+          "lastRefreshAt": "2026-04-17T16:00:00.000Z",
+          "lastSuccessfulRefreshAt": "2026-04-17T16:00:00.000Z",
+          "nextScheduledRefreshAt": null
+        },
+        "refreshState": {
+          "refreshEnabled": true,
+          "laneLabel": "Stock quote / session refresh",
+          "cadence": "Every 15 minutes during market hours",
+          "latestStatus": "healthy",
+          "nextScheduledRunAt": null,
+          "lastSuccessAt": "17 Apr 2026, 9:30 pm",
+          "lastFailureAt": null,
+          "latestError": null,
+          "sourceDependency": "Market data provider"
+        },
+        "accessControl": {
+          "mode": "public_free",
+          "allowedMembershipTiers": [],
+          "requireLogin": false,
+          "showTeaserPublicly": true,
+          "showLockedPreview": false,
+          "ctaLabel": null,
+          "ctaHref": null,
+          "internalNotes": null
+        },
+        "assignedTo": null,
+        "assignedBy": null,
+        "dueDate": null,
+        "scheduledPublishAt": null,
+        "scheduledUnpublishAt": null,
+        "sections": {
+          "workflow": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "identity": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "publishing": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "data_sources": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "frontend_fields": {
+            "mode": "manual_override",
+            "values": {
+              "summary": "Editor single approval 2026-04-21T16:59:03.388Z"
+            },
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "seo": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "documents_links": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          },
+          "refresh_automation": {
+            "mode": "auto_source",
+            "values": {},
+            "note": "",
+            "lastManualEditAt": null,
+            "expiresAt": null
+          }
+        },
+        "documents": []
+      },
+      "baseRecordUpdatedAt": "2026-04-21T16:59:09.766Z"
+    }
+  ],
+  "updatedAt": "2026-04-24T03:41:29.644Z"
+}

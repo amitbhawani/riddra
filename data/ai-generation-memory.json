@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "datasets": [
+    {
+      "id": "ai_dataset_1",
+      "source": "editorial_blocks",
+      "role": "Human-authored context",
+      "status": "Growing",
+      "retainedChunks": 44,
+      "routeTargets": 18,
+      "freshness": "Refreshed from editorial reviews this week",
+      "groundingUse": "Copilot explanations, FAQs, and route-aware summaries",
+      "note": "Editorial reviews, FAQs, strengths, risks, and premium prompts should become reliable retrieval chunks for search and AI summaries."
+    },
+    {
+      "id": "ai_dataset_2",
+      "source": "asset_documents",
+      "role": "Document-backed evidence",
+      "status": "Ready",
+      "retainedChunks": 37,
+      "routeTargets": 17,
+      "freshness": "Refreshed after retrieval queue hardening on Apr 15, 2026",
+      "groundingUse": "Document-backed extraction, results evidence, and route-aware AI grounding",
+      "note": "Dataset update saved during backend closure pass."
+    },
+    {
+      "id": "ai_dataset_3",
+      "source": "asset_announcements",
+      "role": "Fresh event context",
+      "status": "Growing",
+      "retainedChunks": 32,
+      "routeTargets": 14,
+      "freshness": "Announcement snapshots retained for recent event windows",
+      "groundingUse": "Fresh event context for alerts, results-day summaries, and stock follow-through",
+      "note": "Manual company updates, IPO notes, and commentary should help search and AI stay timely without guessing from stale page copy."
+    },
+    {
+      "id": "ai_dataset_4",
+      "source": "asset_relationships",
+      "role": "Context graph",
+      "status": "Growing",
+      "retainedChunks": 36,
+      "routeTargets": 16,
+      "freshness": "Relationship graph synced with compare and learning routes",
+      "groundingUse": "Route handoffs, peer relationships, and context-aware retrieval narrowing",
+      "note": "Related pages, compare candidates, sectors, and learning links should guide retrieval toward the right connected context."
+    },
+    {
+      "id": "ai_dataset_5",
+      "source": "source_snapshots",
+      "role": "Structured numeric truth",
+      "status": "Growing",
+      "retainedChunks": 24,
+      "routeTargets": 12,
+      "freshness": "Numeric snapshots retained from source-entry and market-memory lanes",
+      "groundingUse": "Grounded numeric answers so AI does not infer market metrics from prose",
+      "note": "Trusted metric snapshots now have a first persisted AI-memory lane so grounded quantitative answers can point at retained internal records instead of inferring live numbers from prose."
+    }
+  ],
+  "generationRuns": [
+    {
+      "id": "ai_run_1",
+      "workflow": "Portfolio import validator",
+      "mode": "Formula-first",
+      "routeTarget": "/portfolio/import",
+      "answerState": "Stored",
+      "groundingSource": "source_snapshots",
+      "storedAt": "Apr 15, 2026",
+      "costBand": "Lowest cost",
+      "note": "This workflow now has a persisted generation-memory row so grounded outputs can be reviewed instead of being treated like ad hoc assistant behavior."
+    },
+    {
+      "id": "ai_run_2",
+      "workflow": "Smart result search",
+      "mode": "Hybrid optional AI",
+      "routeTarget": "/search",
+      "answerState": "Queued",
+      "groundingSource": "asset_relationships",
+      "storedAt": "Apr 14, 2026",
+      "costBand": "Budget watch",
+      "note": "Queue this behind structured retrieval and only promote it once answer packets and source-state review stay auditable."
+    },
+    {
+      "id": "ai_run_3",
+      "workflow": "Alert summarizer",
+      "mode": "Hybrid optional AI",
+      "routeTarget": "/alerts",
+      "answerState": "Queued",
+      "groundingSource": "asset_announcements",
+      "storedAt": "Apr 13, 2026",
+      "costBand": "Budget watch",
+      "note": "Queue this behind structured retrieval and only promote it once answer packets and source-state review stay auditable."
+    },
+    {
+      "id": "ai_run_4",
+      "workflow": "Editorial copilot",
+      "mode": "On-demand AI",
+      "routeTarget": "/admin/content",
+      "answerState": "Stored",
+      "groundingSource": "editorial_blocks + asset_documents",
+      "storedAt": "15 Apr 2026",
+      "costBand": "Lowest cost",
+      "note": "Generation run saved during backend closure pass."
+    }
+  ],
+  "answerPackets": [
+    {
+      "id": "ai_packet_1",
+      "workflow": "Decode index mood",
+      "audience": "Busy daily user",
+      "routeTarget": "/markets",
+      "continuityState": "Stored packet",
+      "groundingSources": "source_snapshots + asset_relationships + asset_announcements",
+      "storedAt": "15 Apr 2026",
+      "answerShape": "Mood summary -> pullers and draggers -> breadth read -> next route to open",
+      "note": "Answer packet saved during backend closure pass."
+    },
+    {
+      "id": "ai_packet_2",
+      "workflow": "Compare leading stocks",
+      "audience": "Research and compare users",
+      "routeTarget": "/compare/stocks/hdfc-bank/icici-bank",
+      "continuityState": "Stored packet",
+      "groundingSources": "asset_relationships + editorial_blocks",
+      "storedAt": "Apr 14, 2026",
+      "answerShape": "Matchup framing → best compare route → what to read first → deeper stock pages",
+      "note": "Persist this answer packet with source-state labels so the copilot can reuse a grounded explanation before any live model call."
+    },
+    {
+      "id": "ai_packet_3",
+      "workflow": "Review an IPO window",
+      "audience": "IPO and allotment users",
+      "routeTarget": "/ipo",
+      "continuityState": "Preview packet",
+      "groundingSources": "asset_documents + asset_announcements",
+      "storedAt": "Apr 13, 2026",
+      "answerShape": "Issue status → what to read → risk checks → allotment and listing follow-through",
+      "note": "Keep this packet in preview memory until deeper retrieval writes and stronger route evidence are in place."
+    },
+    {
+      "id": "ai_packet_4",
+      "workflow": "Shortlist mutual funds",
+      "audience": "Investor and SIP users",
+      "routeTarget": "/compare/mutual-funds/hdfc-mid-cap-opportunities/sbi-bluechip-fund",
+      "continuityState": "Preview packet",
+      "groundingSources": "source_snapshots + asset_documents",
+      "storedAt": "Apr 12, 2026",
+      "answerShape": "Category fit → benchmark and risk read → shortlist route → SIP or compare handoff",
+      "note": "Keep this packet in preview memory until deeper retrieval writes and stronger route evidence are in place."
+    },
+    {
+      "id": "ai_packet_5",
+      "workflow": "Map the next best route",
+      "audience": "Users unsure where to go next",
+      "routeTarget": "/markets",
+      "continuityState": "Needs live provider",
+      "groundingSources": "editorial_blocks + asset_relationships",
+      "storedAt": "Apr 11, 2026",
+      "answerShape": "Intent split → best route sequence → strongest pages to open now",
+      "note": "This playbook still needs live provider activation before it should behave like a generated answer lane."
+    }
+  ]
+}

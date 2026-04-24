@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "auth-proof-1776434411196-example-com",
+      "userId": "3c6ec665-e2fc-4bb1-ac78-8d9a2cca27ed",
+      "email": "auth-proof-1776434411196@example.com",
+      "updatedAt": "2026-04-17T14:00:21.499Z",
+      "firstSeenAt": "2026-04-17T14:00:14.828Z",
+      "lastSeenAt": "2026-04-17T14:00:21.499Z",
+      "lastRoute": "/account",
+      "lastAction": "Loaded account route: /account",
+      "storageMode": "file_backed_private_beta",
+      "auth": {
+        "mode": "supabase_session",
+        "label": "Supabase session",
+        "sessionReliability": "Verified",
+        "hasReloadSafeSession": true,
+        "note": "Signed-in continuity runs through Supabase session cookies, so refresh and reload can be validated against stored auth state."
+      },
+      "preferences": {
+        "watchlists": 4,
+        "savedScreens": 3,
+        "alertPreferences": 4,
+        "alertFeedRows": 3,
+        "inboxItems": 4,
+        "consentItems": 4,
+        "consentChannels": 5
+      },
+      "supportAndDelivery": {
+        "supportRequests": 0,
+        "openSupportRequests": 0,
+        "deliveryRoutes": 5,
+        "deliveryEvents": 5,
+        "emailEvents": 1
+      },
+      "entitlements": {
+        "currentPlan": "Elite Monthly",
+        "planLabel": "Elite",
+        "lifecycleState": "Healthy",
+        "syncState": "Synced",
+        "entitlementCount": 6,
+        "placeholderSource": "billing_placeholder_without_razorpay"
+      },
+      "lanes": [
+        {
+          "storageMode": "file_backed_preview",
+          "id": "workspace",
+          "title": "Workspace continuity",
+          "href": "/account/workspace",
+          "metric": "24 stored workspace rows",
+          "totalRows": 24,
+          "attentionCount": 0,
+          "healthyCount": 24,
+          "lastUpdatedAt": "2026-04-17T14:00:19.571Z",
+          "note": "4 watchlists, 3 saved screens, 4 alert preferences, and 4 inbox rows now resolve under one persisted workspace record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "portfolio",
+          "title": "Portfolio continuity",
+          "href": "/portfolio/import",
+          "metric": "2 runs · 3 holdings",
+          "totalRows": 10,
+          "attentionCount": 2,
+          "healthyCount": 1,
+          "lastUpdatedAt": "2026-04-17T14:00:14.837Z",
+          "note": "2 import runs, 0 checkpoints, and 3 holdings persist across reloads instead of only living in portfolio UI cards."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "broker",
+          "title": "Broker continuity",
+          "href": "/account/brokers",
+          "metric": "3 linked accounts · 3 sync runs",
+          "totalRows": 14,
+          "attentionCount": 5,
+          "healthyCount": 3,
+          "lastUpdatedAt": "2026-04-17T14:00:14.839Z",
+          "note": "3 linked accounts, 3 sync runs, and 3 broker-review rows now share one persisted broker account record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "billing",
+          "title": "Billing placeholder continuity",
+          "href": "/account/billing",
+          "metric": "3 invoices · 0 billing events",
+          "totalRows": 3,
+          "attentionCount": 1,
+          "healthyCount": 2,
+          "lastUpdatedAt": "2026-04-17T14:00:14.838Z",
+          "note": "Elite Monthly and Healthy are now explained from stored invoice and event rows, even though Razorpay remains deferred."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "entitlements",
+          "title": "Entitlement continuity",
+          "href": "/account/access/entitlements",
+          "metric": "6 entitlement rows",
+          "totalRows": 7,
+          "attentionCount": 0,
+          "healthyCount": 6,
+          "lastUpdatedAt": "2026-04-17T14:00:14.849Z",
+          "note": "6 entitlement rows and 1 recent sync records explain access posture without needing live billing coupling yet."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "delivery",
+          "title": "Support and delivery continuity",
+          "href": "/account/consents",
+          "metric": "5 channel routes · 5 delivery events",
+          "totalRows": 10,
+          "attentionCount": 4,
+          "healthyCount": 4,
+          "lastUpdatedAt": "2026-04-17T14:00:14.844Z",
+          "note": "5 channel routes and 5 delivery events are persisted with consent-aware state and email delivery outcomes."
+        },
+        {
+          "storageMode": "file_backed_private_beta",
+          "id": "support",
+          "title": "Support continuity",
+          "href": "/account/support",
+          "metric": "0 support requests",
+          "totalRows": 0,
+          "attentionCount": 0,
+          "healthyCount": 0,
+          "lastUpdatedAt": "1970-01-01T00:00:00.000Z",
+          "note": "0 support requests are stored per account, while 4 support ops rows are already configured behind the help surface."
+        }
+      ],
+      "blockers": [
+        "5 broker continuity rows still need manual review before broker-linked state can be treated as trustworthy.",
+        "4 delivery rows are still queued, retrying, blocked, or awaiting consent reconfirmation.",
+        "3 support delivery lanes are still blocked at the ops layer, so subscriber help posture is not fully hardened."
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776434469665-example-com",
+      "userId": "d0604f49-1fb8-454f-add0-8390820b1289",
+      "email": "auth-proof-1776434469665@example.com",
+      "updatedAt": "2026-04-17T14:01:14.654Z",
+      "firstSeenAt": "2026-04-17T14:01:11.320Z",
+      "lastSeenAt": "2026-04-17T14:01:14.654Z",
+      "lastRoute": "/account",
+      "lastAction": "Loaded account route: /account",
+      "storageMode": "file_backed_private_beta",
+      "auth": {
+        "mode": "supabase_session",
+        "label": "Supabase session",
+        "sessionReliability": "Verified",
+        "hasReloadSafeSession": true,
+        "note": "Signed-in continuity runs through Supabase session cookies, so refresh and reload can be validated against stored auth state."
+      },
+      "preferences": {
+        "watchlists": 4,
+        "savedScreens": 3,
+        "alertPreferences": 4,
+        "alertFeedRows": 3,
+        "inboxItems": 4,
+        "consentItems": 4,
+        "consentChannels": 5
+      },
+      "supportAndDelivery": {
+        "supportRequests": 0,
+        "openSupportRequests": 0,
+        "deliveryRoutes": 5,
+        "deliveryEvents": 5,
+        "emailEvents": 1
+      },
+      "entitlements": {
+        "currentPlan": "Elite Monthly",
+        "planLabel": "Elite",
+        "lifecycleState": "Healthy",
+        "syncState": "Synced",
+        "entitlementCount": 6,
+        "placeholderSource": "billing_placeholder_without_razorpay"
+      },
+      "lanes": [
+        {
+          "storageMode": "file_backed_preview",
+          "id": "workspace",
+          "title": "Workspace continuity",
+          "href": "/account/workspace",
+          "metric": "24 stored workspace rows",
+          "totalRows": 24,
+          "attentionCount": 0,
+          "healthyCount": 24,
+          "lastUpdatedAt": "2026-04-17T14:01:11.746Z",
+          "note": "4 watchlists, 3 saved screens, 4 alert preferences, and 4 inbox rows now resolve under one persisted workspace record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "portfolio",
+          "title": "Portfolio continuity",
+          "href": "/portfolio/import",
+          "metric": "2 runs · 3 holdings",
+          "totalRows": 10,
+          "attentionCount": 2,
+          "healthyCount": 1,
+          "lastUpdatedAt": "2026-04-17T14:01:11.322Z",
+          "note": "2 import runs, 0 checkpoints, and 3 holdings persist across reloads instead of only living in portfolio UI cards."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "broker",
+          "title": "Broker continuity",
+          "href": "/account/brokers",
+          "metric": "3 linked accounts · 3 sync runs",
+          "totalRows": 14,
+          "attentionCount": 5,
+          "healthyCount": 3,
+          "lastUpdatedAt": "2026-04-17T14:01:11.323Z",
+          "note": "3 linked accounts, 3 sync runs, and 3 broker-review rows now share one persisted broker account record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "billing",
+          "title": "Billing placeholder continuity",
+          "href": "/account/billing",
+          "metric": "3 invoices · 0 billing events",
+          "totalRows": 3,
+          "attentionCount": 1,
+          "healthyCount": 2,
+          "lastUpdatedAt": "2026-04-17T14:01:11.323Z",
+          "note": "Elite Monthly and Healthy are now explained from stored invoice and event rows, even though Razorpay remains deferred."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "entitlements",
+          "title": "Entitlement continuity",
+          "href": "/account/access/entitlements",
+          "metric": "6 entitlement rows",
+          "totalRows": 7,
+          "attentionCount": 0,
+          "healthyCount": 6,
+          "lastUpdatedAt": "2026-04-17T14:01:11.328Z",
+          "note": "6 entitlement rows and 1 recent sync records explain access posture without needing live billing coupling yet."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "delivery",
+          "title": "Support and delivery continuity",
+          "href": "/account/consents",
+          "metric": "5 channel routes · 5 delivery events",
+          "totalRows": 10,
+          "attentionCount": 4,
+          "healthyCount": 4,
+          "lastUpdatedAt": "2026-04-17T14:01:11.327Z",
+          "note": "5 channel routes and 5 delivery events are persisted with consent-aware state and email delivery outcomes."
+        },
+        {
+          "storageMode": "file_backed_private_beta",
+          "id": "support",
+          "title": "Support continuity",
+          "href": "/account/support",
+          "metric": "0 support requests",
+          "totalRows": 0,
+          "attentionCount": 0,
+          "healthyCount": 0,
+          "lastUpdatedAt": "1970-01-01T00:00:00.000Z",
+          "note": "0 support requests are stored per account, while 4 support ops rows are already configured behind the help surface."
+        }
+      ],
+      "blockers": [
+        "5 broker continuity rows still need manual review before broker-linked state can be treated as trustworthy.",
+        "4 delivery rows are still queued, retrying, blocked, or awaiting consent reconfirmation.",
+        "3 support delivery lanes are still blocked at the ops layer, so subscriber help posture is not fully hardened."
+      ]
+    },
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "userId": "55835bab-6cc5-4405-b1ba-e289566bfa68",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:52.639Z",
+      "firstSeenAt": "2026-04-17T14:22:48.344Z",
+      "lastSeenAt": "2026-04-17T14:22:52.639Z",
+      "lastRoute": "/account/watchlists",
+      "lastAction": "Loaded account route: /account/watchlists",
+      "storageMode": "file_backed_private_beta",
+      "auth": {
+        "mode": "supabase_session",
+        "label": "Supabase session",
+        "sessionReliability": "Verified",
+        "hasReloadSafeSession": true,
+        "note": "Signed-in continuity runs through Supabase session cookies, so refresh and reload can be validated against stored auth state."
+      },
+      "preferences": {
+        "watchlists": 4,
+        "savedScreens": 3,
+        "alertPreferences": 4,
+        "alertFeedRows": 3,
+        "inboxItems": 4,
+        "consentItems": 4,
+        "consentChannels": 5
+      },
+      "supportAndDelivery": {
+        "supportRequests": 0,
+        "openSupportRequests": 0,
+        "deliveryRoutes": 5,
+        "deliveryEvents": 5,
+        "emailEvents": 1
+      },
+      "entitlements": {
+        "currentPlan": "Elite Monthly",
+        "planLabel": "Elite",
+        "lifecycleState": "Healthy",
+        "syncState": "Synced",
+        "entitlementCount": 6,
+        "placeholderSource": "billing_placeholder_without_razorpay"
+      },
+      "lanes": [
+        {
+          "storageMode": "file_backed_preview",
+          "id": "workspace",
+          "title": "Workspace continuity",
+          "href": "/account/workspace",
+          "metric": "24 stored workspace rows",
+          "totalRows": 24,
+          "attentionCount": 0,
+          "healthyCount": 24,
+          "lastUpdatedAt": "2026-04-17T14:22:51.041Z",
+          "note": "4 watchlists, 3 saved screens, 4 alert preferences, and 4 inbox rows now resolve under one persisted workspace record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "portfolio",
+          "title": "Portfolio continuity",
+          "href": "/portfolio/import",
+          "metric": "2 runs · 3 holdings",
+          "totalRows": 10,
+          "attentionCount": 2,
+          "healthyCount": 1,
+          "lastUpdatedAt": "2026-04-17T14:22:48.348Z",
+          "note": "2 import runs, 0 checkpoints, and 3 holdings persist across reloads instead of only living in portfolio UI cards."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "broker",
+          "title": "Broker continuity",
+          "href": "/account/brokers",
+          "metric": "3 linked accounts · 3 sync runs",
+          "totalRows": 14,
+          "attentionCount": 5,
+          "healthyCount": 3,
+          "lastUpdatedAt": "2026-04-17T14:22:48.349Z",
+          "note": "3 linked accounts, 3 sync runs, and 3 broker-review rows now share one persisted broker account record."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "billing",
+          "title": "Billing placeholder continuity",
+          "href": "/account/billing",
+          "metric": "3 invoices · 0 billing events",
+          "totalRows": 3,
+          "attentionCount": 1,
+          "healthyCount": 2,
+          "lastUpdatedAt": "2026-04-17T14:22:48.348Z",
+          "note": "Elite Monthly and Healthy are now explained from stored invoice and event rows, even though Razorpay remains deferred."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "entitlements",
+          "title": "Entitlement continuity",
+          "href": "/account/access/entitlements",
+          "metric": "6 entitlement rows",
+          "totalRows": 7,
+          "attentionCount": 0,
+          "healthyCount": 6,
+          "lastUpdatedAt": "2026-04-17T14:22:48.354Z",
+          "note": "6 entitlement rows and 1 recent sync records explain access posture without needing live billing coupling yet."
+        },
+        {
+          "storageMode": "file_backed_preview",
+          "id": "delivery",
+          "title": "Support and delivery continuity",
+          "href": "/account/consents",
+          "metric": "5 channel routes · 5 delivery events",
+          "totalRows": 10,
+          "attentionCount": 4,
+          "healthyCount": 4,
+          "lastUpdatedAt": "2026-04-17T14:22:48.352Z",
+          "note": "5 channel routes and 5 delivery events are persisted with consent-aware state and email delivery outcomes."
+        },
+        {
+          "storageMode": "file_backed_private_beta",
+          "id": "support",
+          "title": "Support continuity",
+          "href": "/account/support",
+          "metric": "0 support requests",
+          "totalRows": 0,
+          "attentionCount": 0,
+          "healthyCount": 0,
+          "lastUpdatedAt": "1970-01-01T00:00:00.000Z",
+          "note": "0 support requests are stored per account, while 4 support ops rows are already configured behind the help surface."
+        }
+      ],
+      "blockers": [
+        "5 broker continuity rows still need manual review before broker-linked state can be treated as trustworthy.",
+        "4 delivery rows are still queued, retrying, blocked, or awaiting consent reconfirmation.",
+        "3 support delivery lanes are still blocked at the ops layer, so subscriber help posture is not fully hardened."
+      ]
+    }
+  ]
+}

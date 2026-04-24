@@ -1,0 +1,9 @@
+Phase,Duration,Main outcome,What we ship,Success signal
+Phase 0,Weeks 1-2,Foundations,"Brand placeholder, Vercel project, Supabase project, auth, payment skeleton, design system, source mapping",Team can deploy and log in
+Phase 1,Weeks 3-6,Traffic engine v1,"Stock pages, IPO hub, mutual fund pages, sitemap, schema, search, content templates",Pages indexed and traffic starts
+Phase 2,Weeks 7-10,Subscriber value v1,"Watchlists, screener, premium market dashboard, subscription plans, user settings",First meaningful free-to-paid conversion path
+Phase 3,Weeks 11-16,Trader toolkit v1,"Option chain, OI analytics, heatmaps, alerts and richer charts",Product becomes genuinely worth paying for
+Phase 4,Weeks 17-22,AI layer and workflow depth,"AI explainers, compare mode, signal summaries and subscriber assistant",Premium differentiation improves
+Phase 5,Months 6-9,Education and community,"Courses, webinars, creator-led funnel, newsletter and onboarding journeys",Lower acquisition cost and stronger retention
+Phase 6,Months 9-12,Premium capital-market coverage,"PMS, AIF, SIF, manager pages and research surfaces",Higher-value audience segments begin using the platform
+Phase 7,Months 12+,Execution and ecosystem,"Broker integrations, baskets, deeper automation and partner APIs",Platform evolves from research to action

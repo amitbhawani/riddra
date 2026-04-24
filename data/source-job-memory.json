@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "runs": [
+    {
+      "adapter": "nse_equity_snapshot",
+      "domain": "stocks",
+      "cadence": "End of day",
+      "status": "In progress",
+      "queueDepth": 1,
+      "retryBacklog": 0,
+      "lastRunAt": "2026-04-15T06:30:00.000Z",
+      "nextRunWindow": "Today after market close",
+      "cachePosture": "Preview cache exists only as route-level fallback until this job writes durable history.",
+      "nextStep": "Provider sync and verified ingestion are now ready; the next step is connecting a legitimate upstream payload for Tata Motors and the first stock set."
+    },
+    {
+      "adapter": "amfi_nav_refresh",
+      "domain": "mutual_funds",
+      "cadence": "Daily",
+      "status": "In progress",
+      "queueDepth": 1,
+      "retryBacklog": 0,
+      "lastRunAt": "2026-04-15T15:46:23.993Z",
+      "nextRunWindow": "Next AMFI close verification window",
+      "cachePosture": "Preview cache exists only as route-level fallback until this job writes durable history.",
+      "nextStep": "Latest execution: AMFI refresh run recorded during backend closure verification."
+    },
+    {
+      "adapter": "ipo_document_ingest",
+      "domain": "ipo",
+      "cadence": "Event-based",
+      "status": "In progress",
+      "queueDepth": 1,
+      "retryBacklog": 0,
+      "lastRunAt": "2026-04-15T08:30:00.000Z",
+      "nextRunWindow": "On next signed trigger",
+      "cachePosture": "Preview cache exists only as route-level fallback until this job writes durable history.",
+      "nextStep": "Combine manual uploads with official issue-document references and lifecycle metadata."
+    },
+    {
+      "adapter": "index_snapshot_refresh",
+      "domain": "indices",
+      "cadence": "Intraday-ready",
+      "status": "In progress",
+      "queueDepth": 3,
+      "retryBacklog": 0,
+      "lastRunAt": "2026-04-15T09:30:00.000Z",
+      "nextRunWindow": "Every 15 minutes once provider sync is active",
+      "cachePosture": "Index cache can warm from the same delayed snapshot lane once verified writes are live.",
+      "nextStep": "Persisted index tracker ingestion is ready; the next step is feeding Nifty 50, Sensex, Bank Nifty, and Fin Nifty snapshots into the verified sync path."
+    },
+    {
+      "adapter": "provider_sync_bridge",
+      "domain": "shared_market_data",
+      "cadence": "Cron or signed manual run",
+      "status": "Ready",
+      "queueDepth": 2,
+      "retryBacklog": 0,
+      "lastRunAt": "2026-04-15T12:58:13.731Z",
+      "nextRunWindow": "Every 15 minutes once provider sync is active",
+      "cachePosture": "Shared delayed snapshot cache remains partial until real provider sync is verified.",
+      "nextStep": "Operator verification pass saved during backend closure."
+    }
+  ],
+  "hotCacheLanes": [
+    {
+      "lane": "Stock delayed snapshots",
+      "cacheStatus": "Warm",
+      "ttl": "15 minutes target",
+      "note": "Operator-updated queue posture now treats this stock snapshot lane as warm preview cache while live provider sync is still pending."
+    },
+    {
+      "lane": "Index snapshots",
+      "cacheStatus": "Partial",
+      "ttl": "5 minutes target",
+      "note": "Native index charts are stronger now, but the hot-cache lane still needs provider-backed intraday snapshot persistence."
+    },
+    {
+      "lane": "Fund NAV snapshots",
+      "cacheStatus": "Partial",
+      "ttl": "End-of-day target",
+      "note": "File-backed NAV fallback exists, but AMFI-backed recurring refresh still needs durable cache and archive writes."
+    },
+    {
+      "lane": "IPO and filings archive",
+      "cacheStatus": "Cold",
+      "ttl": "Event-driven",
+      "note": "Archive routes exist, but recurring official-source archive jobs and cached history views are still pending."
+    }
+  ]
+}

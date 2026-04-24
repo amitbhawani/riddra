@@ -1,0 +1,210 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "auth-proof-1776435766357-example-com",
+      "email": "auth-proof-1776435766357@example.com",
+      "updatedAt": "2026-04-17T14:22:51.041Z",
+      "watchlists": [
+        {
+          "title": "Final Proof Watchlist 2026-04-17T14:22:50.594Z",
+          "assetCount": 2,
+          "linkedAlerts": 1,
+          "note": "Final private beta proof watchlist.",
+          "createdAt": "2026-04-17T14:22:51.041Z",
+          "updatedAt": "2026-04-17T14:22:51.041Z"
+        },
+        {
+          "title": "High-conviction stocks",
+          "assetCount": 8,
+          "linkedAlerts": 3,
+          "note": "Long-term watchlist for core Indian stocks with follow-up alerts and chart shortcuts.",
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        },
+        {
+          "title": "IPO radar",
+          "assetCount": 5,
+          "linkedAlerts": 2,
+          "note": "Upcoming and active IPOs tracked for GMP, subscription, allotment, and listing follow-up.",
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        },
+        {
+          "title": "Funds to compare",
+          "assetCount": 5,
+          "linkedAlerts": 2,
+          "note": "Mutual funds grouped for return-table review, allocation checks, and eventual overlap analysis.",
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        }
+      ],
+      "alertPreferences": [
+        {
+          "label": "Daily market summary",
+          "defaultState": "On",
+          "note": "Morning and evening summary blocks for major moves, index breadth, and standout stocks."
+        },
+        {
+          "label": "Portfolio mismatch review",
+          "defaultState": "Priority",
+          "note": "High-trust signal that asks the user to verify suspicious import rows before Riddra overwrites holdings."
+        },
+        {
+          "label": "IPO allotment and listing reminders",
+          "defaultState": "On",
+          "note": "Useful for users tracking multiple upcoming issues without manually revisiting every page."
+        },
+        {
+          "label": "Course and learn updates",
+          "defaultState": "Off",
+          "note": "Optional educational nudges that should stay helpful, not noisy."
+        }
+      ],
+      "alertFeed": [
+        {
+          "title": "Portfolio import review needed for Tata Motors mismatch",
+          "timestamp": "Today, 10:22 AM",
+          "channel": "In-app inbox",
+          "status": "Needs review",
+          "summary": "Imported row `TATA MOTR` was matched to Tata Motors with medium confidence and needs user confirmation."
+        },
+        {
+          "title": "Hero FinCorp IPO allotment window opens tomorrow",
+          "timestamp": "Today, 8:15 AM",
+          "channel": "Email digest",
+          "status": "Queued",
+          "summary": "Allotment reminder prepared with timeline, registrar link, and listing watch note."
+        },
+        {
+          "title": "Nifty50 breadth turns positive after first hour",
+          "timestamp": "Today, 9:48 AM",
+          "channel": "In-app banner",
+          "status": "Sent",
+          "summary": "Weighted breadth moved back into bullish territory with financials providing most of the support."
+        }
+      ],
+      "savedScreens": [
+        {
+          "title": "Momentum shortlist",
+          "type": "Stock screener",
+          "note": "Repeatable stock scan for price strength, sector support, and chart follow-up.",
+          "repeatRunCapable": true,
+          "sharedLayout": true,
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        },
+        {
+          "title": "IPO quality filter",
+          "type": "IPO workflow",
+          "note": "Tracks issue size, GMP, lot size, and subscription momentum in one reusable view.",
+          "repeatRunCapable": true,
+          "sharedLayout": false,
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        },
+        {
+          "title": "Fund benchmark review",
+          "type": "Mutual fund compare",
+          "note": "Reusable workspace for category, benchmark, risk, and top-holdings review.",
+          "repeatRunCapable": false,
+          "sharedLayout": true,
+          "createdAt": "2026-04-17T14:22:48.351Z",
+          "updatedAt": "2026-04-17T14:22:48.351Z"
+        }
+      ],
+      "inboxItems": [
+        {
+          "title": "Confirm Tata Motors symbol match from imported portfolio CSV",
+          "source": "Portfolio import validator",
+          "timestamp": "Today, 10:22 AM",
+          "priority": "High",
+          "status": "Needs action",
+          "summary": "A broker export row was matched to Tata Motors with medium confidence and should be reviewed before holdings are saved.",
+          "actionLabel": "Review import",
+          "actionHref": "/portfolio/import"
+        },
+        {
+          "title": "Hero FinCorp IPO allotment reminder is queued",
+          "source": "IPO timeline engine",
+          "timestamp": "Today, 8:15 AM",
+          "priority": "Medium",
+          "status": "Unread",
+          "summary": "Your IPO watchlist has an upcoming allotment milestone, and Riddra has prepared the reminder flow and listing checklist.",
+          "actionLabel": "Open IPO page",
+          "actionHref": "/ipo/hero-fincorp"
+        },
+        {
+          "title": "Nifty50 breadth turned bullish after the first hour",
+          "source": "Index tracker",
+          "timestamp": "Today, 9:48 AM",
+          "priority": "Medium",
+          "status": "Reviewed",
+          "summary": "Weighted breadth improved as financials led the move, which can now be used in future premium intraday alerting.",
+          "actionLabel": "Open tracker",
+          "actionHref": "/nifty50"
+        },
+        {
+          "title": "New course bundle is ready for activation-led onboarding",
+          "source": "Learning and courses",
+          "timestamp": "Yesterday, 7:30 PM",
+          "priority": "Low",
+          "status": "Unread",
+          "summary": "The free-plus-bundle learning track is ready to be used for signup-led activation and future upgrade nudges.",
+          "actionLabel": "View courses",
+          "actionHref": "/courses"
+        }
+      ],
+      "consentSummary": {
+        "consentChannels": 5,
+        "lifecycleScopes": 6,
+        "userControls": 4
+      },
+      "consentItems": [
+        {
+          "title": "Alert and campaign consent",
+          "status": "In progress",
+          "summary": "Users should eventually control whether they receive market alerts, newsletters, onboarding guidance, recovery nudges, and promotional upgrades by channel and purpose."
+        },
+        {
+          "title": "Portfolio-sensitive workflows",
+          "status": "In progress",
+          "summary": "Portfolio imports, broker sync prompts, exception reviews, and trust-recovery journeys should respect higher-sensitivity consent and clearer user confirmation."
+        },
+        {
+          "title": "Lifecycle journey eligibility",
+          "status": "Queued",
+          "summary": "Onboarding, upgrade, churn-recovery, and webinar/course journeys should later check consent scope before users are placed into automated sequences."
+        },
+        {
+          "title": "Operator-safe consent rules",
+          "status": "Queued",
+          "summary": "Operators should be able to configure journey eligibility and messaging rules without bypassing consent-state protections."
+        }
+      ],
+      "consentRules": [
+        "Consent should be purpose-aware, channel-aware, and easy to explain to the user.",
+        "Growth automation must follow consent state rather than assuming silent eligibility.",
+        "Sensitive portfolio and billing flows should always bias toward explicit confirmation over aggressive automation."
+      ],
+      "activityLog": [
+        {
+          "scope": "watchlist",
+          "title": "Final Proof Watchlist 2026-04-17T14:22:50.594Z",
+          "detail": "2 assets · 1 linked alerts · Final private beta proof watchlist.",
+          "action": "Created",
+          "timestamp": "2026-04-17T14:22:51.041Z",
+          "id": "watchlist-final-proof-watchlist-2026-04-17t14-22-50-594z-2026-04-17T14:22:51.041Z"
+        },
+        {
+          "scope": "workspace",
+          "title": "Workspace snapshot ready",
+          "detail": "Seeded watchlists, screens, alerts, inbox state, and consent posture were attached to the signed-in preview workspace.",
+          "action": "Logged",
+          "timestamp": "2026-04-17T14:22:48.351Z",
+          "id": "workspace-workspace-snapshot-ready-2026-04-17T14:22:48.351Z"
+        }
+      ]
+    }
+  ]
+}

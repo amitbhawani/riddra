@@ -1,0 +1,42 @@
+{
+  "name": "riddra",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/run-dev-stable.mjs",
+    "dev:health": "node scripts/check-local-dev.mjs",
+    "build": "node scripts/run-build-stable.mjs",
+    "local:stable": "npm run build && next start",
+    "start": "next start",
+    "lint": "tsc --noEmit",
+    "preflight:hosted": "node scripts/verify-hosted-preflight.mjs",
+    "validate:hosted-backfill": "node scripts/validate-hosted-public-backfill.mjs",
+    "backfill:public-durable-sql": "node scripts/generate-public-durable-backfill-sql.mjs",
+    "meilisearch:dev": "node scripts/run-meilisearch-dev.mjs",
+    "trigger:dev": "node scripts/run-trigger-dev.mjs",
+    "trigger:deploy": "trigger deploy --config trigger.config.ts"
+  },
+  "dependencies": {
+    "@react-email/components": "^1.0.12",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.49.4",
+    "@trigger.dev/sdk": "^4.4.4",
+    "clsx": "^2.1.1",
+    "lightweight-charts": "^5.1.0",
+    "meilisearch": "^0.57.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "resend": "^6.12.0",
+    "trigger.dev": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3"
+  }
+}

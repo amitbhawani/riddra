@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "domain-cutover",
+      "completed": true,
+      "detail": "https://riddra.com/",
+      "note": "",
+      "updatedAt": "2026-04-17T06:34:37.440Z"
+    },
+    {
+      "id": "google-oauth",
+      "completed": true,
+      "detail": "https://jawojjmapxnevywrmmiq.supabase.co/auth/v1/callback",
+      "note": "",
+      "updatedAt": "2026-04-17T06:38:37.694Z"
+    }
+  ]
+}

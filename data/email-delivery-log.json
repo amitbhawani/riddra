@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "contact_inbox_notification_1776429410277_ynxhkk",
+      "family": "contact_inbox_notification",
+      "status": "Skipped",
+      "provider": "resend",
+      "recipients": [
+        "amitbhawani@gmail.com"
+      ],
+      "subject": "New public contact message: Trigger local test",
+      "attemptedAt": "2026-04-17T12:36:50.277Z",
+      "relatedEntityId": "contact-request-qa-example-com-trigger-local-test-1776429408338",
+      "userEmail": "qa@example.com",
+      "routeTarget": "/api/contact/requests",
+      "messageId": null,
+      "error": "Resend is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL first."
+    },
+    {
+      "id": "contact_acknowledgement_1776429410275_xzaui4",
+      "family": "contact_acknowledgement",
+      "status": "Skipped",
+      "provider": "resend",
+      "recipients": [
+        "qa@example.com"
+      ],
+      "subject": "We received your message: Trigger local test",
+      "attemptedAt": "2026-04-17T12:36:50.275Z",
+      "relatedEntityId": "contact-request-qa-example-com-trigger-local-test-1776429408338",
+      "userEmail": "qa@example.com",
+      "routeTarget": "/api/contact/requests",
+      "messageId": null,
+      "error": "Resend is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL first."
+    },
+    {
+      "id": "contact_inbox_notification_1776429409408_d8z35y",
+      "family": "contact_inbox_notification",
+      "status": "Queued",
+      "provider": "resend",
+      "recipients": [
+        "amitbhawani@gmail.com"
+      ],
+      "subject": "New public contact message: Trigger local test",
+      "attemptedAt": "2026-04-17T12:36:49.408Z",
+      "relatedEntityId": "contact-request-qa-example-com-trigger-local-test-1776429408338",
+      "userEmail": "qa@example.com",
+      "routeTarget": "/api/contact/requests",
+      "messageId": null,
+      "error": null
+    },
+    {
+      "id": "contact_acknowledgement_1776429409407_2kjt71",
+      "family": "contact_acknowledgement",
+      "status": "Queued",
+      "provider": "resend",
+      "recipients": [
+        "qa@example.com"
+      ],
+      "subject": "We received your message: Trigger local test",
+      "attemptedAt": "2026-04-17T12:36:49.407Z",
+      "relatedEntityId": "contact-request-qa-example-com-trigger-local-test-1776429408338",
+      "userEmail": "qa@example.com",
+      "routeTarget": "/api/contact/requests",
+      "messageId": null,
+      "error": null
+    }
+  ]
+}

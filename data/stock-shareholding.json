@@ -1,0 +1,48 @@
+{
+  "entries": [
+    {
+      "slug": "tata-motors",
+      "companyName": "Tata Motors",
+      "promoterPercent": "42.56%",
+      "fiiPercent": "18.29%",
+      "diiPercent": "16.91%",
+      "publicPercent": "21.91%",
+      "source": "Screener shareholding snapshot",
+      "sourceDate": "Dec 2025",
+      "sourceUrl": "https://www.screener.in/company/id/1285768/"
+    },
+    {
+      "slug": "infosys",
+      "companyName": "Infosys",
+      "promoterPercent": "14.52%",
+      "fiiPercent": "30.27%",
+      "diiPercent": "41.08%",
+      "publicPercent": "13.69%",
+      "source": "Screener shareholding snapshot",
+      "sourceDate": "Dec 2025",
+      "sourceUrl": "https://www.screener.in/company/INFY/"
+    },
+    {
+      "slug": "hdfc-bank",
+      "companyName": "HDFC Bank",
+      "promoterPercent": "0.00%",
+      "fiiPercent": "44.05%",
+      "diiPercent": "40.14%",
+      "publicPercent": "15.64%",
+      "source": "Screener shareholding snapshot",
+      "sourceDate": "Mar 2026",
+      "sourceUrl": "https://www.screener.in/company/HDFCBANK/"
+    },
+    {
+      "slug": "reliance-industries",
+      "companyName": "Reliance Industries",
+      "promoterPercent": "50.00%",
+      "fiiPercent": "19.09%",
+      "diiPercent": "20.10%",
+      "publicPercent": "10.64%",
+      "source": "Screener shareholding snapshot",
+      "sourceDate": "Dec 2025",
+      "sourceUrl": "https://www.screener.in/company/RELIANCE/"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "lanes": [
+    {
+      "lane": "Stock delayed quote and OHLCV history",
+      "status": "In progress",
+      "retainedSeries": 18,
+      "verifiedSeries": 0,
+      "previewSeries": 9,
+      "refreshWindow": "End-of-day plus verified provider sync",
+      "continuityNote": "Dedicated stock chart routes now have a clearer history posture, but retained OHLCV still depends on source-entry or partial provider writes instead of a durable market-history table.",
+      "nextStep": "Write stock quote snapshots and OHLCV bars into a durable history table so public stock routes stop depending on seed bars and preview-only series continuity."
+    },
+    {
+      "lane": "Index snapshot and chart continuity",
+      "status": "In progress",
+      "retainedSeries": 4,
+      "verifiedSeries": 0,
+      "previewSeries": 4,
+      "refreshWindow": "Intraday-ready once provider sync is active",
+      "continuityNote": "Native index chart presentation is stronger now, but retained index breadth and chart continuity still need a durable snapshot history layer.",
+      "nextStep": "Persist tracked index snapshots and breadth history into a reusable table that can feed both charts and report-style archive routes."
+    },
+    {
+      "lane": "Fund NAV and factsheet chronology",
+      "status": "In progress",
+      "retainedSeries": 16,
+      "verifiedSeries": 0,
+      "previewSeries": 16,
+      "refreshWindow": "End-of-day NAV refresh plus factsheet verification pass",
+      "continuityNote": "Fund routes now carry a saved backend posture for retained NAV and factsheet chronology, but the lane still needs durable provider-backed history writes.",
+      "nextStep": "Persist NAV snapshots and factsheet chronology into a reusable history table once AMFI or provider refresh is active."
+    }
+  ],
+  "backlogLanes": [
+    {
+      "lane": "Market-history retention policy",
+      "status": "Planned",
+      "note": "The platform still needs explicit retention rules for quote bars, index breadth, fund NAV, and archive snapshots so chart continuity stays predictable."
+    },
+    {
+      "lane": "Backfill and replay jobs",
+      "status": "Blocked",
+      "note": "Worker-backed replay jobs are still missing, so history backfills and gap repair cannot run automatically yet."
+    },
+    {
+      "lane": "Cross-route chart cache reuse",
+      "status": "Planned",
+      "note": "The same history series should eventually feed homepage, markets, detail routes, and admin audit surfaces from one durable cache layer."
+    }
+  ]
+}

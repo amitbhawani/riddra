@@ -1,0 +1,97 @@
+{
+  "entries": [
+    {
+      "indexSlug": "nifty50",
+      "sourceLabel": "NSE index constituents snapshot",
+      "sourceDate": "2026-04-19",
+      "referenceUrl": "https://www.nseindia.com/products-services/equity-indices-nifty50",
+      "indexSize": 50,
+      "rows": [
+        { "symbol": "HDFCBANK", "name": "HDFC Bank", "weight": 10.94, "dailyReturnPercent": 0.62 },
+        { "symbol": "RELIANCE", "name": "Reliance Industries", "weight": 8.87, "dailyReturnPercent": 0.45 },
+        { "symbol": "ICICIBANK", "name": "ICICI Bank", "weight": 8.42, "dailyReturnPercent": 0.41 },
+        { "symbol": "BHARTIARTL", "name": "Bharti Airtel", "weight": 5.34, "dailyReturnPercent": 0.81 },
+        { "symbol": "INFY", "name": "Infosys", "weight": 4.28, "dailyReturnPercent": -0.28 },
+        { "symbol": "TCS", "name": "TCS", "weight": 4.11, "dailyReturnPercent": -0.18 },
+        { "symbol": "LT", "name": "Larsen & Toubro", "weight": 4.02, "dailyReturnPercent": 0.54 },
+        { "symbol": "SBIN", "name": "State Bank of India", "weight": 3.97, "dailyReturnPercent": 0.37 },
+        { "symbol": "AXISBANK", "name": "Axis Bank", "weight": 3.26, "dailyReturnPercent": -0.33 },
+        { "symbol": "HCLTECH", "name": "HCLTech", "weight": 3.01, "dailyReturnPercent": 0.24 },
+        { "symbol": "BAJFINANCE", "name": "Bajaj Finance", "weight": 2.92, "dailyReturnPercent": -0.42 },
+        { "symbol": "ITC", "name": "ITC", "weight": 2.71, "dailyReturnPercent": -0.14 },
+        { "symbol": "M&M", "name": "Mahindra & Mahindra", "weight": 2.58, "dailyReturnPercent": 0.43 },
+        { "symbol": "KOTAKBANK", "name": "Kotak Mahindra Bank", "weight": 2.44, "dailyReturnPercent": -0.46 },
+        { "symbol": "MARUTI", "name": "Maruti Suzuki", "weight": 2.37, "dailyReturnPercent": 0.37 }
+      ]
+    },
+    {
+      "indexSlug": "sensex",
+      "sourceLabel": "BSE Sensex constituents snapshot",
+      "sourceDate": "2026-04-19",
+      "referenceUrl": "https://www.bseindia.com/sensex/code/16/",
+      "indexSize": 30,
+      "rows": [
+        { "symbol": "HDFCBANK", "name": "HDFC Bank", "weight": 15.66, "dailyReturnPercent": 0.66 },
+        { "symbol": "ICICIBANK", "name": "ICICI Bank", "weight": 10.88, "dailyReturnPercent": 0.38 },
+        { "symbol": "RELIANCE", "name": "Reliance Industries", "weight": 10.24, "dailyReturnPercent": 0.53 },
+        { "symbol": "INFY", "name": "Infosys", "weight": 5.75, "dailyReturnPercent": -0.35 },
+        { "symbol": "BHARTIARTL", "name": "Bharti Airtel", "weight": 5.37, "dailyReturnPercent": 0.59 },
+        { "symbol": "ITC", "name": "ITC", "weight": 4.23, "dailyReturnPercent": 0.22 },
+        { "symbol": "LT", "name": "Larsen & Toubro", "weight": 4.20, "dailyReturnPercent": 0.72 },
+        { "symbol": "TCS", "name": "TCS", "weight": 3.74, "dailyReturnPercent": -0.18 },
+        { "symbol": "AXISBANK", "name": "Axis Bank", "weight": 3.63, "dailyReturnPercent": -0.26 },
+        { "symbol": "KOTAKBANK", "name": "Kotak Mahindra Bank", "weight": 3.49, "dailyReturnPercent": -0.44 },
+        { "symbol": "MARUTI", "name": "Maruti Suzuki", "weight": 3.18, "dailyReturnPercent": 0.37 },
+        { "symbol": "SUNPHARMA", "name": "Sun Pharma", "weight": 2.98, "dailyReturnPercent": 0.31 },
+        { "symbol": "SBIN", "name": "State Bank of India", "weight": 2.91, "dailyReturnPercent": 0.29 },
+        { "symbol": "M&M", "name": "Mahindra & Mahindra", "weight": 2.74, "dailyReturnPercent": 0.43 },
+        { "symbol": "HINDUNILVR", "name": "Hindustan Unilever", "weight": 2.62, "dailyReturnPercent": 0.18 }
+      ]
+    },
+    {
+      "indexSlug": "banknifty",
+      "sourceLabel": "NSE Bank Nifty constituents snapshot",
+      "sourceDate": "2026-04-19",
+      "referenceUrl": "https://www.nseindia.com/products-services/equity-derivatives-banknifty",
+      "indexSize": 12,
+      "rows": [
+        { "symbol": "HDFCBANK", "name": "HDFC Bank", "weight": 19.01, "dailyReturnPercent": 0.64 },
+        { "symbol": "ICICIBANK", "name": "ICICI Bank", "weight": 14.11, "dailyReturnPercent": 0.58 },
+        { "symbol": "AXISBANK", "name": "Axis Bank", "weight": 10.01, "dailyReturnPercent": 0.44 },
+        { "symbol": "SBIN", "name": "State Bank of India", "weight": 9.94, "dailyReturnPercent": -0.31 },
+        { "symbol": "KOTAKBANK", "name": "Kotak Mahindra Bank", "weight": 9.73, "dailyReturnPercent": -0.52 },
+        { "symbol": "FEDERALBNK", "name": "Federal Bank", "weight": 6.18, "dailyReturnPercent": -0.18 },
+        { "symbol": "INDUSINDBK", "name": "IndusInd Bank", "weight": 4.80, "dailyReturnPercent": -0.74 },
+        { "symbol": "AUBANK", "name": "AU Small Finance Bank", "weight": 4.49, "dailyReturnPercent": 0.41 },
+        { "symbol": "BANKBARODA", "name": "Bank of Baroda", "weight": 4.45, "dailyReturnPercent": 0.29 },
+        { "symbol": "CANBK", "name": "Canara Bank", "weight": 4.06, "dailyReturnPercent": 0.21 },
+        { "symbol": "PNB", "name": "Punjab National Bank", "weight": 3.97, "dailyReturnPercent": -0.22 },
+        { "symbol": "IDFCFIRSTB", "name": "IDFC First Bank", "weight": 3.55, "dailyReturnPercent": 0.35 }
+      ]
+    },
+    {
+      "indexSlug": "finnifty",
+      "sourceLabel": "NSE Financial Services constituents snapshot",
+      "sourceDate": "2026-04-19",
+      "referenceUrl": "https://www.nseindia.com/products-services/equity-derivatives-niftyfinservice",
+      "indexSize": 20,
+      "rows": [
+        { "symbol": "HDFCBANK", "name": "HDFC Bank", "weight": 18.92, "dailyReturnPercent": 0.61 },
+        { "symbol": "ICICIBANK", "name": "ICICI Bank", "weight": 14.05, "dailyReturnPercent": 0.47 },
+        { "symbol": "AXISBANK", "name": "Axis Bank", "weight": 10.00, "dailyReturnPercent": 0.39 },
+        { "symbol": "SBIN", "name": "State Bank of India", "weight": 9.89, "dailyReturnPercent": 0.33 },
+        { "symbol": "KOTAKBANK", "name": "Kotak Mahindra Bank", "weight": 9.31, "dailyReturnPercent": -0.36 },
+        { "symbol": "BAJFINANCE", "name": "Bajaj Finance", "weight": 7.67, "dailyReturnPercent": -0.42 },
+        { "symbol": "SHRIRAMFIN", "name": "Shriram Finance", "weight": 4.37, "dailyReturnPercent": 0.44 },
+        { "symbol": "BSE", "name": "BSE Ltd", "weight": 3.92, "dailyReturnPercent": 0.52 },
+        { "symbol": "BAJAJFINSV", "name": "Bajaj Finserv", "weight": 3.37, "dailyReturnPercent": -0.18 },
+        { "symbol": "SBILIFE", "name": "SBI Life Insurance", "weight": 2.86, "dailyReturnPercent": -0.21 },
+        { "symbol": "HDFCLIFE", "name": "HDFC Life", "weight": 2.68, "dailyReturnPercent": 0.55 },
+        { "symbol": "ICICIPRULI", "name": "ICICI Prudential Life", "weight": 2.34, "dailyReturnPercent": -0.16 },
+        { "symbol": "PFC", "name": "Power Finance Corp", "weight": 2.29, "dailyReturnPercent": 0.24 },
+        { "symbol": "RECLTD", "name": "REC", "weight": 2.17, "dailyReturnPercent": 0.19 },
+        { "symbol": "JIOFIN", "name": "Jio Financial Services", "weight": 2.11, "dailyReturnPercent": -0.09 }
+      ]
+    }
+  ]
+}

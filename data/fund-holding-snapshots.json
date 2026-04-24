@@ -1,0 +1,30 @@
+{
+  "entries": [
+    {
+      "fundSlug": "hdfc-mid-cap-opportunities",
+      "sourceLabel": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-13",
+      "referenceUrl": "https://dhan.co/mutual-funds/hdfc-midcap-opportunities-fund-direct-growth/",
+      "rows": [
+        { "name": "Max Financial Services", "weight": "4.96%", "sector": "Financials" },
+        { "name": "The Federal Bank", "weight": "4.28%", "sector": "Financials" },
+        { "name": "Bharat Electronics", "weight": "4.16%", "sector": "Industrials" },
+        { "name": "Coforge", "weight": "3.92%", "sector": "Technology" },
+        { "name": "Indian Hotels Company", "weight": "3.67%", "sector": "Consumer Discretionary" }
+      ]
+    },
+    {
+      "fundSlug": "sbi-bluechip-fund",
+      "sourceLabel": "Dhan fund factsheet snapshot",
+      "sourceDate": "2026-04-17",
+      "referenceUrl": "https://dhan.co/mutual-funds/sbi-blue-chip-fund-direct-growth",
+      "rows": [
+        { "name": "HDFC Bank", "weight": "8.91%", "sector": "Financials" },
+        { "name": "ICICI Bank", "weight": "7.84%", "sector": "Financials" },
+        { "name": "Infosys", "weight": "6.42%", "sector": "Technology" },
+        { "name": "Reliance Industries", "weight": "5.73%", "sector": "Energy" },
+        { "name": "Bharti Airtel", "weight": "4.86%", "sector": "Telecom" }
+      ]
+    }
+  ]
+}

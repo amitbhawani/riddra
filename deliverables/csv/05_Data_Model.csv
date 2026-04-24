@@ -1,0 +1,25 @@
+Table or entity,Purpose,Key columns,Priority
+instruments,"Master list for stocks, indices, funds, IPOs, PMS and AIF records","instrument_id, slug, symbol, type, exchange, status",P0
+companies,Issuer metadata,"company_id, instrument_id, legal_name, sector, industry, description",P0
+quotes_latest,Fast lookup for the latest market values,"instrument_id, ltp, change_pct, volume, updated_at",P0
+ohlcv_bars,Historical candles,"instrument_id, timeframe, ts, open, high, low, close, volume",P0
+fundamentals_snapshot,Latest financial metrics for stock pages and screens,"instrument_id, pe, pb, roce, roe, debt_equity, eps, market_cap",P0
+financial_statements,Quarterly and annual statements,"instrument_id, period, revenue, ebitda, pat, assets, liabilities",P0
+shareholding_patterns,"Promoter, FII, DII and public holdings over time","instrument_id, as_of_date, promoter_pct, fii_pct, dii_pct, public_pct",P0
+corporate_actions,"Splits, bonuses, dividends and other events","instrument_id, action_type, ex_date, value",P1
+option_contracts,Contract metadata,"contract_id, underlying_id, expiry, strike, option_type",P0
+option_chain_snapshots,Realtime options chain data,"contract_id, oi, coi, iv, ltp, bid, ask, ts",P0
+oi_aggregates,Computed analytics,"underlying_id, expiry, pcr, max_pain, buildup_state, ts",P0
+mutual_funds,Fund master records,"fund_id, amc_id, category, plan_type, expense_ratio, risk_level",P0
+mutual_fund_nav,Historical NAV,"fund_id, nav_date, nav",P0
+mutual_fund_holdings,Holdings and sectors,"fund_id, as_of_date, holding_name, weight",P0
+ipos,IPO master records,"ipo_id, company_name, ipo_type, open_date, close_date, listing_date, status",P0
+ipo_updates,"Subscription, GMP, allotment and listing events","ipo_id, update_type, source, metric_value, ts",P0
+content_pages,CMS-style dynamic page metadata,"slug, content_type, title, seo_title, schema_json, publish_state",P0
+news_items,Stock or fund related news,"news_id, instrument_id, headline, source, published_at, summary",P1
+users,Subscriber accounts,"user_id, email, role, status",P0
+subscriptions,Billing records and plan state,"subscription_id, user_id, plan_code, status, renewal_date",P0
+entitlements,Feature gating,"user_id, feature_code, access_level",P0
+watchlists,Saved instruments and screens,"watchlist_id, user_id, name",P1
+alerts,"Price, technical or screening alerts","alert_id, user_id, rule_json, channel, status",P1
+ai_conversations,Saved premium AI sessions,"conversation_id, user_id, context_type, created_at",P2

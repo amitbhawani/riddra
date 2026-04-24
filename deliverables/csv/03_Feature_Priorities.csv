@@ -1,0 +1,12 @@
+Feature,User value,Revenue impact,SEO impact,Complexity,Recommended phase,Decision
+Stock pages,Very high,High,Very high,Medium,Phase 1,Build first
+IPO hub,High,High,Very high,Low to medium,Phase 1,Build first
+Fundamental screener,High,High,Medium,Medium,Phase 1,Build first
+Live watchlist and dashboards,High,High,Low,Medium,Phase 1,Build first
+Options chain and OI,Very high,Very high,Low,High,Phase 1,Build first for paid users
+Mutual fund pages,High,Medium,Very high,Medium,Phase 1,Build first
+Courses,Medium,Medium,Medium,Low,Phase 2,Add after product-market signal
+AI copilot,Medium,High for premium tier,Low,Medium,Phase 2,Add after structured data exists
+PMS directory,Medium,Medium,Medium,High,Phase 3,Research carefully
+AIF directory,Medium,Medium,Medium,High,Phase 3,Research carefully
+Broker execution,High,High,Low,High,Phase 3,Delay until trust and compliance mature

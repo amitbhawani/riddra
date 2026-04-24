@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "itemId": "mobile-compact-screen-route-proof",
+      "actionStatus": "Needs refresh",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Clear the blocking gap for Compact-screen route proof and capture fresh launch proof.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "smoke-end-to-end-journey-rehearsal",
+      "actionStatus": "Needs refresh",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Clear the blocking gap for End-to-end journey rehearsal and capture fresh launch proof.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "chart-chart-backed-route-confidence",
+      "actionStatus": "Working",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Finish the active proof pass for Chart-backed route confidence and attach the verification result.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "placeholder-placeholder-and-preview-honesty",
+      "actionStatus": "Working",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Finish the active proof pass for Placeholder and preview honesty and attach the verification result.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "reliability-incident-and-rollback-proof",
+      "actionStatus": "Needs refresh",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Clear the blocking gap for Incident and rollback proof and capture fresh launch proof.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "runbook-launch-day-execution-packet",
+      "actionStatus": "Needs refresh",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Clear the blocking gap for Launch-day execution packet and capture fresh launch proof.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    },
+    {
+      "itemId": "announcement-public-messaging-readiness",
+      "actionStatus": "Working",
+      "owner": "",
+      "proof": "",
+      "nextStep": "Finish the active proof pass for Public messaging readiness and attach the verification result.",
+      "note": "",
+      "updatedAt": "2026-04-15T18:47:40.419Z"
+    }
+  ]
+}

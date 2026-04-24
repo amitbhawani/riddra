@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "profile": {
+        "id": "profile_amitbhawani-gmail-com",
+        "userKey": "amitbhawani-gmail-com",
+        "authUserId": "local-admin-bypass",
+        "name": "amitbhawani",
+        "email": "amitbhawani@gmail.com",
+        "username": "amitbhawani",
+        "profileVisible": true,
+        "membershipTier": "free",
+        "role": "admin",
+        "capabilities": [
+          "can_manage_settings",
+          "can_publish_content",
+          "can_manage_media",
+          "can_manage_memberships",
+          "can_manage_refresh_jobs",
+          "can_manage_imports",
+          "can_edit_finance_content",
+          "can_edit_editorial_content"
+        ],
+        "createdAt": "2026-04-24T05:55:25.285Z",
+        "updatedAt": "2026-04-24T05:55:25.285Z",
+        "lastActiveAt": "2026-04-24T08:33:34.374Z"
+      },
+      "watchlist": [
+        {
+          "id": "watchlist_1a401d89-67eb-4dee-a871-b19ca42044cc",
+          "pageType": "stock",
+          "slug": "tata-motors",
+          "symbol": "TATAMOTORS",
+          "title": "Tata Motors",
+          "href": "/stocks/tata-motors",
+          "stockSlug": "tata-motors",
+          "stockSymbol": "TATAMOTORS",
+          "stockName": "Tata Motors",
+          "addedAt": "2026-04-24T06:43:40.860Z"
+        }
+      ],
+      "portfolio": [],
+      "bookmarks": [],
+      "recentlyViewed": [
+        {
+          "id": "recent_8fdc8877-26b0-4bca-a834-825791f0d130",
+          "pageType": "index",
+          "slug": "nifty50",
+          "title": "Nifty 50",
+          "href": "/nifty50",
+          "viewedAt": "2026-04-24T08:33:34.374Z"
+        },
+        {
+          "id": "recent_15581ccd-09c4-456c-bdb3-03ebfe6a948a",
+          "pageType": "mutual_fund",
+          "slug": "hdfc-mid-cap-opportunities",
+          "title": "HDFC Mid-Cap Opportunities Fund",
+          "href": "/mutual-funds/hdfc-mid-cap-opportunities",
+          "viewedAt": "2026-04-24T08:32:53.474Z"
+        },
+        {
+          "id": "recent_362eb9bc-8718-44c6-bab3-17aa620055b5",
+          "pageType": "stock",
+          "slug": "tata-motors",
+          "title": "Tata Motors",
+          "href": "/stocks/tata-motors",
+          "viewedAt": "2026-04-24T08:32:50.927Z"
+        },
+        {
+          "id": "recent_1e18cf92-8d0f-414b-99a0-da5e95e45e2b",
+          "pageType": "stock",
+          "slug": "test-motors",
+          "title": "Tata Motors Test Page",
+          "href": "/stocks/test-motors",
+          "viewedAt": "2026-04-24T08:32:46.356Z"
+        }
+      ]
+    }
+  ],
+  "mediaAssets": [],
+  "settings": {
+    "siteName": "Riddra",
+    "defaultMetaTitleSuffix": "Riddra",
+    "defaultMetaDescription": "Riddra is a market intelligence and research platform for Indian investors.",
+    "defaultOgImage": "",
+    "defaultCanonicalBase": "",
+    "defaultNoIndex": false,
+    "defaultMembershipTier": "free",
+    "defaultLockedCtaLabel": "Unlock with membership",
+    "supportEmail": "",
+    "supportRoute": "/contact",
+    "previewEnabled": true,
+    "mediaUploadsEnabled": true,
+    "watchlistEnabled": true,
+    "portfolioEnabled": true,
+    "updatedAt": "2026-04-24T05:55:25.285Z"
+  },
+  "previews": [],
+  "versions": [],
+  "refreshJobRuns": [],
+  "updatedAt": "2026-04-24T08:42:13.349Z"
+}

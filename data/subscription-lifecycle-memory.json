@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "userKey": "amitbhawani-gmail-com",
+      "email": "amitbhawani@gmail.com",
+      "updatedAt": "2026-04-15T14:13:57.675Z",
+      "jobs": [
+        {
+          "id": "account_renewal_audit_001",
+          "title": "Renewal confirmation",
+          "triggerEvent": "subscription.charged",
+          "status": "Running",
+          "accountScope": "Current subscriber",
+          "nextRun": "Apr 15, 2026 · 8:50 PM",
+          "note": "Lifecycle job update replayed after queue serialization fix."
+        },
+        {
+          "id": "account_receipt_followup_002",
+          "title": "Receipt and lifecycle follow-up",
+          "triggerEvent": "subscription.activated",
+          "status": "Ready to rerun",
+          "accountScope": "Current subscriber",
+          "nextRun": "Operator-triggered",
+          "note": "Activation should later trigger receipt, lifecycle confirmation, and recovery-safe fallback instructions from one durable backend lane."
+        }
+      ],
+      "recoveryActions": [
+        {
+          "title": "Renewal confirmation",
+          "status": "Ready to send",
+          "channel": "Email + billing workspace",
+          "dueAt": "Apr 15, 2026 · 9:05 PM",
+          "note": "Recovery action replayed after queue serialization fix."
+        },
+        {
+          "title": "Lifecycle fallback drill",
+          "status": "Subscriber review",
+          "channel": "Billing workspace",
+          "dueAt": "Before next plan change",
+          "note": "Even healthy accounts should keep a visible fallback path until lifecycle automation is driven by real provider events."
+        }
+      ]
+    }
+  ],
+  "opsJobs": [
+    {
+      "id": "renewal_audit_001",
+      "title": "Renewal continuity audit",
+      "triggerEvent": "subscription.charged",
+      "status": "Running",
+      "accountScope": "All active subscribers",
+      "nextRun": "Apr 15, 2026 · 9:20 PM",
+      "note": "Ops lifecycle replayed after queue serialization fix."
+    },
+    {
+      "id": "failure_warning_002",
+      "title": "Failed-charge warning queue",
+      "triggerEvent": "payment.failed",
+      "status": "Running",
+      "accountScope": "Grace-period accounts",
+      "nextRun": "Apr 15, 2026 · 5:30 PM",
+      "note": "Failure warnings should queue support handoff, reminder timing, and downgrade review together instead of relying on one-off billing notes."
+    },
+    {
+      "id": "grace_review_003",
+      "title": "Grace-period downgrade review",
+      "triggerEvent": "subscription.halted",
+      "status": "Waiting on support",
+      "accountScope": "At-risk paid accounts",
+      "nextRun": "Support-confirmed",
+      "note": "Grace-period accounts should keep a review window before fallback access changes are applied or recovery promises are sent."
+    },
+    {
+      "id": "fallback_access_004",
+      "title": "Fallback-access cleanup run",
+      "triggerEvent": "subscription.cancelled",
+      "status": "Ready to rerun",
+      "accountScope": "Cancelled subscriptions",
+      "nextRun": "Operator-triggered",
+      "note": "Cancellation should preserve invoice history and entitlement traceability while fallback access is applied deliberately."
+    }
+  ],
+  "opsRecoveryActions": [
+    {
+      "title": "Failed-charge reminder sequence",
+      "status": "Ready to send",
+      "channel": "Email + account banner",
+      "dueAt": "Apr 15, 2026 · 6:30 PM",
+      "note": "Reminder sequencing should stay tied to payment-event truth so billing retries, subscriber messaging, and support timing stay aligned."
+    },
+    {
+      "title": "Support rescue handoff",
+      "status": "Awaiting support",
+      "channel": "Billing support",
+      "dueAt": "Apr 15, 2026 · 7:00 PM",
+      "note": "High-risk failed-charge accounts should create one deliberate support handoff instead of relying on ad-hoc payment follow-up."
+    },
+    {
+      "title": "Fallback access review",
+      "status": "Subscriber review",
+      "channel": "Account billing workspace",
+      "dueAt": "Before grace window ends",
+      "note": "Fallback access changes should remain reviewable until provider-backed retries and entitlement sync are fully production-grade."
+    }
+  ]
+}

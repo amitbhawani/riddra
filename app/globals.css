@@ -1,0 +1,519 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --font-display: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-body: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --riddra-product-font-display: var(--font-riddra-display), "Source Serif 4", serif;
+  --riddra-product-font-body: var(--font-riddra-body), "DM Sans", sans-serif;
+  --riddra-product-font-mono: var(--font-riddra-mono), "JetBrains Mono", monospace;
+  --riddra-product-bg: #fafafa;
+  --riddra-product-surface: #ffffff;
+  --riddra-product-border: #ddd7cf;
+  --riddra-product-accent: #1b3a6b;
+  --riddra-product-accent-secondary: #d4853b;
+  --riddra-product-positive: #1a7f4b;
+  --riddra-product-negative: #c0392b;
+  --riddra-product-neutral: #6b7280;
+  --riddra-product-card-radius: 11px;
+  --riddra-product-button-radius: 6px;
+  --riddra-product-card-padding: 12px;
+  --riddra-product-section-gap: 12px;
+  --riddra-product-tab-height: 48px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(90, 230, 198, 0.16), transparent 24%),
+    radial-gradient(circle at 80% 0%, rgba(244, 184, 96, 0.18), transparent 22%),
+    linear-gradient(180deg, #09101c 0%, #070b15 50%, #05070f 100%);
+  color: #f7fafc;
+  font-family: var(--font-body), sans-serif;
+}
+
+.public-site-shell {
+  background:
+    linear-gradient(180deg, rgba(250, 247, 242, 0.98) 0%, rgba(244, 239, 231, 0.98) 38%, #ece5dc 100%);
+  transition: background 180ms ease;
+}
+
+.public-site-main {
+  transition: background 180ms ease, color 180ms ease;
+}
+
+html[data-riddra-content-theme="dark"] .public-site-shell {
+  background:
+    radial-gradient(circle at top, rgba(90, 230, 198, 0.1), transparent 24%),
+    radial-gradient(circle at 80% 0%, rgba(244, 184, 96, 0.12), transparent 22%),
+    linear-gradient(180deg, #09101c 0%, #070b15 50%, #05070f 100%);
+}
+
+html[data-riddra-content-theme="dark"] .public-site-shell > .bg-grid {
+  opacity: 0.08;
+}
+
+html[data-riddra-content-theme="light"] .public-site-shell > .bg-grid {
+  opacity: 0.035;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-page,
+html[data-riddra-content-theme="dark"] .riddra-member-page {
+  color-scheme: dark;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.98) 0%, rgba(15, 23, 42, 0.985) 44%, rgba(17, 24, 39, 0.99) 100%) !important;
+  color: #e5edf7 !important;
+  border-top-color: rgba(71, 85, 105, 0.34) !important;
+  border-bottom-color: rgba(71, 85, 105, 0.42) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(148, 163, 184, 0.08),
+    0 28px 72px rgba(2, 6, 23, 0.34) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-card,
+html[data-riddra-content-theme="dark"] .riddra-product-tabbar {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.98) 100%) !important;
+  border-color: rgba(100, 116, 139, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.26) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[#111827]"],
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[#1F2937]"],
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[#374151]"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[#111827]"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[#1F2937]"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[#374151]"] {
+  color: #f8fafc !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[#1B3A6B]"],
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[#355286]"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[#1B3A6B]"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[#355286]"] {
+  color: #bfdbfe !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[rgba(107,114,128"],
+html[data-riddra-content-theme="dark"] .riddra-product-page [class*="text-[rgba(75,85,99"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[rgba(107,114,128"],
+html[data-riddra-content-theme="dark"] .riddra-member-page [class*="text-[rgba(75,85,99"] {
+  color: #cbd5e1 !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-member-page input,
+html[data-riddra-content-theme="dark"] .riddra-member-page textarea,
+html[data-riddra-content-theme="dark"] .riddra-member-page select {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(100, 116, 139, 0.42) !important;
+  color: #f8fafc !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-inline-card {
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.95) 100%) !important;
+  border-color: rgba(148, 163, 184, 0.26) !important;
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.18) !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-inline-action {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(148, 163, 184, 0.34) !important;
+  color: #bfdbfe !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-inline-action:hover {
+  background: rgba(30, 41, 59, 0.96) !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-empty-state {
+  background: rgba(15, 23, 42, 0.54) !important;
+  border-color: rgba(212, 133, 59, 0.28) !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-chip {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-hero-action {
+  background: rgba(248, 250, 252, 0.98) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: #1b3a6b !important;
+}
+
+html[data-riddra-content-theme="dark"] .public-profile-hero-action:hover {
+  background: rgba(226, 232, 240, 0.98) !important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(90, 230, 198, 0.3);
+  color: white;
+}
+
+.display-font {
+  font-family: var(--font-display), sans-serif;
+}
+
+.riddra-product-page {
+  color-scheme: light;
+  background:
+    linear-gradient(180deg, rgba(252, 252, 251, 0.995) 0%, rgba(248, 246, 242, 0.992) 42%, #f3efe9 100%);
+  color: var(--riddra-product-accent);
+  border-top: 1px solid rgba(226, 222, 217, 0.66);
+  border-bottom: 1px solid rgba(226, 222, 217, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 24px 72px rgba(7, 11, 21, 0.12);
+}
+
+.riddra-product-display {
+  font-family: var(--riddra-product-font-display);
+}
+
+.riddra-product-body {
+  font-family: var(--riddra-product-font-body);
+}
+
+.riddra-product-number {
+  font-family: var(--riddra-product-font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+.riddra-product-card {
+  border-radius: var(--riddra-product-card-radius);
+  border: 1px solid var(--riddra-product-border);
+  background: var(--riddra-product-surface);
+}
+
+.riddra-product-card-primary,
+.riddra-product-card-secondary,
+.riddra-product-card-warning {
+  padding: var(--riddra-product-card-padding);
+}
+
+.riddra-product-card-compact {
+  padding: 14px 16px;
+}
+
+.riddra-product-card-warning {
+  border-color: rgba(212, 133, 59, 0.6);
+}
+
+.riddra-product-section {
+  border-top: 1px solid var(--riddra-product-border);
+  padding-top: var(--riddra-product-section-gap);
+}
+
+.riddra-product-tabbar {
+  min-height: var(--riddra-product-tab-height);
+}
+
+.riddra-product-tabbar::-webkit-scrollbar {
+  display: none;
+}
+
+.riddra-site-ticker-viewport {
+  overflow: hidden;
+}
+
+.riddra-site-ticker-track {
+  display: flex;
+  min-width: max-content;
+  animation: riddra-site-ticker-scroll 54s linear infinite;
+  will-change: transform;
+}
+
+.riddra-site-ticker-viewport:hover .riddra-site-ticker-track {
+  animation-play-state: paused;
+}
+
+.riddra-site-ticker-segment {
+  display: flex;
+  min-width: max-content;
+  align-items: center;
+  gap: 1rem;
+  white-space: nowrap;
+  padding-inline: 0;
+}
+
+.riddra-site-ticker-manual {
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 1rem;
+}
+
+.riddra-site-ticker-manual::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes riddra-site-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.riddra-member-page {
+  color-scheme: light;
+  background:
+    linear-gradient(180deg, rgba(252, 252, 251, 0.995) 0%, rgba(248, 246, 242, 0.992) 42%, #f3efe9 100%);
+  color: var(--riddra-product-accent);
+  border-top: 1px solid rgba(226, 222, 217, 0.66);
+  border-bottom: 1px solid rgba(226, 222, 217, 0.8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 24px 72px rgba(7, 11, 21, 0.08);
+}
+
+.riddra-member-page [class*="text-white"] {
+  color: #1b3a6b !important;
+}
+
+.riddra-member-page [class*="text-mist"] {
+  color: rgba(75, 85, 99, 0.84) !important;
+}
+
+.riddra-member-page [class*="text-sky"] {
+  color: #1b3a6b !important;
+}
+
+.riddra-member-page [class*="text-aurora"] {
+  color: #1a7f4b !important;
+}
+
+.riddra-member-page [class*="border-white/8"],
+.riddra-member-page [class*="border-white/10"],
+.riddra-member-page [class*="border-white/12"],
+.riddra-member-page [class*="border-white/16"],
+.riddra-member-page [class*="border-white/18"],
+.riddra-member-page [class*="border-white/20"] {
+  border-color: rgba(221, 215, 207, 0.96) !important;
+}
+
+.riddra-member-page [class*="bg-black/10"],
+.riddra-member-page [class*="bg-black/15"] {
+  background: rgba(27, 58, 107, 0.03) !important;
+}
+
+.riddra-member-page [class*="bg-white/[0.02]"],
+.riddra-member-page [class*="bg-white/[0.03]"],
+.riddra-member-page [class*="bg-white/[0.04]"],
+.riddra-member-page [class*="bg-white/[0.05]"],
+.riddra-member-page [class*="bg-white/[0.06]"],
+.riddra-member-page [class*="bg-white/[0.08]"] {
+  background: rgba(27, 58, 107, 0.03) !important;
+}
+
+.riddra-member-page [class*="border-dashed"] {
+  border-color: rgba(212, 133, 59, 0.28) !important;
+}
+
+.riddra-member-page input,
+.riddra-member-page textarea,
+.riddra-member-page select {
+  border-color: rgba(221, 215, 207, 0.96) !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+
+.riddra-member-page input::placeholder,
+.riddra-member-page textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --riddra-product-card-radius: 10px;
+    --riddra-product-card-padding: 11px;
+    --riddra-product-section-gap: 11px;
+    --riddra-product-tab-height: 44px;
+  }
+
+  .riddra-product-page {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 18px 44px rgba(7, 11, 21, 0.1);
+  }
+}
+
+.riddra-legacy-tool .mg-theme-bar,
+.riddra-legacy-tool .mg-footer,
+.riddra-legacy-tool [class*="watermark"],
+.riddra-legacy-tool [class*="wm"] {
+  display: none !important;
+}
+
+.riddra-legacy-tool .mg-app,
+.riddra-legacy-tool .mg-app.mg-light,
+.riddra-legacy-tool .mg-app.mg-dark {
+  --bg: transparent;
+  --sf: rgba(255, 255, 255, 0.04);
+  --sf2: rgba(255, 255, 255, 0.03);
+  --bd: rgba(255, 255, 255, 0.09);
+  --tx: #f7fafc;
+  --mu: rgba(226, 232, 240, 0.72);
+  --mg-ac: #5ae6c6;
+  --mg-ac-rgb: 90, 230, 198;
+  --ac-bg: rgba(90, 230, 198, 0.08);
+  --ac-bdr: rgba(90, 230, 198, 0.2);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  background: transparent;
+  color: var(--tx);
+}
+
+.riddra-legacy-tool .mg-hero {
+  max-width: none;
+  padding: 0 0 2rem;
+}
+
+.riddra-legacy-tool .mg-hero::before {
+  background: radial-gradient(circle, rgba(90, 230, 198, 0.12) 0%, transparent 62%);
+  top: -80px;
+}
+
+.riddra-legacy-tool .mg-hero-badge {
+  background: rgba(90, 230, 198, 0.08);
+  border-color: rgba(90, 230, 198, 0.22);
+  color: #8cf0da;
+  box-shadow: none;
+}
+
+.riddra-legacy-tool .mg-hero h1,
+.riddra-legacy-tool .mg-section-title {
+  font-family: var(--font-display), sans-serif !important;
+}
+
+.riddra-legacy-tool .mg-hero p,
+.riddra-legacy-tool .mg-section-subtitle,
+.riddra-legacy-tool .mg-input-label,
+.riddra-legacy-tool .mg-input-text,
+.riddra-legacy-tool .mg-sip-field-note,
+.riddra-legacy-tool .mg-swp-field-note,
+.riddra-legacy-tool .mg-empty,
+.riddra-legacy-tool .mg-sip-empty {
+  color: rgba(226, 232, 240, 0.72) !important;
+}
+
+.riddra-legacy-tool .mg-section,
+.riddra-legacy-tool .mg-subcard,
+.riddra-legacy-tool .mg-sip-summary-card,
+.riddra-legacy-tool .mg-sip-hero-pill,
+.riddra-legacy-tool .mg-swp-hero-pill,
+.riddra-legacy-tool .mg-gold-hero-pill,
+.riddra-legacy-tool .mg-sv-hero-pill,
+.riddra-legacy-tool .pc-file-item,
+.riddra-legacy-tool .pc-drop-zone {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px);
+}
+
+.riddra-legacy-tool .mg-section,
+.riddra-legacy-tool .mg-sip-summary-card,
+.riddra-legacy-tool .mg-gold-hero-pill,
+.riddra-legacy-tool .mg-sv-hero-pill,
+.riddra-legacy-tool .mg-sip-hero-pill,
+.riddra-legacy-tool .mg-swp-hero-pill {
+  border-radius: 24px !important;
+}
+
+.riddra-legacy-tool .mg-subcard,
+.riddra-legacy-tool .mg-input-field,
+.riddra-legacy-tool .mg-table-wrap,
+.riddra-legacy-tool .mg-sv-cw,
+.riddra-legacy-tool .mg-gold-invest-result,
+.riddra-legacy-tool .mg-sv-ir,
+.riddra-legacy-tool .pc-result-card,
+.riddra-legacy-tool .pc-results-grid > * {
+  border-radius: 20px !important;
+}
+
+.riddra-legacy-tool .mg-section-header,
+.riddra-legacy-tool .mg-section-body {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.riddra-legacy-tool .mg-input,
+.riddra-legacy-tool .mg-input-text,
+.riddra-legacy-tool select,
+.riddra-legacy-tool input,
+.riddra-legacy-tool textarea {
+  background: rgba(5, 7, 15, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f7fafc !important;
+}
+
+.riddra-legacy-tool .mg-btn-primary,
+.riddra-legacy-tool .mg-btn-secondary,
+.riddra-legacy-tool .cb,
+.riddra-legacy-tool .pc-action-btn,
+.riddra-legacy-tool button[class*="btn"] {
+  background: linear-gradient(135deg, #5ae6c6 0%, #f4b860 100%) !important;
+  color: #09101c !important;
+  border: none !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+}
+
+.riddra-legacy-tool .mg-btn-ghost,
+.riddra-legacy-tool .sh-b,
+.riddra-legacy-tool .sc-a,
+.riddra-legacy-tool .pc-file-remove {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #f7fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 999px !important;
+}
+
+.riddra-legacy-tool .mg-pill,
+.riddra-legacy-tool .mg-section-badge,
+.riddra-legacy-tool .mg-gold-karat-tag,
+.riddra-legacy-tool .mg-sv-kt {
+  background: rgba(90, 230, 198, 0.08) !important;
+  color: #8cf0da !important;
+  border: 1px solid rgba(90, 230, 198, 0.2) !important;
+}
+
+.riddra-legacy-tool .mg-pill.active {
+  background: rgba(90, 230, 198, 0.16) !important;
+  color: #f7fafc !important;
+}
+
+.riddra-legacy-tool .mg-table,
+.riddra-legacy-tool table {
+  color: #f7fafc !important;
+}
+
+.riddra-legacy-tool .mg-table th,
+.riddra-legacy-tool .mg-table td,
+.riddra-legacy-tool table th,
+.riddra-legacy-tool table td {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.riddra-legacy-tool canvas {
+  filter: saturate(0.95);
+}

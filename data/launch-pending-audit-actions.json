@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "itemId": "cutover-blockers-supabase-auth-and-protected-route-truth",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Unblock Supabase auth and protected-route truth and move it into verified execution.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    },
+    {
+      "itemId": "cutover-blockers-provider-backed-market-data-execution",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Unblock Provider-backed market-data execution and move it into verified execution.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    },
+    {
+      "itemId": "go-live-checklist-auth-foundation-and-subscriber-workspace",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Move Auth foundation and subscriber workspace from active backlog into a verified result.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    },
+    {
+      "itemId": "go-live-checklist-official-source-and-data-refresh-setup",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Unblock Official source and data refresh setup and move it into verified execution.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    },
+    {
+      "itemId": "subscriber-truth-real-auth-and-subscriber-identity",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Unblock Real auth and subscriber identity and move it into verified execution.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    },
+    {
+      "itemId": "subscriber-truth-portfolio-watchlists-alerts-and-broker-continuity",
+      "actionStatus": "Open",
+      "owner": "",
+      "nextStep": "Move Portfolio, watchlists, alerts, and broker continuity from active backlog into a verified result.",
+      "note": "",
+      "updatedAt": "2026-04-18T10:04:41.922Z"
+    }
+  ]
+}
