@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { headers } from "next/headers";
 import { DM_Sans, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 
@@ -98,6 +99,7 @@ export default async function RootLayout({
             <SiteFooter />
           </div>
         )}
+        <Analytics />
       </body>
     </html>
   );
