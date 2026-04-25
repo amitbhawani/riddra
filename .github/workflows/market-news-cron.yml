@@ -1,0 +1,47 @@
+name: Market News Cron
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-market-news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Trigger Market News automation
+        env:
+          MARKET_NEWS_CRON_SECRET: ${{ secrets.MARKET_NEWS_CRON_SECRET }}
+          MARKET_NEWS_RUN_URL: https://riddra.com/api/admin/market-news/run?limit=10
+        run: |
+          set -euo pipefail
+
+          # Vercel Hobby supports only daily cron schedules.
+          # GitHub Actions provides the 15-minute Market News automation cadence
+          # until the project upgrades to a Vercel plan with finer cron support.
+
+          if [ -z "${MARKET_NEWS_CRON_SECRET}" ]; then
+            echo "Missing required GitHub secret: MARKET_NEWS_CRON_SECRET"
+            exit 1
+          fi
+
+          response_file="$(mktemp)"
+          http_code="$(
+            curl -L -X POST \
+              -H "x-cron-secret: ${MARKET_NEWS_CRON_SECRET}" \
+              -H "Accept: application/json" \
+              -sS \
+              -o "${response_file}" \
+              -w "%{http_code}" \
+              "${MARKET_NEWS_RUN_URL}"
+          )"
+
+          cat "${response_file}"
+
+          if [ "${http_code}" -lt 200 ] || [ "${http_code}" -ge 300 ]; then
+            echo
+            echo "Market News automation failed with HTTP ${http_code}"
+            exit 1
+          fi
