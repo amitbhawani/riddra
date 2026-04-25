@@ -14,7 +14,7 @@ jobs:
       - name: Trigger Market News automation
         env:
           MARKET_NEWS_CRON_SECRET: ${{ secrets.MARKET_NEWS_CRON_SECRET }}
-          MARKET_NEWS_RUN_URL: https://riddra.com/api/jobs/market-news/run?limit=10
+          MARKET_NEWS_RUN_URL: https://www.riddra.com/api/jobs/market-news/run?limit=10
         run: |
           set -euo pipefail
 
