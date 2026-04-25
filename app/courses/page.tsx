@@ -72,8 +72,9 @@ export default async function CoursesPage() {
             <p className="text-sm text-mist/68">Support continuity</p>
             <p className="mt-2 text-3xl font-semibold text-white">{supportRegistry.total}</p>
             <p className="mt-3 text-sm leading-7 text-mist/72">
-              {supportRegistry.inProgress} in progress, {supportRegistry.blocked} blocked, and support email currently{" "}
-              {config.supportEmail ? "configured" : "not configured yet"}.
+              {config.supportEmail
+                ? "Support guidance is already available for course questions and access follow-up."
+                : "Support guidance is already visible here, and direct contact details will appear once that channel is ready."}
             </p>
           </GlowCard>
         </div>

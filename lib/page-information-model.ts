@@ -91,7 +91,7 @@ export const RIDDRA_PAGE_INFORMATION_MODEL: Record<RiddraPageType, RiddraPageInf
       "Long-window return rows",
       "Latest news list",
       "Analyst checklist details",
-      "Benchmark comparison overlays in localhost preview mode",
+      "Benchmark comparison overlays in clearly labeled preview mode",
     ],
     forbiddenFields: [
       "Fake analyst ratings",
@@ -105,7 +105,7 @@ export const RIDDRA_PAGE_INFORMATION_MODEL: Record<RiddraPageType, RiddraPageInf
     sidebarBlocks: ["Quick stats", "Compact market snapshot", "Actions and docs"],
     chartDataRequirements: [
       { requirement: "Primary stock chart with supported timeframe toggles", betaStatus: "required" },
-      { requirement: "Benchmark overlay only when real or clearly localhost-preview labeled", betaStatus: "optional" },
+      { requirement: "Benchmark overlay only when real or clearly preview-labeled", betaStatus: "optional" },
       { requirement: "Trailing returns table visible in the summary research board", betaStatus: "required" },
     ],
     truthStateRequirements: [

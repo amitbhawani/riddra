@@ -11,7 +11,7 @@ import {
 import { SearchAssistForm } from "@/components/search-assist-form";
 import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
-import { getSmartSearchResults, suggestedQueries } from "@/lib/smart-search";
+import { getSmartSearchResults, sanitizeSearchQuery, suggestedQueries } from "@/lib/smart-search";
 import { env, isRealAiEnabled } from "@/lib/env";
 import { getSearchIndexMemory } from "@/lib/search-index-memory-store";
 import { getSearchQueryMemory, recordSearchQueryEvent } from "@/lib/search-query-memory-store";
@@ -28,12 +28,13 @@ export const metadata: Metadata = {
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const { query = "" } = await searchParams;
-  const searchExperience = await getSmartSearchResults(query);
+  const safeQuery = sanitizeSearchQuery(query);
+  const searchExperience = await getSmartSearchResults(safeQuery);
   const { actions, engine, focusCard, groups, results } = searchExperience;
   const [searchQueryMemory, searchIndexMemory, sharedSidebarRailData] = await Promise.all([
-    query.trim()
+    safeQuery
       ? recordSearchQueryEvent({
-          query,
+          query: safeQuery,
           resultCount: results.length,
           actionCount: actions.length,
           groupCount: groups.length,
@@ -41,14 +42,14 @@ export default async function SearchPage({ searchParams }: PageProps) {
           focusCardHref: focusCard?.href,
           leadCategory: results[0]?.category,
           leadHref: results[0]?.href,
-        })
+        }).catch(() => getSearchQueryMemory())
       : getSearchQueryMemory(),
     getSearchIndexMemory(),
     getSharedSidebarRailData({ pageCategory: "search" }),
   ]);
   const showSharedSidebar = sharedSidebarRailData.enabledOnPageType;
   const explanation =
-    query && engine.available && results.length
+    safeQuery && engine.available && results.length
       ? `Formula-first answer mode is active right now, so Riddra is grounding this search in trusted structured results${isRealAiEnabled() ? " with optional live AI enabled." : " while live AI stays selective so structured results remain the primary guide."}`
       : null;
   const breadcrumbs = [
@@ -105,19 +106,19 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
             <PublicSurfaceTruthSection
               eyebrow="Search truth"
-              title="This search layer is strong for discovery, but full follow-through still depends on launch activation"
-              description="Use smart search confidently for route discovery, while keeping auth continuity, premium workflow promises, and support follow-through honest until those live paths are fully verified."
+              title="Search is ready for discovery across stocks, funds, tools, and learning routes"
+              description="Use smart search to move into the right route and follow-up workflow without needing to know the exact path first."
               authReady="Signed-in continuity is active enough to carry search discovery into account and workspace flows."
-              authPending="Local preview auth still limits how trustworthy the full search-to-account handoff can be."
-              billingReady="Billing core credentials exist, so premium search follow-through can move beyond pure preview framing once checkout and webhook flows are exercised."
-              billingPending="Billing credentials are still incomplete, so premium search promises should stay expectation-setting."
+              authPending="Search stays fully usable even when account-linked follow-through is temporarily limited."
+              billingReady="Membership prompts stay visible where relevant once checkout and workspace continuity are exercised."
+              billingPending="Premium route access appears where relevant after sign-in."
               supportReady="Support delivery is configured enough to begin testing real follow-up for public search users who convert."
-              supportPending="Support delivery is still not fully active, so search should keep support expectations conservative."
+              supportPending="Support guidance remains available whenever a search-led account step needs help."
               href="/launch-readiness"
               hrefLabel="Open launch readiness"
             />
 
-            {query && !engine.available ? (
+            {safeQuery && !engine.available ? (
               <ProductCard tone="secondary" className="space-y-3 p-4 sm:p-5">
                 <p className="riddra-product-body text-xs uppercase tracking-[0.2em] text-[#8E5723]">{engine.statusLabel}</p>
                 <h2 className="riddra-product-body text-2xl font-semibold text-[#1B3A6B]">
@@ -139,16 +140,16 @@ export default async function SearchPage({ searchParams }: PageProps) {
               </ProductCard>
             ) : null}
 
-            {query && actions.length ? (
+            {safeQuery && actions.length ? (
               <ShowcaseRouteStrip
                 eyebrow="Best next moves"
-                title={`Use "${query}" as a guided route handoff`}
+                title={`Use "${safeQuery}" as a guided route handoff`}
                 description="Search now keeps the strongest follow-up routes near the top, so direct stock and fund matches can move immediately into chart, compare, sector, or category workflows."
                 items={actions}
               />
             ) : null}
 
-            {query && focusCard ? (
+            {safeQuery && focusCard ? (
               <ProductCard tone="secondary" className="space-y-5 p-4 sm:p-5">
                 <div className="space-y-3">
                   <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
@@ -219,10 +220,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 ))
               ) : (
                 <div className="rounded-[18px] border border-dashed border-[rgba(212,133,59,0.28)] bg-[rgba(27,58,107,0.03)] px-4 py-4 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
-                  {query && !engine.available
+                  {safeQuery && !engine.available
                     ? `Live indexed answers are temporarily unavailable. ${engine.detail}`
-                    : query
-                      ? `No structured matches found for "${query}" yet. Try a more specific company, category, or workflow phrase.`
+                    : safeQuery
+                      ? `No structured matches found for "${safeQuery}" yet. Try a more specific company, category, or workflow phrase.`
                       : "Enter a natural-language question or query to see structured results across stocks, IPOs, funds, tools, courses, and learning content."}
                 </div>
               )}

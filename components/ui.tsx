@@ -62,19 +62,23 @@ export function ButtonLink({
   href,
   children,
   tone = "primary",
+  className,
 }: {
   href: string;
   children: ReactNode;
   tone?: "primary" | "secondary";
+  className?: string;
 }) {
   return (
     <Link
       href={href}
       className={clsx(
         "inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-medium transition",
+        tone === "primary" ? "riddra-button-link-primary" : "riddra-button-link-secondary",
         tone === "primary"
-          ? "bg-[#1B3A6B] text-white hover:bg-[#264a83]"
-          : "border border-[rgba(27,58,107,0.14)] bg-white text-[#1B3A6B] hover:border-[#D4853B] hover:text-[#D4853B]",
+          ? "bg-[#1B3A6B] !text-white hover:bg-[#264a83] hover:!text-white"
+          : "border border-[rgba(27,58,107,0.14)] bg-white !text-[#1B3A6B] hover:border-[#D4853B] hover:!text-[#D4853B]",
+        className,
       )}
     >
       {children}

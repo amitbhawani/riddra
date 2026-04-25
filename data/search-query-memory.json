@@ -3,6 +3,42 @@
   "events": [
     {
       "query": "tata",
+      "loggedAt": "2026-04-25T05:28:26.686Z",
+      "resultCount": 1,
+      "actionCount": 0,
+      "groupCount": 1,
+      "leadCategory": "Stock",
+      "leadHref": "/stocks/tata-motors",
+      "zeroResults": false
+    },
+    {
+      "query": "script alert(1) /script",
+      "loggedAt": "2026-04-25T05:28:26.352Z",
+      "resultCount": 0,
+      "actionCount": 0,
+      "groupCount": 0,
+      "zeroResults": true
+    },
+    {
+      "query": "news",
+      "loggedAt": "2026-04-25T04:13:00.123Z",
+      "resultCount": 0,
+      "actionCount": 0,
+      "groupCount": 0,
+      "zeroResults": true
+    },
+    {
+      "query": "tata",
+      "loggedAt": "2026-04-25T04:00:20.598Z",
+      "resultCount": 1,
+      "actionCount": 0,
+      "groupCount": 1,
+      "leadCategory": "Stock",
+      "leadHref": "/stocks/tata-motors",
+      "zeroResults": false
+    },
+    {
+      "query": "tata",
       "loggedAt": "2026-04-24T08:33:06.925Z",
       "resultCount": 1,
       "actionCount": 0,
@@ -2270,54 +2306,6 @@
     {
       "query": "tata motors chart and fundamentals",
       "loggedAt": "2026-04-20T06:12:05.070Z",
-      "resultCount": 1,
-      "actionCount": 4,
-      "groupCount": 1,
-      "focusCardTitle": "Tata Motors",
-      "focusCardHref": "/stocks/tata-motors",
-      "leadCategory": "Stock",
-      "leadHref": "/stocks/tata-motors",
-      "zeroResults": false
-    },
-    {
-      "query": "tata motors chart and fundamentals",
-      "loggedAt": "2026-04-20T06:11:44.750Z",
-      "resultCount": 1,
-      "actionCount": 4,
-      "groupCount": 1,
-      "focusCardTitle": "Tata Motors",
-      "focusCardHref": "/stocks/tata-motors",
-      "leadCategory": "Stock",
-      "leadHref": "/stocks/tata-motors",
-      "zeroResults": false
-    },
-    {
-      "query": "tata motors chart and fundamentals",
-      "loggedAt": "2026-04-20T06:11:29.507Z",
-      "resultCount": 1,
-      "actionCount": 4,
-      "groupCount": 1,
-      "focusCardTitle": "Tata Motors",
-      "focusCardHref": "/stocks/tata-motors",
-      "leadCategory": "Stock",
-      "leadHref": "/stocks/tata-motors",
-      "zeroResults": false
-    },
-    {
-      "query": "tata motors chart and fundamentals",
-      "loggedAt": "2026-04-20T06:10:38.766Z",
-      "resultCount": 1,
-      "actionCount": 4,
-      "groupCount": 1,
-      "focusCardTitle": "Tata Motors",
-      "focusCardHref": "/stocks/tata-motors",
-      "leadCategory": "Stock",
-      "leadHref": "/stocks/tata-motors",
-      "zeroResults": false
-    },
-    {
-      "query": "tata motors chart and fundamentals",
-      "loggedAt": "2026-04-20T06:10:15.830Z",
       "resultCount": 1,
       "actionCount": 4,
       "groupCount": 1,

@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { getPublishableCmsRecordBySlug, getPublishableCmsSlugSet } from "@/lib/publishable-content";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -61,8 +62,7 @@ export default async function WebinarRegisterPage({ params }: PageProps) {
   const supportRegistry = getSupportOpsRegistrySummary("account");
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-8">
+    <GlobalSidebarPageShell category="webinars" leftClassName="riddra-legacy-light-surface space-y-8">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Registration route</Eyebrow>
@@ -189,7 +189,6 @@ export default async function WebinarRegisterPage({ params }: PageProps) {
             </div>
           </GlowCard>
         </div>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

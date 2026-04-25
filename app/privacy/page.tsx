@@ -23,8 +23,11 @@ export default function PrivacyPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="legal">
+      <GlobalSidebarPageShell
+        category="legal"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Trust layer</Eyebrow>
@@ -81,6 +84,5 @@ export default function PrivacyPage() {
           <p>This is the current operating privacy summary for launch. A fuller reviewed legal version replaces it before wider marketing scale begins.</p>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

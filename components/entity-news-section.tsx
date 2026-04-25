@@ -1,0 +1,204 @@
+import {
+  MarketNewsClickSurface,
+  MarketNewsTrackedLink,
+} from "@/components/market-news-click-surface";
+import { MarketNewsEntityChips } from "@/components/market-news-entity-chips";
+import { MarketNewsImage } from "@/components/market-news-image";
+import { ProductCard, ProductSectionTitle } from "@/components/product-page-system";
+import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
+
+function formatDateLabel(value: string | null | undefined) {
+  const parsed = Date.parse(value ?? "");
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(parsed));
+}
+
+function formatImpactLabel(value: string | null | undefined) {
+  return String(value ?? "")
+    .split("_")
+    .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
+    .join(" ")
+    .trim();
+}
+
+type EntityNewsSectionProps = {
+  entityType: "stock" | "sector" | "mutual_fund" | "etf" | "ipo";
+  entitySlug: string;
+  symbol?: string | null;
+  articles: MarketNewsArticleWithRelations[];
+  usedSectorFallback?: boolean;
+  fallbackSectorLabel?: string | null;
+  usedLatestFallback?: boolean;
+  titleOverride?: string;
+  descriptionOverride?: string;
+  emptyTitleOverride?: string;
+  emptyDescriptionOverride?: string;
+};
+
+export function EntityNewsSection({
+  entityType,
+  entitySlug,
+  symbol,
+  articles,
+  usedSectorFallback = false,
+  fallbackSectorLabel,
+  usedLatestFallback = false,
+  titleOverride,
+  descriptionOverride,
+  emptyTitleOverride,
+  emptyDescriptionOverride,
+}: EntityNewsSectionProps) {
+  const title =
+    titleOverride ??
+    (entityType === "sector"
+      ? "Latest sector news"
+      : entityType === "stock" && usedSectorFallback
+        ? `${fallbackSectorLabel || "Sector"} news`
+        : "Latest stock news");
+  const description =
+    descriptionOverride ??
+    (entityType === "sector"
+      ? usedLatestFallback
+        ? "Direct sector-linked articles are not available yet, so this section is showing the latest market stories from the broader Riddra news surface."
+        : "Latest matched market news for this sector with direct links into the full Market News archive."
+      : entityType === "stock" && usedSectorFallback
+        ? `Direct stock-linked articles are not available yet, so this section is showing the latest ${fallbackSectorLabel || "sector"} stories.`
+        : symbol
+          ? `Latest matched market news for ${symbol} with direct links into the full Market News archive.`
+          : "Latest matched market news with direct links into the full Market News archive.");
+
+  return (
+    <ProductCard tone="secondary" className="space-y-4">
+      <ProductSectionTitle eyebrow="News" title={title} description={description} />
+
+      {articles.length ? (
+        <div className="grid gap-3">
+          {articles.map((article) => {
+            const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
+            const fallbackSrc =
+              article.image?.fallback_image_url || article.fallback_image_url || article.display_image_url;
+            const primaryEntity = article.entities[0] ?? null;
+            const trackingEntityType = entityType === "stock" || entityType === "sector" || entityType === "mutual_fund" || entityType === "etf" || entityType === "ipo"
+              ? entityType
+              : primaryEntity?.entity_type ?? null;
+            const trackingEntitySlug = entitySlug || primaryEntity?.entity_slug || null;
+
+            return (
+              <MarketNewsClickSurface
+                key={article.id}
+                href={`/markets/news/${article.slug}`}
+                articleId={article.id}
+                entityType={trackingEntityType}
+                entitySlug={trackingEntitySlug}
+                className="grid gap-3 rounded-[14px] border border-[rgba(221,215,207,0.92)] bg-white p-3.5 sm:grid-cols-[112px_minmax(0,1fr)]"
+              >
+                <div className="overflow-hidden rounded-[12px] border border-[rgba(221,215,207,0.92)] bg-[rgba(248,246,243,0.92)]">
+                  <MarketNewsImage
+                    primarySrc={article.display_image_url}
+                    fallbackSrc={fallbackSrc}
+                    alt={article.image_display_alt_text}
+                    className="h-[88px] w-full object-cover sm:h-full"
+                  />
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {article.impact_label ? (
+                      <span className="rounded-full border border-[rgba(212,133,59,0.22)] bg-[rgba(212,133,59,0.1)] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8E5723]">
+                        {formatImpactLabel(article.impact_label)}
+                      </span>
+                    ) : null}
+                    {publishedLabel ? (
+                      <span className="text-[11px] text-[rgba(107,114,128,0.82)]">{publishedLabel}</span>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <MarketNewsTrackedLink
+                      href={`/markets/news/${article.slug}`}
+                      articleId={article.id}
+                      entityType={trackingEntityType}
+                      entitySlug={trackingEntitySlug}
+                      className="block text-[15px] font-semibold leading-6 text-[#1B3A6B] transition hover:text-[#D4853B]"
+                    >
+                      {article.rewritten_title || article.original_title}
+                    </MarketNewsTrackedLink>
+                    <p className="line-clamp-2 text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">
+                      {article.short_summary || article.summary || "Market news is being prepared."}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[rgba(107,114,128,0.86)]">
+                    <span className="font-medium text-[#1B3A6B]">{article.source_name}</span>
+                    {article.category ? <span>• {article.category}</span> : null}
+                  </div>
+
+                  <MarketNewsEntityChips
+                    entities={article.entities}
+                    compact
+                    limit={4}
+                    activeEntitySlug={entitySlug}
+                  />
+
+                  <div className="flex flex-wrap gap-3 pt-0.5">
+                    <MarketNewsTrackedLink
+                      href={`/markets/news/${article.slug}`}
+                      articleId={article.id}
+                      entityType={trackingEntityType}
+                      entitySlug={trackingEntitySlug}
+                      className="text-[12px] font-semibold text-[#1B3A6B] underline underline-offset-4"
+                    >
+                      Read more
+                    </MarketNewsTrackedLink>
+                    <a
+                      href={article.source_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[12px] font-medium text-[rgba(75,85,99,0.86)] underline underline-offset-4"
+                    >
+                      Source
+                    </a>
+                  </div>
+                </div>
+              </MarketNewsClickSurface>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="rounded-[14px] border border-dashed border-[rgba(212,133,59,0.26)] bg-[rgba(27,58,107,0.03)] px-4 py-5">
+          <p className="text-[14px] font-semibold text-[#1B3A6B]">
+            {emptyTitleOverride ||
+              (entityType === "sector"
+                ? "Latest sector news is being prepared"
+                : entityType === "mutual_fund"
+                  ? "Latest mutual fund news is being prepared"
+                  : entityType === "etf"
+                    ? "Latest ETF news is being prepared"
+                    : entityType === "ipo"
+                      ? "Latest IPO news is being prepared"
+                      : "Latest stock news is being prepared")}
+          </p>
+          <p className="mt-2 text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">
+            {emptyDescriptionOverride ||
+              (entityType === "sector"
+                ? "Matched market news articles for this sector will appear here once they are ready on the public Market News surface."
+                : entityType === "mutual_fund"
+                  ? "Matched market news articles for this fund will appear here once they are ready on the public Market News surface."
+                  : entityType === "etf"
+                    ? "Matched market news articles for this ETF will appear here once they are ready on the public Market News surface."
+                    : entityType === "ipo"
+                      ? "Matched market news articles for this IPO will appear here once they are ready on the public Market News surface."
+                      : "Matched market news articles for this stock will appear here once they are ready on the public Market News surface.")}
+          </p>
+        </div>
+      )}
+    </ProductCard>
+  );
+}

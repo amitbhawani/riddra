@@ -10,8 +10,11 @@ export async function SiteHeader() {
 
   return (
     <SiteHeaderNavClient
+      brand={siteChrome.brand}
+      tickerItems={siteChrome.headerTickerItems}
       marketNav={siteChrome.headerMarketNav}
       utilityNav={siteChrome.headerUtilityNav}
+      visibleMenuGroups={siteChrome.visibleMenuGroups}
       accountLabel={profile?.name || profile?.username || profile?.email || null}
       isSignedIn={Boolean(profile)}
     />

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
-import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
+import { ProductCard, ProductSectionTitle } from "@/components/product-page-system";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { ToolsExplorer } from "@/components/tools-explorer";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow } from "@/components/ui";
 import { tools } from "@/lib/tools";
 
 export const metadata: Metadata = {
@@ -14,71 +14,98 @@ export const metadata: Metadata = {
 };
 
 export default async function ToolsPage() {
-  const sidebar = await getGlobalSidebarRail("tools");
-
   return (
-    <div className="riddra-product-page py-3 sm:py-4">
-      <Container>
-        <ProductPageTwoColumnLayout
-          left={
-            <div className="riddra-legacy-light-surface space-y-6">
-        <div className="space-y-5">
-          <Eyebrow>Activation layer</Eyebrow>
-          <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">Tools</h1>
-          <p className="max-w-3xl text-base leading-8 text-mist/76">
-            Use investing calculators, live commodity trackers, and practical utility tools to move from quick answers into deeper workflows without leaving the platform.
-          </p>
+    <GlobalSidebarPageShell
+      category="tools"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
+      <ProductCard tone="primary" className="space-y-5">
+        <div className="space-y-3">
+          <Eyebrow>Tools</Eyebrow>
+          <ProductSectionTitle
+            title="Tools"
+            description="Use investing calculators, live commodity trackers, and practical utility tools inside the same container, spacing rhythm, and reading surface as the rest of Riddra."
+          />
         </div>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {[
+            {
+              label: "Trading utility",
+              value: "Position sizing",
+              detail: "Work out entry risk and share size before taking a trade.",
+            },
+            {
+              label: "IPO utility",
+              value: "IPO lots",
+              detail: "Estimate lot count and application amount quickly.",
+            },
+            {
+              label: "Wealth utility",
+              value: "SIP goal",
+              detail: "Translate long-term goals into a monthly savings target.",
+            },
+            {
+              label: "Scanning utility",
+              value: "Breakout check",
+              detail: "Use a focused signal card before opening the full chart route.",
+            },
+          ].map((item) => (
+            <ProductCard key={item.value} tone="secondary" className="space-y-2 p-4">
+              <p className="riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
+                {item.label}
+              </p>
+              <p className="riddra-product-number text-[20px] font-semibold text-[#1B3A6B]">{item.value}</p>
+              <p className="riddra-product-body text-sm leading-7 text-[rgba(75,85,99,0.84)]">{item.detail}</p>
+            </ProductCard>
+          ))}
+        </div>
+      </ProductCard>
 
         <PublicSurfaceTruthSection
           eyebrow="Tools truth"
-          title="The tools hub is useful right now, but saved continuity and subscriber follow-through still depend on launch activation"
-          description="Use tools confidently for public value, while keeping auth continuity, premium workflow promises, and support follow-through honest until all live paths are fully verified."
+          title="Use the tools hub now and step into account features only when you need them"
+          description="This route stays useful as a public utility surface first, while saved tools, member continuity, and support follow-through remain clearly signposted."
           authReady="Signed-in continuity is active enough to carry tool usage into saved account and workspace flows."
-          authPending="Local preview auth still limits how trustworthy the full tools-to-account handoff can be."
-          billingReady="Billing core credentials exist, so premium tool continuity can move beyond pure preview framing once checkout and webhook flows are exercised."
-          billingPending="Billing credentials are still incomplete, so premium workflow promises should stay expectation-setting."
+          authPending="The full tool-to-account handoff still depends on the live sign-in path staying healthy."
+          billingReady="Premium tool continuity can move beyond preview framing once membership continuity is fully exercised."
+          billingPending="Until then, premium workflow promises stay expectation-setting."
           supportReady="Support delivery is configured enough to begin testing real follow-up for tool-driven onboarding and recovery questions."
-          supportPending="Support delivery is still not fully active, so the tools layer should keep support expectations conservative."
+          supportPending="Support follow-through stays conservative on this route until the live help path is fully exercised."
           href="/pricing"
           hrefLabel="Open pricing"
         />
 
         <ToolsExplorer />
 
-        <div className="grid gap-6">
-          {tools.map((tool) => (
-            <Link key={tool.slug} href={`/tools/${tool.slug}`}>
-              <GlowCard className="transition hover:border-white/18 hover:bg-white/[0.04]">
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.16em] text-mist/60">
-                      <span>{tool.category}</span>
-                      <span>{tool.access}</span>
-                    </div>
-                    <h2 className="text-2xl font-semibold text-white">{tool.title}</h2>
-                    <p className="max-w-3xl text-sm leading-7 text-mist/74">{tool.summary}</p>
+      <div className="grid gap-6">
+        {tools.map((tool) => (
+          <Link key={tool.slug} href={`/tools/${tool.slug}`}>
+            <ProductCard tone="secondary" className="transition hover:border-[rgba(27,58,107,0.18)]">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-3">
+                  <div className="riddra-product-body flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.78)]">
+                    <span>{tool.category}</span>
+                    <span>{tool.access}</span>
                   </div>
-                  <div className="grid min-w-[260px] gap-3">
-                    <div className="rounded-2xl border border-white/8 bg-black/15 px-4 py-4">
-                      <p className="text-sm text-mist/66">What it helps with</p>
-                      <p className="mt-2 text-sm font-semibold text-white">{tool.outcome}</p>
-                    </div>
-                    <div className="rounded-2xl border border-white/8 bg-black/15 px-4 py-4">
-                      <p className="text-sm text-mist/66">Typical input</p>
-                      <p className="mt-2 text-sm font-semibold text-white">{tool.inputLabel}</p>
-                    </div>
+                  <h2 className="riddra-product-body text-2xl font-semibold text-[#1B3A6B]">{tool.title}</h2>
+                  <p className="riddra-product-body max-w-3xl text-sm leading-7 text-[rgba(75,85,99,0.84)]">{tool.summary}</p>
+                </div>
+                <div className="grid min-w-[260px] gap-3">
+                  <div className="rounded-[12px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4 shadow-[0_8px_18px_rgba(27,58,107,0.03)]">
+                    <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">What it helps with</p>
+                    <p className="riddra-product-body mt-2 text-sm font-semibold text-[#1B3A6B]">{tool.outcome}</p>
+                  </div>
+                  <div className="rounded-[12px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4 shadow-[0_8px_18px_rgba(27,58,107,0.03)]">
+                    <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">Typical input</p>
+                    <p className="riddra-product-body mt-2 text-sm font-semibold text-[#1B3A6B]">{tool.inputLabel}</p>
                   </div>
                 </div>
-              </GlowCard>
-            </Link>
-          ))}
-        </div>
-            </div>
-          }
-          right={sidebar}
-        />
-      </Container>
-    </div>
+              </div>
+            </ProductCard>
+          </Link>
+        ))}
+      </div>
+    </GlobalSidebarPageShell>
   );
 }

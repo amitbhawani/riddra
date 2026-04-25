@@ -23,11 +23,19 @@
   },
   "experience": {
     "headerAnnouncement": "Header QA 1776824963944",
+    "headerBrandMark": "R",
+    "headerLogoUrl": "",
+    "headerLogoWidthPx": "28",
+    "headerBrandLabel": "Riddra",
+    "headerBrandHref": "/",
+    "headerVisibleMenuGroups": "markets\nstocks\nfunds\ntools\nlearn",
+    "headerTickerRows": "NIFTY 50|22,487.20|+0.74%|/nifty50\nSENSEX|73,904.55|+0.66%|/sensex\nBANKNIFTY|48,211.80|+0.92%|/banknifty\nFINNIFTY|22,541.10|+0.36%|/finnifty\nUSD/INR|83.19|-0.08%|/markets\nGOLD|₹71,842|+0.44%|/markets\nSILVER|₹81,420|+0.27%|/markets\nBRENT|$87.42|-0.22%|/markets\nDOW JONES|38,944.20|+0.31%|/markets\nHANG SENG|16,489.10|+0.58%|/markets\nSHANGHAI|3,062.84|-0.19%|/markets",
     "headerQuickLinks": "",
     "headerMarketNav": "",
     "headerUtilityNav": "",
     "headerPrimaryCtaLabel": "",
     "headerPrimaryCtaHref": "",
+    "headerHeadCode": "<!-- Google tag (gtag.js) -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-QPCB1REZFN\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n\n  gtag('config', 'G-QPCB1REZFN');\n</script>\n<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1333359665928869\"\n     crossorigin=\"anonymous\"></script>",
     "footerSummary": "",
     "footerLinks": "",
     "stockSidebarMode": "",
@@ -189,5 +197,5 @@
     "documentAiApiUrl": "",
     "transcriptProviderUrl": ""
   },
-  "updatedAt": "2026-04-24T03:37:01.755Z"
+  "updatedAt": "2026-04-24T15:35:09.736Z"
 }

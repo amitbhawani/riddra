@@ -100,6 +100,7 @@ export const adminPrimaryNavigation: AdminNavGroup[] = [
     defaultOpen: true,
     items: [
       { label: "Approvals", href: "/admin/approvals", note: "Review, approve, or reject editor-submitted content changes before they go live.", adminOnly: true },
+      { label: "Market News", href: "/admin/market-news", note: "Moderate market news articles, failed rewrites, and ingestion health.", adminOnly: true },
       { label: "Activity Log", href: "/admin/activity-log", note: "Recent admin actions grouped for easy review and quick follow-through." },
       { label: "Change Log", href: "/admin/change-log", note: "Filter all saved changes by user, page, and action." },
       { label: "Help", href: "/admin/help", note: "Plain-language editing guidance for content, approvals, memberships, refresh jobs, and global-site surfaces." },

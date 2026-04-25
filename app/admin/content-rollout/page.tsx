@@ -8,7 +8,7 @@ import { contentRolloutItems } from "@/lib/content-rollout";
 
 export const metadata: Metadata = {
   title: "Content Rollout",
-  description: "Protected content-rollout page for tracking route families, DB readiness, and fallback removal.",
+  description: "Protected content-rollout page for tracking route families, database readiness, and older local content paths.",
 };
 
 export default async function ContentRolloutPage() {
@@ -28,25 +28,25 @@ export default async function ContentRolloutPage() {
           <Eyebrow>Phase 2 data rollout</Eyebrow>
           <SectionHeading
             title="Content rollout"
-            description="This page maps each route family to its current data mode so we can deliberately move from fallback content into real database-backed publishing."
+            description="This page maps each route family to its current content state so we can deliberately move from older local content into real database-backed publishing."
           />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <GlowCard>
-            <p className="text-sm text-mist/68">Fallback-first</p>
+            <p className="text-sm text-mist/68">Local-content first</p>
             <p className="mt-2 text-3xl font-semibold text-white">
               {contentRolloutItems.filter((item) => item.currentMode === "Fallback-first").length}
             </p>
           </GlowCard>
           <GlowCard>
-            <p className="text-sm text-mist/68">DB-first with fallback</p>
+            <p className="text-sm text-mist/68">Database-led with local backup</p>
             <p className="mt-2 text-3xl font-semibold text-white">
               {contentRolloutItems.filter((item) => item.currentMode === "DB-first with fallback").length}
             </p>
           </GlowCard>
           <GlowCard>
-            <p className="text-sm text-mist/68">DB-ready</p>
+            <p className="text-sm text-mist/68">Database-ready</p>
             <p className="mt-2 text-3xl font-semibold text-white">
               {contentRolloutItems.filter((item) => item.currentMode === "DB-ready").length}
             </p>

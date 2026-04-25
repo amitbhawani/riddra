@@ -4,8 +4,10 @@ import { DM_Sans, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SystemHeadScripts } from "@/components/system-head-scripts";
 import { REQUEST_PATH_HEADER } from "@/lib/open-access";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
+import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { siteConfig } from "@/lib/site";
 import { normalizeSystemHeadCode } from "@/lib/system-head-code";
 import { getSystemSettings } from "@/lib/user-product-store";
@@ -76,18 +78,18 @@ export default async function RootLayout({
   const route = requestHeaders.get(REQUEST_PATH_HEADER) ?? "/";
   const isAdminRoute = route === "/admin" || route.startsWith("/admin/");
   const settings = await getSystemSettings();
-  const publicHeadCode = isAdminRoute ? "" : normalizeSystemHeadCode(settings.publicHeadCode);
+  const runtimeConfig = getRuntimeLaunchConfig();
+  const publicHeadCode = isAdminRoute
+    ? ""
+    : normalizeSystemHeadCode(runtimeConfig.headerHeadCode || settings.publicHeadCode);
 
   return (
     <html lang="en">
-      {publicHeadCode ? (
-        <head suppressHydrationWarning dangerouslySetInnerHTML={{ __html: publicHeadCode }} />
-      ) : (
-        <head />
-      )}
+      <head />
       <body
         className={`${riddraBodyFont.variable} ${riddraDisplayFont.variable} ${riddraMonoFont.variable} ${isAdminRoute ? "bg-[#f3f4f6] text-[#111827]" : "bg-ink text-white"} antialiased`}
       >
+        {!isAdminRoute && publicHeadCode ? <SystemHeadScripts code={publicHeadCode} /> : null}
         {isAdminRoute ? (
           <div className="min-h-screen">{children}</div>
         ) : (

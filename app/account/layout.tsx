@@ -7,7 +7,7 @@ import {
   ProductPageTwoColumnLayout,
 } from "@/components/product-page-system";
 import { syncAccountContinuityRecord } from "@/lib/account-continuity-store";
-import { requireBetaUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { REQUEST_PATH_HEADER } from "@/lib/open-access";
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default async function AccountLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await requireBetaUser();
+  const user = await requireUser();
   const requestHeaders = await headers();
   const route = requestHeaders.get(REQUEST_PATH_HEADER) ?? "/account";
   const sidebar = await getGlobalSidebarRail("account");

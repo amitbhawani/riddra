@@ -31,6 +31,7 @@ import { getMarketDataTargetStatuses } from "@/lib/market-data-targets";
 import { getIndexChartSymbolAuditRows, getIndexChartSymbolAuditSummary } from "@/lib/index-chart-symbol-audit";
 import { getMarketHistoryMemory } from "@/lib/market-history-memory-store";
 import { getMarketHistoryRegistrySummary } from "@/lib/market-history-registry";
+import { getConfiguredPublicSiteUrl } from "@/lib/public-site-url";
 
 export const metadata: Metadata = {
   title: "Market Data Ops",
@@ -62,11 +63,12 @@ export default async function AdminMarketDataPage() {
   const refreshProof = getMarketDataRefreshProofStatus();
   const ingestionReadiness = getMarketDataIngestionReadiness();
   const providerSyncReadiness = getMarketDataProviderSyncReadiness();
+  const publicProofOrigin = getConfiguredPublicSiteUrl() || "https://www.riddra.com";
   const refreshProofCommands = [
     `npm run trigger:dev`,
-    `curl -s -X POST http://127.0.0.1:3000/api/market-data/refresh \\
+    `curl -s -X POST ${publicProofOrigin}/api/market-data/refresh \\
   -H 'x-riddra-refresh-secret: <MARKET_DATA_REFRESH_SECRET>'`,
-    `curl -s 'http://127.0.0.1:3000/api/admin/durable-jobs?family=market_data'`,
+    `curl -s '${publicProofOrigin}/api/admin/durable-jobs?family=market_data'`,
   ];
   const refreshProofCriteria = [
     "The refresh API returns ok: true with mode durable_job_queued and a non-empty job id.",

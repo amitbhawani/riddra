@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import {
   communityProgramsItems,
   getCommunityProgramBySlug,
@@ -55,8 +56,7 @@ export default async function CommunityProgramPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-8">
+    <GlobalSidebarPageShell category="community" leftClassName="riddra-legacy-light-surface space-y-8">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{program.participationMode}</Eyebrow>
@@ -188,7 +188,6 @@ export default async function CommunityProgramPage({ params }: PageProps) {
             intended participation loops and how they connect back into the rest of the product.
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

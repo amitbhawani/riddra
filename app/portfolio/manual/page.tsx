@@ -44,7 +44,7 @@ export default async function PortfolioManualPage() {
           title="Manual portfolio entry is still a protected preview flow"
           description={
             usesDurablePortfolioState
-              ? "This builder shows the shape of manual portfolio creation, and the page now reads a persisted draft from the shared private-beta portfolio lane for the signed-in account. Real user ownership and provider-backed valuation continuity still need more verification before it can be presented as a fully live subscriber tool."
+              ? "This builder shows the shape of manual portfolio creation, and the page now reads a persisted draft from the shared private-beta portfolio lane for the signed-in account. Real user ownership and live valuation continuity still need more verification before it can be presented as a fully live subscriber tool."
               : "This builder still falls back to the file-backed portfolio draft for the signed-in account because durable private-beta portfolio storage is unavailable."
           }
           items={[
@@ -52,8 +52,8 @@ export default async function PortfolioManualPage() {
               ? "Broker continuity exists enough to compare manual and connected paths more rigorously."
               : "Manual entry remains the safest planning path while broker continuity is still staged.",
             truth.hasMarketDataProvider
-              ? "A market-data provider is available, so the next step is binding manual holdings to verified delayed valuation."
-              : "Manual holdings still need provider-backed valuation before this flow can be trusted as a live portfolio tool.",
+              ? "A market-data source is available, so the next step is binding manual holdings to verified delayed valuation."
+              : "Manual holdings still need a live valuation source before this flow can be trusted as a live portfolio tool.",
             `Current persisted draft: ${portfolioMemory.manualDraft.symbol} · ${portfolioMemory.manualDraft.quantity} shares @ ${portfolioMemory.manualDraft.avgCost}.`,
             `Storage mode: ${portfolioMemory.storageMode.replaceAll("_", " ")}.`,
           ]}

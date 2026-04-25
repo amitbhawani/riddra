@@ -20,6 +20,78 @@ const headerFields = [
     helper: "Short announcement or notice line shown above the public navigation when needed.",
   },
   {
+    key: "headerBrandMark",
+    label: "Logo mark",
+    type: "text" as const,
+    helper: "Short text used inside the square brand mark, such as R.",
+  },
+  {
+    key: "headerLogoUrl",
+    label: "Logo image",
+    type: "image" as const,
+    helper:
+      "Upload a logo image or paste an existing logo URL. When this is set, it is shown before the site name instead of the square letter mark.",
+  },
+  {
+    key: "headerLogoWidthPx",
+    label: "Logo width (px)",
+    type: "number" as const,
+    helper: "Pixel width used for the logo image in the public header. Height scales automatically.",
+  },
+  {
+    key: "headerBrandLabel",
+    label: "Brand label",
+    type: "text" as const,
+    helper: "Main brand name shown beside the logo mark in the top menu.",
+  },
+  {
+    key: "headerBrandHref",
+    label: "Brand link",
+    type: "text" as const,
+    helper: "Route opened when someone clicks the logo or brand label.",
+  },
+  {
+    key: "headerVisibleMenuGroups",
+    label: "Top menu groups",
+    type: "checkbox_group" as const,
+    helper: "Choose which top-level groups are shown in the main desktop and mobile header navigation.",
+    options: [
+      {
+        label: "Markets",
+        value: "markets",
+        description: "Show the markets group and its dropdown links.",
+      },
+      {
+        label: "Stocks",
+        value: "stocks",
+        description: "Show the stocks group and its dropdown links.",
+      },
+      {
+        label: "Funds",
+        value: "funds",
+        description: "Show the funds group and its dropdown links.",
+      },
+      {
+        label: "Tools",
+        value: "tools",
+        description: "Show the tools group and its dropdown links.",
+      },
+      {
+        label: "Learn",
+        value: "learn",
+        description: "Show the learn group and its dropdown links.",
+      },
+    ],
+  },
+  {
+    key: "headerTickerRows",
+    label: "Header ticker rows",
+    type: "textarea" as const,
+    rows: 10,
+    helper:
+      "One row per line using Label|Value|Change|/route. These rows currently act as the manual snapshot for the scrolling ticker beneath the main header and are ready to be replaced by backend-fed live or last-close data later.",
+  },
+  {
     key: "headerQuickLinks",
     label: "Quick links",
     type: "links" as const,
@@ -47,12 +119,21 @@ const headerFields = [
     label: "Primary CTA href",
     type: "text" as const,
   },
+  {
+    key: "headerHeadCode",
+    label: "Header code and analytics",
+    type: "textarea" as const,
+    rows: 8,
+    helper:
+      "Paste trusted <script> tags that should load globally across public pages, such as Google Analytics or Google Ads. This is a site-wide master setting, and local-only URLs or non-script markup are blocked.",
+  },
 ] satisfies Array<{
   key: keyof Awaited<ReturnType<typeof getLaunchConfigStore>>["experience"];
   label: string;
-  type: "text" | "textarea" | "links";
+  type: "text" | "textarea" | "links" | "checkbox_group" | "image" | "number";
   rows?: number;
   helper?: string;
+  options?: Array<{ label: string; value: string; description?: string }>;
 }>;
 
 const footerFields = [
@@ -261,22 +342,19 @@ export default async function AdminGlobalSiteSectionPage({
         description={meta.description}
       />
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
-        <AdminGuidanceCard
-          title="What changes here affect"
-          description="Global-site edits can influence many routes at once, so treat this as shared frontend content."
-          items={[
-            "Header and footer edits affect public navigation, trust copy, and shared calls to action across the site.",
-            "Shared blocks, banners, route strips, and market modules are reusable frontend modules, not one-off record content.",
-            "Save draft first when you want a review step, and publish only when the shared change is ready for every assigned route.",
-          ]}
-          links={[
-            { href: "/admin/help", label: "Help", tone: "primary" },
-            { href: "/admin/activity-log", label: "Activity log" },
-          ]}
-        />
-        <AdminStorageStatusCard scope="global-site editing" />
-      </div>
+      <AdminGuidanceCard
+        title="What changes here affect"
+        description="Global-site edits can influence many routes at once, so treat this as shared frontend content."
+        items={[
+          "Header and footer edits affect public navigation, trust copy, and shared calls to action across the site.",
+          "Shared blocks, banners, route strips, and market modules are reusable frontend modules, not one-off record content.",
+          "Save draft first when you want a review step, and publish only when the shared change is ready for every assigned route.",
+        ]}
+        links={[
+          { href: "/admin/help", label: "Help", tone: "primary" },
+          { href: "/admin/activity-log", label: "Activity log" },
+        ]}
+      />
 
       {isExperienceSection ? (
         <AdminGlobalSiteEditorClient
@@ -330,6 +408,8 @@ export default async function AdminGlobalSiteSectionPage({
           }
         />
       )}
+
+      <AdminStorageStatusCard scope="global-site editing" />
     </AdminPageFrame>
   );
 }

@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import {
   getMentorshipTrackBySlug,
   getMentorshipTrackRoutes,
@@ -55,8 +56,7 @@ export default async function MentorshipTrackPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-8">
+    <GlobalSidebarPageShell category="mentorship" leftClassName="riddra-legacy-light-surface space-y-8">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{track.audience}</Eyebrow>
@@ -188,7 +188,6 @@ export default async function MentorshipTrackPage({ params }: PageProps) {
             path is trying to do and where it should lead next.
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

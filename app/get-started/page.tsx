@@ -25,7 +25,7 @@ export default function GetStartedPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -34,7 +34,11 @@ export default function GetStartedPage() {
           path: "/get-started",
         })}
       />
-      <GlobalSidebarPageShell category="home">
+      <GlobalSidebarPageShell
+        category="home"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Launch onboarding</Eyebrow>
@@ -78,7 +82,9 @@ export default function GetStartedPage() {
             {
               label: "Support continuity",
               value: `${supportRegistry.total} rows`,
-              detail: `${supportRegistry.inProgress} in progress, ${supportRegistry.blocked} blocked, and contact email currently ${config.supportEmail ? "configured" : "not configured yet"}.`,
+              detail: config.supportEmail
+                ? "Support guidance is available here, and direct follow-up can continue through the visible contact channel."
+                : "Support guidance is available here, and direct follow-up details will appear once the contact channel is ready.",
             },
           ]}
         />
@@ -103,6 +109,6 @@ export default function GetStartedPage() {
           ))}
         </div>
       </GlobalSidebarPageShell>
-    </div>
+    </>
   );
 }

@@ -157,6 +157,9 @@ export default async function TestMotorsPage() {
   ).filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   const demoData = {
+    heroBadgeLabel: "TEST MOTORS",
+    heroSectorLabel: "Automobiles",
+    industryLabel: "Passenger Vehicles and Commercial Vehicles",
     sectorLabel: "Nifty Auto",
     investorDetails: [
       { label: "Symbol", value: stock.symbol, helper: "" },
@@ -278,6 +281,9 @@ export default async function TestMotorsPage() {
       similarAssets={similarAssets}
       mutualFundOwners={mutualFundOwners}
       demoData={demoData}
+      marketNews={[]}
+      marketNewsUsedSectorFallback={false}
+      marketNewsFallbackSectorLabel={null}
       viewerSignedIn={Boolean(viewer)}
       sharedSidebarRailData={sharedSidebarRailData}
     />

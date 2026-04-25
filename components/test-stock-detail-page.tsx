@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
+import { EntityNewsSection } from "@/components/entity-news-section";
 import {
   MainChartContainer,
   ProductCard,
@@ -13,6 +14,7 @@ import {
 import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { UserContentActionCard } from "@/components/user-content-action-card";
 import type { StockChartSnapshot } from "@/lib/chart-content";
+import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
 import type { StockSnapshot } from "@/lib/mock-data";
 import { formatBenchmarkLabel } from "@/lib/benchmark-labels";
 import {
@@ -68,6 +70,9 @@ type DemoShareholdingBucket = {
 };
 
 type TestStockDetailDemoData = {
+  heroBadgeLabel?: string;
+  heroSectorLabel?: string;
+  industryLabel?: string | null;
   sectorLabel?: string;
   investorDetails?: Array<{ label: string; value: string; helper: string }>;
   performanceRows?: Array<{ period: string; stock: string; benchmark: string }>;
@@ -93,6 +98,9 @@ type TestStockDetailPageProps = {
   similarAssets: SimilarStockCard[];
   mutualFundOwners: MutualFundOwner[];
   demoData: TestStockDetailDemoData;
+  marketNews: MarketNewsArticleWithRelations[];
+  marketNewsUsedSectorFallback?: boolean;
+  marketNewsFallbackSectorLabel?: string | null;
   viewerSignedIn: boolean;
   sharedSidebarRailData: SharedSidebarRailData;
   pageContext?: {
@@ -627,29 +635,6 @@ function getInvestorTrendMeta(current: string, previous: string) {
   };
 }
 
-function getNewsTone(type: string) {
-  const normalized = type.trim().toLowerCase();
-
-  if (normalized.includes("news")) {
-    return {
-      borderClassName: "border-[#3B82F6]",
-      badgeClassName: "bg-[rgba(59,130,246,0.12)] text-[#1D4ED8]",
-    };
-  }
-
-  if (normalized.includes("research")) {
-    return {
-      borderClassName: "border-[#8B5CF6]",
-      badgeClassName: "bg-[rgba(139,92,246,0.12)] text-[#7C3AED]",
-    };
-  }
-
-  return {
-    borderClassName: "border-[#F59E0B]",
-    badgeClassName: "bg-[rgba(245,158,11,0.14)] text-[#B45309]",
-  };
-}
-
 export function TestStockDetailPage({
   stock,
   chartSnapshot,
@@ -661,6 +646,9 @@ export function TestStockDetailPage({
   similarAssets,
   mutualFundOwners,
   demoData,
+  marketNews,
+  marketNewsUsedSectorFallback = false,
+  marketNewsFallbackSectorLabel = null,
   viewerSignedIn,
   sharedSidebarRailData,
   pageContext,
@@ -772,7 +760,7 @@ export function TestStockDetailPage({
   useEffect(() => {
     const hashSectionId = window.location.hash.replace("#", "");
 
-    if (!["summary", "performance", "ownership", "forecast"].includes(hashSectionId)) {
+    if (!["summary", "performance", "ownership", "latest-news", "forecast"].includes(hashSectionId)) {
       return;
     }
 
@@ -841,7 +829,7 @@ export function TestStockDetailPage({
   }, []);
 
   useEffect(() => {
-    const sectionIds = ["summary", "performance", "ownership", "forecast"] as const;
+    const sectionIds = ["summary", "performance", "ownership", "latest-news", "forecast"] as const;
     const sectionIdSet = new Set<string>(sectionIds);
 
     const clearPendingAlignment = () => {
@@ -964,7 +952,9 @@ export function TestStockDetailPage({
   const week52Range = derive52WeekRange(chartSnapshot);
   const benchmarkLabel = formatBenchmarkLabel(benchmarkSlug);
   const sectorLabel = demoData.sectorLabel ?? (sectorBenchmarkSlug ? formatBenchmarkLabel(sectorBenchmarkSlug) : null);
-  const displaySectorName = stock.sector === "Unclassified" ? "Automobiles" : stock.sector;
+  const displaySectorName = demoData.heroSectorLabel ?? stock.sector;
+  const displayIndustryLabel = demoData.industryLabel ?? null;
+  const heroBadgeLabel = demoData.heroBadgeLabel ?? stock.symbol;
   const isNegativeChange = stock.change.trim().startsWith("-");
   const priceChangePillClass = isNegativeChange
     ? "border-[rgba(220,38,38,0.14)] bg-[rgba(239,68,68,0.1)] text-[#DC2626]"
@@ -1111,7 +1101,6 @@ export function TestStockDetailPage({
       value: relativeStrengthRank,
     },
   ];
-  const newsTimeBadges = ["Apr 15 · 8:35 PM", "Apr 14 · 6:10 PM", "Apr 13 · 9:20 AM", "Apr 12 · 4:45 PM"];
   const summaryQuickDetailRows = [
     { label: "Symbol", value: investorDetailLookup.get("symbol") ?? stock.symbol },
     { label: "Sector", value: investorDetailLookup.get("sector") ?? displaySectorName },
@@ -1139,6 +1128,12 @@ export function TestStockDetailPage({
       label: "Ownership",
       onClick: () => scrollToSection("ownership"),
       active: activeSectionId === "ownership",
+    },
+    {
+      id: "latest-news",
+      label: "News",
+      onClick: () => scrollToSection("latest-news"),
+      active: activeSectionId === "latest-news",
     },
     { id: "forecast", label: "Forecast", onClick: () => scrollToSection("forecast"), active: activeSectionId === "forecast" },
   ];
@@ -1496,14 +1491,16 @@ export function TestStockDetailPage({
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="rounded-[9px] bg-[#433C8B] px-3.5 py-1.5 text-[12px] font-semibold tracking-[0.04em] text-white">
-                          TEST MOTORS
+                          {heroBadgeLabel}
                         </span>
                       </div>
                       <h1 className="riddra-product-display text-[1.48rem] font-semibold leading-tight tracking-[-0.03em] text-[#1F2937] sm:text-[1.82rem]">
                         {stock.name}
                       </h1>
                       <p className="riddra-product-body text-[13px] text-[rgba(107,114,128,0.9)]">
-                        Sector: {displaySectorName} | Industry: Passenger Vehicles and Commercial Vehicles
+                        {displayIndustryLabel
+                          ? `Sector: ${displaySectorName} | Industry: ${displayIndustryLabel}`
+                          : `Sector: ${displaySectorName}`}
                       </p>
                     </div>
 
@@ -2438,32 +2435,14 @@ export function TestStockDetailPage({
               </section>
 
               <section id="latest-news" className={sectionScrollAnchorClass}>
-                <ProductCard tone="secondary" className="space-y-3">
-                  <ProductSectionTitle
-                    title="Latest news"
-                    description=""
-                    eyebrow="News"
-                  />
-                  <div className="grid gap-2.5 md:grid-cols-2">
-                    {stock.newsItems.slice(0, 4).map((item, index) => (
-                      <div
-                        key={`${item.title}-${index}`}
-                        className={`rounded-[13px] border border-[rgba(226,222,217,0.82)] border-l-[3px] bg-white px-3.5 py-3 ${getNewsTone(item.type).borderClassName}`}
-                      >
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${getNewsTone(item.type).badgeClassName}`}>
-                            {item.type}
-                          </span>
-                          <span className="rounded-full border border-[rgba(221,215,207,0.92)] bg-[rgba(250,249,247,0.92)] px-2 py-0.5 text-[10px] font-medium text-[rgba(75,85,99,0.86)]">
-                            {newsTimeBadges[index] ?? "Apr 12 · 4:45 PM"}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-[14px] font-semibold leading-6 text-[#1F2937]">{item.title}</p>
-                        <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-[rgba(107,114,128,0.74)]">{item.source}</p>
-                      </div>
-                    ))}
-                  </div>
-                </ProductCard>
+                <EntityNewsSection
+                  entityType="stock"
+                  entitySlug={stock.slug}
+                  symbol={stock.symbol}
+                  articles={marketNews}
+                  usedSectorFallback={marketNewsUsedSectorFallback}
+                  fallbackSectorLabel={marketNewsFallbackSectorLabel}
+                />
               </section>
 
               <section id="faq" className={sectionScrollAnchorClass}>

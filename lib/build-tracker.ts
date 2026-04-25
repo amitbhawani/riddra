@@ -2027,7 +2027,7 @@ export const privateBetaReadinessSections: ReadinessTrackItem[] = [
     detail:
       "The immediate release goal is a safe internal or invite-only deploy with verified domain, auth, provider, and operator paths. For the current signoff set, the planning and proof layer is complete and the product is ready for a manual, operator-led beta.",
     checks: [
-      "Keep localhost and production-build fallback stable.",
+      "Keep the workspace runtime and production-build fallback stable.",
       "Mirror the proven local posture into the invite-only beta environment when you start operator-led rollout.",
     ],
     href: "/admin/launch-control",

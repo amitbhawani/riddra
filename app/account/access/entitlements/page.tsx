@@ -72,7 +72,7 @@ export default async function AccountEntitlementsPage() {
           items={[
             truth.hasLiveAuthContinuity
               ? "Public auth continuity is active enough to validate real account identity."
-              : "Auth continuity still needs final provider-backed proof, so this route should keep showing stored access posture instead of pretending every outside-user path is fully verified.",
+              : "Auth continuity still needs final live sign-in proof, so this route should keep showing stored access posture instead of pretending every outside-user path is fully verified.",
             truth.hasBillingWebhook
               ? "Webhook signing exists in code, but commercial billing remains intentionally deferred while private beta relies on stored entitlement placeholders and support-led access control."
               : "Commercial billing is intentionally deferred, so entitlement trust here comes from stored sync rows and account continuity records rather than live payment proof.",

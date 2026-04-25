@@ -128,7 +128,7 @@ export default async function AdminSystemHealthPage() {
         items={[
           "Stale data means the page still works, but some supporting market data is older or thinner than it should be.",
           "Incomplete flagship page means an important public route still loads, but one or more supporting blocks are still weak or missing.",
-          "Database field blocker means the live database is still missing a field this page expects. Local fallback can keep localhost usable, but the warning only clears after the real database is updated.",
+          "Database field blocker means the main database is still missing a field this page expects. The warning clears only after that database is updated.",
         ]}
         links={[
           { href: "/admin/readiness", label: "Readiness center", tone: "primary" },
@@ -188,7 +188,9 @@ export default async function AdminSystemHealthPage() {
 
         <AdminSectionCard
           title="Environment safety"
-          description="Production-safety posture, durable-state readiness, and media storage mode."
+          description="Deployment posture, save-path status, and media storage mode."
+          collapsible
+          defaultOpen={false}
         >
           <div className="space-y-2.5">
             <div className="rounded-lg border border-[#d1d5db] bg-[#f8fafc] p-[14px] shadow-sm">
@@ -198,7 +200,7 @@ export default async function AdminSystemHealthPage() {
                   tone={report.isProductionMode ? "danger" : "info"}
                 />
                 <AdminBadge
-                  label={report.usesDurableOperatorState ? "Durable DB-first state" : "Fallback state active"}
+                  label={report.usesDurableOperatorState ? "Hosted save path" : "Local save path"}
                   tone={report.usesDurableOperatorState ? "success" : "warning"}
                 />
                 <AdminBadge label={report.mediaStorage.label} tone="default" />
@@ -216,7 +218,7 @@ export default async function AdminSystemHealthPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <AdminBadge label="Runtime gaps" tone="danger" />
                   <p className="text-sm font-medium text-[#111827]">
-                    Some hosted-runtime requirements are still missing.
+                    Some deployment settings are still missing.
                   </p>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -230,7 +232,7 @@ export default async function AdminSystemHealthPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <AdminBadge label="Runtime requirements ready" tone="success" />
                   <p className="text-sm font-medium text-[#111827]">
-                    No missing hosted-runtime requirements are currently flagged by the launch config checks.
+                    No missing deployment settings are currently flagged by the launch checks.
                   </p>
                 </div>
               </div>

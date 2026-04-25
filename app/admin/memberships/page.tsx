@@ -84,8 +84,6 @@ export default async function AdminMembershipsPage() {
         description="Manage the fixed Free, Pro, and Pro Max plans that power member-facing feature access."
       />
 
-      <AdminStorageStatusCard scope="membership tiers and access plans" />
-
       <AdminSectionCard
         title="Tier registry"
         description="Each tier now leads with member-facing feature access, while the family and record rules stay available for deeper exceptions."
@@ -141,6 +139,8 @@ export default async function AdminMembershipsPage() {
           />
         )}
       </AdminSectionCard>
+
+      <AdminStorageStatusCard scope="membership tiers and access plans" />
     </AdminPageFrame>
   );
 }

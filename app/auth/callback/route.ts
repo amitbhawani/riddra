@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
   const nextPath = resolveSafeNextPath(request);
   const response = NextResponse.redirect(new URL(nextPath, getRequestOrigin(request)));
-  const supabase = createSupabaseRouteHandlerClient(request, response);
+  const supabase = await createSupabaseRouteHandlerClient(response);
 
   try {
     const { error } = await supabase.auth.exchangeCodeForSession(code);

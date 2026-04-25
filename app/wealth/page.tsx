@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { getWealthFamilyOverviews, wealthFamilyMeta, wealthProducts } from "@/lib/wealth-products";
 
 export const metadata: Metadata = {
@@ -12,12 +14,24 @@ export const metadata: Metadata = {
 };
 
 export default function WealthHubPage() {
+  if (isStockFirstLaunchPlaceholderFamily("wealth")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="wealth"
+        pageCategory="home"
+      />
+    );
+  }
+
   const familyCounts = getWealthFamilyOverviews();
   const totalProducts = wealthProducts.length;
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="home">
+      <GlobalSidebarPageShell
+        category="home"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Eyebrow>Wealth expansion</Eyebrow>
           <SectionHeading
@@ -93,6 +107,5 @@ export default function WealthHubPage() {
           ))}
         </div>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

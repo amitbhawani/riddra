@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import {
   ProductBulletListCard,
   ProductCard,
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RScoreMethodologyPage() {
+export default async function RScoreMethodologyPage() {
+  const sidebar = await getGlobalSidebarRail("stocks");
+
   return (
     <ProductPageShell
       breadcrumbs={[
@@ -40,6 +43,7 @@ export default function RScoreMethodologyPage() {
         </ProductCard>
       }
       stickyTabs={null}
+      sidebar={sidebar}
       summary={
         <div className="grid gap-4 lg:grid-cols-2">
           <ProductBulletListCard

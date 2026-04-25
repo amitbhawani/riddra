@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
 import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 import {
   ProductCard,
   ProductPageContainer,
@@ -22,6 +23,7 @@ import { getFunds } from "@/lib/content";
 import { getFundCategorySearchAliases } from "@/lib/fund-search-aliases";
 import { getFundPortfolioLens, getFundReturnValue } from "@/lib/fund-research";
 import { getFundTruthLabel } from "@/lib/market-truth";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 
 export const metadata: Metadata = {
   title: "Mutual Funds",
@@ -29,6 +31,15 @@ export const metadata: Metadata = {
 };
 
 export default async function MutualFundsIndexPage() {
+  if (isStockFirstLaunchPlaceholderFamily("mutual_funds")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="mutual_funds"
+        pageCategory="mutual_funds"
+      />
+    );
+  }
+
   const funds = await getFunds();
   const sidebar = await getGlobalSidebarRail("mutual_funds");
   const categories = Array.from(new Set(funds.map((fund) => fund.category)));
@@ -139,7 +150,7 @@ export default async function MutualFundsIndexPage() {
         fund.snapshotMeta?.marketDetail ??
         (fund.factsheetMeta
           ? `${fund.factsheetMeta.documentLabel} captured on ${fund.factsheetMeta.sourceDate}.`
-          : "This route stays conservative until a provider-backed durable NAV is written for the scheme."),
+          : "This route stays conservative until a verified delayed NAV is written for the scheme."),
       primaryMetric: {
         label: "Latest NAV",
         value: fund.nav,

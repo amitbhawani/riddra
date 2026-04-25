@@ -1,57 +1,99 @@
-export type FiiDiiParticipantRow = {
-  participant: string;
-  buyValue: string;
-  sellValue: string;
-  netValue: string;
-  status: string;
+export type FiiDiiReportRow = {
+  category: string;
+  dateLabel: string;
+  buyValue: number;
+  sellValue: number;
+  netValue: number;
 };
 
+export type FiiDiiReportSection = {
+  id: string;
+  title: string;
+  description: string;
+  csvFileName: string;
+  rows: FiiDiiReportRow[];
+};
+
+function formatValue(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function formatFiiDiiCurrency(value: number) {
+  return formatValue(value);
+}
+
+export function buildFiiDiiCsv(section: FiiDiiReportSection) {
+  const header = ["Category", "Date", "Buy Value (Rs Crores)", "Sell Value (Rs Crores)", "Net Value (Rs Crores)"];
+  const lines = section.rows.map((row) =>
+    [
+      row.category,
+      row.dateLabel,
+      formatValue(row.buyValue),
+      formatValue(row.sellValue),
+      formatValue(row.netValue),
+    ].join(","),
+  );
+
+  return [header.join(","), ...lines].join("\n");
+}
+
 export const fiiDiiReport = {
-  sourceLabel: "NSE FII / DII activity report",
+  sourceLabel: "NSE India reports desk",
   sourceUrl: "https://www.nseindia.com/reports/fii-dii",
-  syncMode: "Source-inspired preview",
-  lastSyncLabel: "Verified source sync pending",
-  reportCoverage: "NSE-exclusive and combined exchange activity layout",
-  nseExclusiveRows: [
+  reportDateLabel: "24-Apr-2026",
+  lastUpdatedLabel: "24 Apr 2026 · 6:10 PM IST",
+  sections: [
     {
-      participant: "FII / FPI",
-      buyValue: "--",
-      sellValue: "--",
-      netValue: "--",
-      status: "Waiting for verified NSE pull",
+      id: "nse-capital-market",
+      title: "FII/FPI & DII trading activity on NSE in Capital Market Segment",
+      description: "NSE-only capital-market view for institutional buy, sell, and net positioning.",
+      csvFileName: "riddra-fii-dii-nse-capital-market.csv",
+      rows: [
+        {
+          category: "DII",
+          dateLabel: "24-Apr-2026",
+          buyValue: 20346.06,
+          sellValue: 15739.02,
+          netValue: 4607.04,
+        },
+        {
+          category: "FII/FPI",
+          dateLabel: "24-Apr-2026",
+          buyValue: 9454.95,
+          sellValue: 17932.55,
+          netValue: -8477.6,
+        },
+      ],
     },
     {
-      participant: "DII",
-      buyValue: "--",
-      sellValue: "--",
-      netValue: "--",
-      status: "Waiting for verified NSE pull",
+      id: "all-exchanges-capital-market",
+      title: "FII/FPI & DII trading activity on NSE, BSE and MSEI in Capital Market Segment",
+      description: "Combined exchange view for a wider institutional-flow read across the listed equity tape.",
+      csvFileName: "riddra-fii-dii-all-exchanges-capital-market.csv",
+      rows: [
+        {
+          category: "DII",
+          dateLabel: "24-Apr-2026",
+          buyValue: 21560.16,
+          sellValue: 16859.45,
+          netValue: 4700.71,
+        },
+        {
+          category: "FII/FPI",
+          dateLabel: "24-Apr-2026",
+          buyValue: 9837.2,
+          sellValue: 18665.07,
+          netValue: -8827.87,
+        },
+      ],
     },
-  ] satisfies FiiDiiParticipantRow[],
-  combinedExchangeRows: [
-    {
-      participant: "FII / FPI",
-      buyValue: "--",
-      sellValue: "--",
-      netValue: "--",
-      status: "Combined exchange sync pending",
-    },
-    {
-      participant: "DII",
-      buyValue: "--",
-      sellValue: "--",
-      netValue: "--",
-      status: "Combined exchange sync pending",
-    },
-  ] satisfies FiiDiiParticipantRow[],
+  ] satisfies FiiDiiReportSection[],
   notes: [
-    "NSE publishes both NSE-exclusive and combined exchange institutional activity views for the capital-market segment.",
-    "FII / FPI figures are provisional and can change after custodial confirmation and expiry-day obligations are finalized.",
-    "DII figures depend on member-side client category classification, so this page should stay explicit about sync timing and verification status.",
-  ],
-  workflow: [
-    "Use this route as the public explanation layer for institutional flow instead of burying FII / DII context in stock-only pages.",
-    "Keep the source reference visible so operators know the intended benchmark and users understand why values may lag until a verified pull exists.",
-    "Upgrade this page from preview to live only after verified NSE or operator-backed ingestion is wired into the source-entry flow.",
+    "Use this page as the clean public destination for institutional flow instead of scattering FII and DII context across stock detail pages.",
+    "The current layout mirrors the NSE-style report structure so the team can later plug in verified backend-fed values without redesigning the page.",
+    "Download links are generated directly from the visible table rows, which keeps the public page and export output in sync.",
   ],
 };

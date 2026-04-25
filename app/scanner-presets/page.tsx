@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { requirePlanTier } from "@/lib/plan-gating";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { scannerPresetRows, scannerPresetRules, scannerPresetSummary } from "@/lib/scanner-presets";
@@ -28,8 +29,11 @@ export default async function ScannerPresetsPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <GlobalSidebarPageShell
+      category="charts"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Phase 4 workstation</Eyebrow>
@@ -135,7 +139,6 @@ export default async function ScannerPresetsPage() {
             </Link>
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

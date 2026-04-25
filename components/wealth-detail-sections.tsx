@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { WealthFamily, WealthProduct } from "@/lib/wealth-products";
 
 import {
@@ -17,9 +18,10 @@ const familyLabels: Record<WealthFamily, string> = {
 type WealthDetailSectionsProps = {
   family: WealthFamily;
   product: WealthProduct;
+  marketNewsSection?: ReactNode;
 };
 
-export function WealthDetailSections({ family, product }: WealthDetailSectionsProps) {
+export function WealthDetailSections({ family, product, marketNewsSection }: WealthDetailSectionsProps) {
   const familyLabel = familyLabels[family];
 
   return (
@@ -108,6 +110,8 @@ export function WealthDetailSections({ family, product }: WealthDetailSectionsPr
         items={product.keyPoints.map((item) => ({ body: item }))}
         variant="context"
       />
+
+      {marketNewsSection ? <div id="news">{marketNewsSection}</div> : null}
     </div>
   );
 }

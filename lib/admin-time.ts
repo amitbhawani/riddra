@@ -58,6 +58,23 @@ export function formatAdminSavedState(
   return `${prefix} ${formatAdminDateTime(value, "just now")}`;
 }
 
+export function formatAdminStorageDetail(
+  storageMode: "durable" | "fallback" | null | undefined,
+  value: string | null | undefined,
+  action: "saved" | "removed" = "saved",
+) {
+  const storageLabel =
+    storageMode === "durable"
+      ? action === "removed"
+        ? "Removed from the primary shared storage."
+        : "Saved to the primary shared storage."
+      : action === "removed"
+        ? "Removed from the current workspace storage."
+        : "Saved in the current workspace storage.";
+
+  return `${storageLabel} ${formatAdminSavedState(value)}`;
+}
+
 export function formatAdminDateLabel(
   value: string | null | undefined,
   fallback = "Not recorded",

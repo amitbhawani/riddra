@@ -1,0 +1,12 @@
+.next
+.next/**
+.next-stale-*
+.next-stale-*/**
+node_modules
+node_modules/**
+dist
+build
+.cache
+.cache/**
+*.log
+.DS_Store

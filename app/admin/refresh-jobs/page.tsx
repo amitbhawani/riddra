@@ -35,22 +35,19 @@ export default async function AdminRefreshJobsPage() {
         description="Manage cadence, source dependency, last/next run, health posture, and manual refresh control for the durable source lanes behind the public product."
       />
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <AdminGuidanceCard
-          title="How to use this desk"
-          description="This area helps operators understand what a run, retry, success, or failure actually means."
-          items={[
-            "Run now starts a safe manual run for jobs that allow operator-triggered refresh.",
-            "Retry uses the last failed or warning run as context so the history stays traceable.",
-            "Last success and last failure tell you the most recent trustworthy outcome, not just whether a button was clicked.",
-          ]}
-          links={[
-            { href: "/admin/system-health", label: "System health", tone: "primary" },
-            { href: "/admin/help", label: "Help" },
-          ]}
-        />
-        <AdminStorageStatusCard scope="refresh job state and run history" />
-      </div>
+      <AdminGuidanceCard
+        title="How to use this desk"
+        description="This area helps operators understand what a run, retry, success, or failure actually means."
+        items={[
+          "Run now starts a safe manual run for jobs that allow operator-triggered refresh.",
+          "Retry uses the last failed or warning run as context so the history stays traceable.",
+          "Last success and last failure tell you the most recent trustworthy outcome, not just whether a button was clicked.",
+        ]}
+        links={[
+          { href: "/admin/system-health", label: "System health", tone: "primary" },
+          { href: "/admin/help", label: "Help" },
+        ]}
+      />
 
       <AdminStatGrid
         stats={[
@@ -78,6 +75,8 @@ export default async function AdminRefreshJobsPage() {
       />
 
       <AdminRefreshJobsClient initialJobs={jobs} initialRunsByJob={runsByJob} />
+
+      <AdminStorageStatusCard scope="refresh job state and run history" />
     </AdminPageFrame>
   );
 }

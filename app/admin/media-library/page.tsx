@@ -25,9 +25,9 @@ export default async function AdminMediaLibraryPage() {
         description="Upload local images, register hosted image or document URLs, and reuse the same lightweight asset library across content, SEO, courses, webinars, and document attachments."
       />
 
-      <AdminStorageStatusCard scope="media metadata and reusable assets" />
-
       <AdminMediaLibraryClient initialAssets={assets} />
+
+      <AdminStorageStatusCard scope="media metadata and reusable assets" />
     </AdminPageFrame>
   );
 }

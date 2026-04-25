@@ -90,36 +90,36 @@ export function SubscriberTruthNotice({
   const safeExpectedState = expectedState ? sanitizePublicCopy(expectedState) : null;
 
   return (
-    <div className="riddra-product-card relative overflow-hidden rounded-[16px] border border-[rgba(212,133,59,0.22)] bg-[linear-gradient(180deg,rgba(212,133,59,0.08),rgba(255,255,255,0.92))] p-4 shadow-[0_10px_28px_rgba(27,58,107,0.045)]">
-      <p className="riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[#8E5723]">{eyebrow}</p>
-      <h2 className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">{safeTitle}</h2>
-      <p className="riddra-product-body mt-2 max-w-3xl text-sm leading-7 text-[rgba(75,85,99,0.84)]">{safeDescription}</p>
+    <div className="subscriber-truth-notice riddra-auth-truth-notice riddra-product-card relative overflow-hidden rounded-[12px] border border-[rgba(221,215,207,0.96)] bg-[linear-gradient(180deg,#FFFFFF_0%,rgba(247,244,240,0.94)_100%)] p-4 shadow-[0_10px_28px_rgba(27,58,107,0.04)]">
+      <p className="riddra-auth-notice-eyebrow riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[#8E5723]">{eyebrow}</p>
+      <h2 className="riddra-auth-notice-title riddra-product-body mt-2 text-[16px] font-semibold text-[#1B3A6B]">{safeTitle}</h2>
+      <p className="riddra-auth-notice-copy riddra-product-body mt-1.5 max-w-3xl text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">{safeDescription}</p>
       {safeCurrentState || safeExpectedState ? (
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {safeCurrentState ? (
-            <div className="rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-4">
-              <p className="riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[rgba(107,114,128,0.76)]">
+            <div className="subscriber-truth-notice-panel riddra-auth-truth-panel rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-4">
+              <p className="riddra-auth-truth-label riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[rgba(107,114,128,0.76)]">
                 Current state
               </p>
-              <p className="riddra-product-body mt-2 text-sm leading-7 text-[rgba(75,85,99,0.84)]">{safeCurrentState}</p>
+              <p className="riddra-auth-truth-copy riddra-product-body mt-2 text-sm leading-7 text-[rgba(75,85,99,0.84)]">{safeCurrentState}</p>
             </div>
           ) : null}
           {safeExpectedState ? (
-            <div className="rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-4">
-              <p className="riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[rgba(107,114,128,0.76)]">
+            <div className="subscriber-truth-notice-panel riddra-auth-truth-panel rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-4">
+              <p className="riddra-auth-truth-label riddra-product-body text-[11px] uppercase tracking-[0.18em] text-[rgba(107,114,128,0.76)]">
                 Expected state
               </p>
-              <p className="riddra-product-body mt-2 text-sm leading-7 text-[rgba(75,85,99,0.84)]">{safeExpectedState}</p>
+              <p className="riddra-auth-truth-copy riddra-product-body mt-2 text-sm leading-7 text-[rgba(75,85,99,0.84)]">{safeExpectedState}</p>
             </div>
           ) : null}
         </div>
       ) : null}
       {normalizedItems.length > 0 ? (
-        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {normalizedItems.map((item) => (
             <div
               key={item}
-              className="riddra-product-body rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]"
+              className="subscriber-truth-notice-panel riddra-auth-truth-panel riddra-auth-truth-copy riddra-product-body rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-white px-4 py-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]"
             >
               {item}
             </div>
@@ -127,17 +127,17 @@ export function SubscriberTruthNotice({
         </div>
       ) : null}
       {safeHref && hrefLabel ? (
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href={safeHref}
-            className="inline-flex rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
+            className="subscriber-truth-notice-action riddra-auth-truth-action inline-flex rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
           >
             {hrefLabel}
           </Link>
           {safeSecondaryHref && secondaryHrefLabel ? (
             <Link
               href={safeSecondaryHref}
-              className="inline-flex rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-[rgba(27,58,107,0.03)] px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.18)] hover:bg-[rgba(27,58,107,0.05)]"
+              className="subscriber-truth-notice-action riddra-auth-truth-action inline-flex rounded-[10px] border border-[rgba(221,215,207,0.86)] bg-[rgba(27,58,107,0.03)] px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.18)] hover:bg-[rgba(27,58,107,0.05)]"
             >
               {secondaryHrefLabel}
             </Link>

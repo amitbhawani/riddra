@@ -244,15 +244,5 @@ export async function requireOperator() {
 }
 
 export async function requireBetaUser() {
-  const user = await requireUser();
-
-  if ((await isOpenAccessRequest()) || (await isTrustedLocalBypassRequest())) {
-    return user;
-  }
-
-  if (!isBetaApprovedUserEmail(user.email)) {
-    redirect("/private-beta");
-  }
-
-  return user;
+  return requireUser();
 }

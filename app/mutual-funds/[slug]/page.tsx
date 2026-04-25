@@ -6,11 +6,13 @@ import {
   getBenchmarkLatestDate,
   getFormattedBenchmarkReturns,
 } from "@/lib/benchmark-history";
+import { EntityNewsSection } from "@/components/entity-news-section";
 import { JsonLd } from "@/components/json-ld";
 import { MutualFundDetailBriefPage } from "@/components/mutual-fund-detail-brief-page";
 import { getCurrentUser } from "@/lib/auth";
 import { getFund, getFunds } from "@/lib/content";
 import { getFundReturnValue } from "@/lib/fund-research";
+import { getLatestMarketNewsForEntity } from "@/lib/market-news/queries";
 import {
   getFundHistoryTimeframes,
   getFundPerformanceContext,
@@ -18,10 +20,12 @@ import {
   type FundHistoryReturnLabel,
 } from "@/lib/mutual-fund-history";
 import { formatProductDate } from "@/lib/product-page-design";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 import { getMembershipFeatureStatus, getUserProductProfile } from "@/lib/user-product-store";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -65,15 +69,27 @@ export default async function MutualFundDetailPage({ params, searchParams }: Pag
   const selectedRange = normalizeFundHistoryTimeframe(
     Array.isArray(resolvedSearchParams.range) ? resolvedSearchParams.range[0] : resolvedSearchParams.range,
   );
-  const [fund, allFunds, sharedSidebarRailData] = await Promise.all([
-    getFund(slug),
-    getFunds(),
-    getSharedSidebarRailData({ pageCategory: "mutual_funds" }),
-  ]);
+  const fund = await getFund(slug);
 
   if (!fund) {
     notFound();
   }
+
+  if (isStockFirstLaunchPlaceholderFamily("mutual_funds")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="mutual_funds"
+        variant="detail"
+        pageCategory="mutual_funds"
+        assetName={fund.name}
+      />
+    );
+  }
+
+  const [allFunds, sharedSidebarRailData] = await Promise.all([
+    getFunds(),
+    getSharedSidebarRailData({ pageCategory: "mutual_funds" }),
+  ]);
 
   const peerFunds = allFunds
     .filter((item) => item.slug !== fund.slug && item.category === fund.category)
@@ -105,6 +121,29 @@ export default async function MutualFundDetailPage({ params, searchParams }: Pag
     { name: "Mutual Funds", href: "/mutual-funds" },
     { name: fund.name, href: `/mutual-funds/${fund.slug}` },
   ];
+  const fundHouseName = fund.factsheetMeta?.amcName?.trim() ?? "";
+  const usableFundHouseName =
+    fundHouseName && !/(unavailable|pending)/i.test(fundHouseName) ? fundHouseName : null;
+  const marketNews = await getLatestMarketNewsForEntity({
+    entityType: "mutual_fund",
+    entitySlug: fund.slug,
+    fallbackKeywords: usableFundHouseName ? [usableFundHouseName] : [],
+    allowLatestFallback: true,
+    limit: 5,
+  }).catch(() => ({
+    articles: [],
+    matchedEntityType: null,
+    usedSectorFallback: false,
+    usedEntityFallback: false,
+    usedKeywordFallback: false,
+    usedIpoFallback: false,
+    usedLatestFallback: false,
+  }));
+  const marketNewsDescription = marketNews.usedKeywordFallback && usableFundHouseName
+    ? `Direct fund-linked articles are not available yet, so this section is showing the latest market stories tied to ${usableFundHouseName}.`
+    : marketNews.usedLatestFallback
+      ? "Direct fund-linked articles are not available yet, so this section is showing the latest market stories from the broader Riddra news surface."
+      : "Latest matched market news for this fund with direct links into the full Market News archive.";
 
   return (
     <>
@@ -153,6 +192,16 @@ export default async function MutualFundDetailPage({ params, searchParams }: Pag
           statusLabel: performanceContext.statusLabel,
           annualReturnsEmptyLabel: performanceContext.annualReturnsEmptyLabel,
         }}
+        marketNewsSection={
+          <EntityNewsSection
+            entityType="mutual_fund"
+            entitySlug={fund.slug}
+            articles={marketNews.articles}
+            usedLatestFallback={marketNews.usedLatestFallback}
+            titleOverride="Latest mutual fund news"
+            descriptionOverride={marketNewsDescription}
+          />
+        }
       />
     </>
   );

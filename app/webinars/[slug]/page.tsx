@@ -3,10 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
-import { ProductPageTwoColumnLayout } from "@/components/product-page-system";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { educationTracks } from "@/lib/education-library";
 import { getPublishableCmsRecordBySlug, getPublishableCmsSlugSet } from "@/lib/publishable-content";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
@@ -62,15 +61,13 @@ export default async function WebinarDetailPage({ params }: PageProps) {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
-  const sidebar = await getGlobalSidebarRail("webinars");
-
   return (
-    <div className="riddra-product-page py-3 sm:py-4">
-      <Container>
-        <ProductPageTwoColumnLayout
-          left={
-            <div className="riddra-legacy-light-surface space-y-6">
-        <div className="space-y-5">
+    <GlobalSidebarPageShell
+      category="webinars"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
+      <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{webinar.format}</Eyebrow>
           <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">
@@ -91,7 +88,7 @@ export default async function WebinarDetailPage({ params }: PageProps) {
               Open replay route
             </Link>
           </div>
-        </div>
+      </div>
 
         <SubscriberTruthNotice
           eyebrow="Webinar detail truth"
@@ -139,7 +136,7 @@ export default async function WebinarDetailPage({ params }: PageProps) {
           ))}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
           <GlowCard>
             <h2 className="text-2xl font-semibold text-white">Why this format matters</h2>
             <div className="mt-5 grid gap-3">
@@ -164,9 +161,9 @@ export default async function WebinarDetailPage({ params }: PageProps) {
               ))}
             </div>
           </GlowCard>
-        </div>
+      </div>
 
-        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <GlowCard>
             <h2 className="text-2xl font-semibold text-white">Session assets</h2>
             <div className="mt-5 grid gap-3">
@@ -192,9 +189,9 @@ export default async function WebinarDetailPage({ params }: PageProps) {
               ))}
             </div>
           </GlowCard>
-        </div>
+      </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
           <GlowCard>
             <h2 className="text-2xl font-semibold text-white">How this webinar fits the library</h2>
             <p className="mt-4 text-sm leading-7 text-mist/74">{relatedTrack.path}</p>
@@ -240,12 +237,7 @@ export default async function WebinarDetailPage({ params }: PageProps) {
               This webinar layer now carries real session logistics, host framing, access posture, companion routes, asset blocks, and dedicated registration plus replay routes. The remaining work is durable RSVP persistence, replay hosting, and attendance-linked follow-up flows.
             </div>
           </GlowCard>
-        </div>
-            </div>
-          }
-          right={sidebar}
-        />
-      </Container>
-    </div>
+      </div>
+    </GlobalSidebarPageShell>
   );
 }

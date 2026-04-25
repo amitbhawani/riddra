@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { MarketCopilotWorkspace } from "@/components/market-copilot-workspace";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getAiGenerationMemory } from "@/lib/ai-generation-memory-store";
 import {
   marketCopilotPanels,
@@ -31,8 +32,7 @@ export default async function MarketCopilotPage() {
   );
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <GlobalSidebarPageShell category="tools" leftClassName="riddra-legacy-light-surface space-y-10">
         <div className="space-y-5">
           <Eyebrow>AI-ready layer</Eyebrow>
           <SectionHeading
@@ -193,7 +193,6 @@ export default async function MarketCopilotPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

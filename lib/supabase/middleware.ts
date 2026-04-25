@@ -12,8 +12,6 @@ import {
 } from "@/lib/open-access";
 import {
   isAdminEmailFromEnv,
-  isBetaApprovedEmail,
-  isBetaProtectedPagePath,
   isOperatorApiPath,
   isOperatorSurfacePath,
 } from "@/lib/route-access";
@@ -29,10 +27,6 @@ const DEFAULT_SECURITY_HEADERS: Record<string, string> = {
 
 function isAdminEmail(email: string | null | undefined) {
   return isAdminEmailFromEnv(email);
-}
-
-function isBetaApproved(email: string | null | undefined) {
-  return isBetaApprovedEmail(email);
 }
 
 function applySecurityHeaders(request: NextRequest, response: NextResponse) {
@@ -90,8 +84,7 @@ function shouldRefreshSupabaseSession(pathname: string) {
 
   return (
     protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)) ||
-    isOperatorSurfacePath(pathname) ||
-    isBetaProtectedPagePath(pathname)
+    isOperatorSurfacePath(pathname)
   );
 }
 
@@ -121,13 +114,6 @@ function forbiddenOperatorResponse(request: NextRequest) {
   return redirectToAccount(request);
 }
 
-function redirectToPrivateBeta(request: NextRequest) {
-  const betaUrl = request.nextUrl.clone();
-  betaUrl.pathname = "/private-beta";
-  betaUrl.search = "";
-  return withHeaders(request, NextResponse.redirect(betaUrl));
-}
-
 export async function updateSession(request: NextRequest) {
   const requestHeaders = buildRequestHeaders(request);
   const pathname = request.nextUrl.pathname;
@@ -135,7 +121,6 @@ export async function updateSession(request: NextRequest) {
     isLocalAuthBypassEnabled() && isTrustedLocalRequestHost(request.headers.get("host"));
   const hasAuthCookies = hasSupabaseAuthCookies(request.cookies.getAll().map((cookie) => cookie.name));
   const isOperatorSurface = isOperatorSurfacePath(pathname);
-  const isBetaSurface = isBetaProtectedPagePath(pathname);
 
   if (localBypassEnabled || !hasSupabaseEnv() || !shouldRefreshSupabaseSession(pathname) || !hasAuthCookies) {
     const response = NextResponse.next({
@@ -146,10 +131,6 @@ export async function updateSession(request: NextRequest) {
 
     if (isOperatorSurface && !localBypassEnabled && !hasAuthCookies) {
       return redirectToLogin(request);
-    }
-
-    if (isBetaSurface && !localBypassEnabled && !hasAuthCookies) {
-      return redirectToPrivateBeta(request);
     }
 
     return withHeaders(request, response);
@@ -190,10 +171,6 @@ export async function updateSession(request: NextRequest) {
       return redirectToLogin(request);
     }
 
-    if (isBetaSurface && !user) {
-      return redirectToPrivateBeta(request);
-    }
-
     if (isOperatorSurface && !isAdminEmail(user?.email)) {
       const isAdminTree =
         pathname === "/admin" ||
@@ -205,19 +182,11 @@ export async function updateSession(request: NextRequest) {
         return forbiddenOperatorResponse(request);
       }
     }
-
-    if (isBetaSurface && !isBetaApproved(user?.email)) {
-      return redirectToPrivateBeta(request);
-    }
   } catch (error) {
     logSupabaseServerWarning(`Skipping session refresh for ${pathname}`, error);
 
     if (isOperatorSurface) {
       return redirectToLogin(request);
-    }
-
-    if (isBetaSurface) {
-      return redirectToPrivateBeta(request);
     }
   }
 

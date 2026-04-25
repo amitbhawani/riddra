@@ -6,6 +6,15 @@ export type ManagedNavLink = {
   href: string;
 };
 
+export type ManagedTickerItem = {
+  label: string;
+  value: string;
+  change: string;
+  href: string;
+};
+
+export type HeaderMenuGroupKey = "markets" | "stocks" | "funds" | "tools" | "learn";
+
 export type SharedSidebarBlock =
   | "market_snapshot"
   | "page_actions"
@@ -32,6 +41,38 @@ const defaultHeaderQuickLinks: ManagedNavLink[] = [
   { label: "Search", href: "/search" },
   { label: "Markets", href: "/markets" },
   { label: "Tools", href: "/tools" },
+];
+
+const defaultHeaderVisibleMenuGroups: HeaderMenuGroupKey[] = [
+  "markets",
+  "stocks",
+  "funds",
+  "tools",
+  "learn",
+];
+
+function normalizeLogoWidth(value: string | null | undefined) {
+  const numeric = Number.parseInt(String(value ?? "").trim(), 10);
+
+  if (!Number.isFinite(numeric)) {
+    return 28;
+  }
+
+  return Math.min(160, Math.max(16, numeric));
+}
+
+const defaultHeaderTickerItems: ManagedTickerItem[] = [
+  { label: "NIFTY 50", value: "22,487.20", change: "+0.74%", href: "/nifty50" },
+  { label: "SENSEX", value: "73,904.55", change: "+0.66%", href: "/sensex" },
+  { label: "BANKNIFTY", value: "48,211.80", change: "+0.92%", href: "/banknifty" },
+  { label: "FINNIFTY", value: "22,541.10", change: "+0.36%", href: "/finnifty" },
+  { label: "USD/INR", value: "83.19", change: "-0.08%", href: "/markets" },
+  { label: "GOLD", value: "₹71,842", change: "+0.44%", href: "/markets" },
+  { label: "SILVER", value: "₹81,420", change: "+0.27%", href: "/markets" },
+  { label: "BRENT", value: "$87.42", change: "-0.22%", href: "/markets" },
+  { label: "DOW JONES", value: "38,944.20", change: "+0.31%", href: "/markets" },
+  { label: "HANG SENG", value: "16,489.10", change: "+0.58%", href: "/markets" },
+  { label: "SHANGHAI", value: "3,062.84", change: "-0.19%", href: "/markets" },
 ];
 
 const defaultFooterLinks: ManagedNavLink[] = [
@@ -63,6 +104,23 @@ function sanitizeHref(value: string) {
   return `/${trimmed.replace(/^\/+/, "")}`;
 }
 
+function normalizeHeaderMenuGroup(value: string): HeaderMenuGroupKey | null {
+  switch (value.trim().toLowerCase()) {
+    case "markets":
+      return "markets";
+    case "stocks":
+      return "stocks";
+    case "funds":
+      return "funds";
+    case "tools":
+      return "tools";
+    case "learn":
+      return "learn";
+    default:
+      return null;
+  }
+}
+
 export function parseManagedLinks(raw: string, fallback: ManagedNavLink[]) {
   const parsed = raw
     .split("\n")
@@ -80,6 +138,34 @@ export function parseManagedLinks(raw: string, fallback: ManagedNavLink[]) {
       return { label, href };
     })
     .filter((item): item is ManagedNavLink => Boolean(item));
+
+  return parsed.length > 0 ? parsed : fallback;
+}
+
+function parseManagedTickerItems(raw: string, fallback: ManagedTickerItem[]) {
+  const parsed = raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [labelPart, valuePart, changePart, hrefPart] = line.split("|");
+      const label = labelPart?.trim() ?? "";
+      const value = valuePart?.trim() ?? "";
+      const change = changePart?.trim() ?? "";
+      const href = sanitizeHref(hrefPart?.trim() ?? "/markets");
+
+      if (!label || !value || !href) {
+        return null;
+      }
+
+      return {
+        label,
+        value,
+        change,
+        href,
+      };
+    })
+    .filter((item): item is ManagedTickerItem => Boolean(item));
 
   return parsed.length > 0 ? parsed : fallback;
 }
@@ -213,10 +299,24 @@ function getSidebarDescription(family: PageFamily, mode: SidebarMode, assetName?
 
 export function getSiteChromeConfig() {
   const config = getRuntimeLaunchConfig();
+  const visibleMenuGroups = config.headerVisibleMenuGroups
+    .split(/[\n,]+/)
+    .map((value) => normalizeHeaderMenuGroup(value))
+    .filter((value): value is HeaderMenuGroupKey => Boolean(value));
 
   return {
     headerAnnouncement: config.headerAnnouncement,
+    brand: {
+      mark: config.headerBrandMark || "R",
+      logoUrl: sanitizeHref(config.headerLogoUrl) || "",
+      logoWidthPx: normalizeLogoWidth(config.headerLogoWidthPx),
+      label: config.headerBrandLabel || "Riddra",
+      href: sanitizeHref(config.headerBrandHref) || "/",
+    },
+    visibleMenuGroups:
+      visibleMenuGroups.length > 0 ? defaultHeaderVisibleMenuGroups.filter((group) => visibleMenuGroups.includes(group)) : defaultHeaderVisibleMenuGroups,
     headerQuickLinks: parseManagedLinks(config.headerQuickLinks, defaultHeaderQuickLinks),
+    headerTickerItems: parseManagedTickerItems(config.headerTickerRows, defaultHeaderTickerItems),
     headerMarketNav: parseManagedLinks(config.headerMarketNav, publicMarketNav),
     headerUtilityNav: parseManagedLinks(config.headerUtilityNav, publicUtilityNav),
     primaryCta:

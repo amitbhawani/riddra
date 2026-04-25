@@ -1,0 +1,20 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="104" y="110" width="234" height="42" rx="21" fill="#EAF7F0"/>
+  <text x="221" y="137" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#2F7A55">Riddra Funds</text>
+  <text x="104" y="236" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#26364F">Fund update</text>
+  <text x="104" y="290" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#70819B">Mutual fund coverage will use this fallback when no trusted source image is available.</text>
+  <rect x="104" y="362" width="438" height="18" rx="9" fill="#E8F3ED"/>
+  <rect x="104" y="402" width="398" height="18" rx="9" fill="#E8F3ED"/>
+  <rect x="104" y="442" width="286" height="18" rx="9" fill="#E8F3ED"/>
+  <rect x="816" y="192" width="66" height="156" rx="14" fill="#CFEBDD"/>
+  <rect x="902" y="152" width="66" height="196" rx="14" fill="#7CC49A"/>
+  <rect x="988" y="228" width="66" height="120" rx="14" fill="#A7D9BC"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E6F5EC"/>
+      <stop offset="1" stop-color="#F4FAF7"/>
+    </linearGradient>
+  </defs>
+</svg>

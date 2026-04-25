@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getFundCategoryHubs } from "@/lib/hubs";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
@@ -16,6 +18,15 @@ export const metadata: Metadata = {
 };
 
 export default async function FundCategoriesPage() {
+  if (isStockFirstLaunchPlaceholderFamily("fund_categories")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="fund_categories"
+        pageCategory="mutual_funds"
+      />
+    );
+  }
+
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");

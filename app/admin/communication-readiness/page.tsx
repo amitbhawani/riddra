@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { getCommunicationDeliveryProofStatus, getCommunicationReadinessItems } from "@/lib/communication-readiness";
 import { getCommunicationRegistrySummary } from "@/lib/communication-readiness-registry";
 import { getEmailDeliveryLog, summarizeEmailDeliveryLog } from "@/lib/email-delivery-log-store";
+import { getConfiguredPublicSiteUrl } from "@/lib/public-site-url";
 
 export const metadata: Metadata = {
   title: "Communication Readiness",
@@ -46,7 +47,8 @@ export default async function CommunicationReadinessPage() {
     "RESEND_REPLY_TO_EMAIL=founder@your-domain.com",
     "NEXT_PUBLIC_SUPPORT_EMAIL=support@your-domain.com",
   ];
-  const contactProofCommand = `curl -s -X POST http://127.0.0.1:3000/api/contact/requests \\
+  const publicProofOrigin = getConfiguredPublicSiteUrl() || "https://www.riddra.com";
+  const contactProofCommand = `curl -s -X POST ${publicProofOrigin}/api/contact/requests \\
   -H 'content-type: application/json' \\
   --data '{"name":"QA Contact","email":"YOUR_REAL_INBOX@example.com","topic":"Support","note":"Private beta contact acknowledgement proof."}'`;
   const supportProofSteps = [

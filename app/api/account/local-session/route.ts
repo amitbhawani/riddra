@@ -23,7 +23,7 @@ async function assertLocalBypassSessionControl() {
 
   const requestHeaders = await headers();
   if (!isTrustedLocalRequestHost(requestHeaders.get("host"))) {
-    throw new Error("Local session switching is limited to trusted localhost requests.");
+    throw new Error("Local session switching is limited to trusted workspace requests.");
   }
 }
 

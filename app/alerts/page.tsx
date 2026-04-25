@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { alertCategories, alertFeedItems } from "@/lib/alerts";
 import { getPlaceholderHonestyRowByHref } from "@/lib/placeholder-honesty-registry";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   description: "Review alert categories, notification flows, and the handoff into your account-level preferences.",
 };
 
-export default function AlertsPage() {
+export default async function AlertsPage() {
   const placeholderTruth = getPlaceholderHonestyRowByHref("/alerts");
   const breadcrumbs = [
     { name: "Home", href: "/" },
@@ -22,7 +23,7 @@ export default function AlertsPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -32,7 +33,7 @@ export default function AlertsPage() {
           path: "/alerts",
         })}
       />
-      <Container className="space-y-10">
+      <GlobalSidebarPageShell category="account" leftClassName="riddra-legacy-light-surface space-y-10">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Retention layer</Eyebrow>
@@ -146,7 +147,7 @@ export default function AlertsPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
-    </div>
+      </GlobalSidebarPageShell>
+    </>
   );
 }

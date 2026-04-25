@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getAccountBillingMemory } from "@/lib/billing-ledger-memory-store";
@@ -62,6 +61,32 @@ function formatDateLabel(value: string | null | undefined) {
   return new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
   }).format(new Date(parsed));
+}
+
+function buildPublicProfileLinkItems(profile: ProductUserProfile) {
+  const items: Array<{ label: string; href: string }> = [];
+
+  if (profile.websiteUrl) {
+    items.push({ label: "Website", href: profile.websiteUrl });
+  }
+
+  if (profile.xHandle) {
+    items.push({ label: "X", href: `https://x.com/${profile.xHandle}` });
+  }
+
+  if (profile.linkedinUrl) {
+    items.push({ label: "LinkedIn", href: profile.linkedinUrl });
+  }
+
+  if (profile.instagramHandle) {
+    items.push({ label: "Instagram", href: `https://instagram.com/${profile.instagramHandle}` });
+  }
+
+  if (profile.youtubeUrl) {
+    items.push({ label: "YouTube", href: profile.youtubeUrl });
+  }
+
+  return items;
 }
 
 function normalizeMembershipSlug(value: string | null | undefined) {
@@ -248,10 +273,23 @@ export default async function PublicUserProfilePage({ params }: PageProps) {
     email: data.profile.email,
   };
 
+  const defaultEntitlementMemory: Pick<
+    Awaited<ReturnType<typeof getEntitlementSyncMemory>>,
+    "historyRows"
+  > = {
+    historyRows: [],
+  };
+  const defaultBillingMemory: Pick<
+    Awaited<ReturnType<typeof getAccountBillingMemory>>,
+    "currentPlan" | "invoices"
+  > = {
+    currentPlan: "",
+    invoices: [],
+  };
   const [sharedSidebarRailData, entitlementMemory, billingMemory] = await Promise.all([
     getSharedSidebarRailData({ pageCategory: "user_profiles" }),
-    getEntitlementSyncMemory(),
-    getAccountBillingMemory(pseudoUser),
+    getEntitlementSyncMemory().catch(() => defaultEntitlementMemory),
+    getAccountBillingMemory(pseudoUser).catch(() => defaultBillingMemory),
   ]);
   const showSharedSidebar = sharedSidebarRailData.enabledOnPageType;
 
@@ -285,29 +323,24 @@ export default async function PublicUserProfilePage({ params }: PageProps) {
       : membershipSlug === "pro"
         ? "Forecast-style guidance, premium learning, and stronger product access."
         : data.membershipTier?.description ?? "Basic public member profile access.";
+  const publicLinkItems = buildPublicProfileLinkItems(data.profile);
   return (
-    <div className="riddra-product-page py-16 sm:py-24">
-      <Container className="space-y-8">
-        <div className="space-y-5">
-          <Breadcrumbs
-            items={[
-              { name: "Home", href: "/" },
-              { name: `@${data.profile.username}`, href: `/user/${data.profile.username}` },
-            ]}
-          />
-          <Eyebrow>Public profile</Eyebrow>
-          <SectionHeading
-            title="Member profile"
-            description="Safe member-facing activity only. Watchlists, public holdings, and saved routes stay visible here without exposing private workspace controls."
-          />
-        </div>
-
+    <div className="riddra-product-page py-6 sm:py-8">
+      <Container>
         <div
-          className={`grid gap-6 ${
+          className={`grid gap-5 sm:gap-6 ${
             showSharedSidebar ? "xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start" : ""
           }`}
         >
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-7">
+            <div className="space-y-3">
+              <Eyebrow>Public profile</Eyebrow>
+              <SectionHeading
+                title="Member profile"
+                description="Safe member-facing activity only. Watchlists, public holdings, and saved routes stay visible here without exposing private workspace controls."
+              />
+            </div>
+
             <GlowCard className="space-y-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-3">
@@ -351,6 +384,21 @@ export default async function PublicUserProfilePage({ params }: PageProps) {
                       </span>
                     ) : null}
                   </div>
+                  {publicLinkItems.length ? (
+                    <div className="flex flex-wrap gap-2">
+                      {publicLinkItems.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.03)] px-3 py-1.5 text-[12px] font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.22)] hover:bg-[rgba(27,58,107,0.06)]"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap gap-3">
@@ -506,7 +554,7 @@ export default async function PublicUserProfilePage({ params }: PageProps) {
           </div>
 
           {showSharedSidebar ? (
-            <aside className="space-y-4 xl:sticky xl:top-24">
+            <aside className="space-y-3 xl:sticky xl:top-20">
               <SharedMarketSidebarRail
                 visibleBlocks={sharedSidebarRailData.visibleBlocks}
                 marketSnapshotItems={sharedSidebarRailData.marketSnapshotItems}

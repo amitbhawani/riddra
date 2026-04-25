@@ -74,21 +74,21 @@ export function SharedMarketSidebarRail({
   const showPopularStocks = visibleBlocks?.popularStocks ?? true;
 
   return (
-    <div className="space-y-3">
+    <div className="shared-market-sidebar-rail space-y-3">
       {showMarketSnapshot ? (
         <div className="grid gap-3">
           {marketSnapshotSections.map((section) => (
           <ProductCard key={section.title} tone="primary" className="space-y-3">
             <SidebarSectionHeading title={section.title} />
-            <div className="overflow-hidden rounded-[10px] border border-[rgba(27,58,107,0.08)] bg-white">
-              <div className="grid grid-cols-[minmax(0,40%)_minmax(0,40%)_minmax(0,20%)] items-center gap-2 border-b border-[rgba(27,58,107,0.08)] bg-[rgba(255,255,255,0.92)] px-3 py-2">
-                <span className="text-left font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
+            <div className="shared-market-sidebar-table overflow-hidden rounded-[10px] border border-[rgba(27,58,107,0.08)] bg-white">
+              <div className="shared-market-sidebar-header grid grid-cols-[minmax(0,46%)_minmax(68px,34%)_minmax(54px,20%)] items-center gap-2 border-b border-[rgba(27,58,107,0.08)] bg-[rgba(255,255,255,0.92)] px-3 py-2">
+                <span className="shared-market-sidebar-table-label text-left font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
                   Name
                 </span>
-                <span className="justify-self-end text-right font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
+                <span className="shared-market-sidebar-table-label justify-self-end text-right font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
                   Last
                 </span>
-                <span className="justify-self-end text-right font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
+                <span className="shared-market-sidebar-table-label justify-self-end text-right font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
                   Chg%
                 </span>
               </div>
@@ -97,10 +97,10 @@ export function SharedMarketSidebarRail({
                 {section.rows.map((item) => (
                   <div
                     key={`${section.title}-${item.label}`}
-                    className="grid grid-cols-[minmax(0,40%)_minmax(0,40%)_minmax(0,20%)] items-center gap-2 px-3 py-2.5"
+                    className="shared-market-sidebar-row grid grid-cols-[minmax(0,46%)_minmax(68px,34%)_minmax(54px,20%)] items-center gap-2 px-3 py-2.5"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-left text-[12px] font-semibold uppercase tracking-[0.02em] text-[#1F2937]">
+                      <p className="shared-market-sidebar-name truncate text-left text-[12px] font-semibold uppercase tracking-[0.02em] text-[#1F2937]">
                         {item.href ? (
                           <Link href={item.href} className="hover:text-[#D4853B]">
                             {item.label}
@@ -110,9 +110,9 @@ export function SharedMarketSidebarRail({
                         )}
                       </p>
                     </div>
-                    <p className="justify-self-end text-right text-[12px] font-semibold text-[#1B3A6B]">{item.value}</p>
+                    <p className="shared-market-sidebar-value justify-self-end text-right text-[12px] font-semibold text-[#1B3A6B]">{item.value}</p>
                     <p
-                      className="riddra-product-number justify-self-end text-right text-[11px] font-medium"
+                      className="shared-market-sidebar-change riddra-product-number justify-self-end text-right text-[11px] font-medium"
                       style={{ color: getTrendColor(item.change) }}
                     >
                       {item.change}
@@ -185,7 +185,7 @@ function SidebarMoverRow({
   positive?: boolean;
 }) {
   const className = [
-    "grid grid-cols-[minmax(0,1fr)_78px] items-center gap-3 rounded-[9px] border px-3 py-2",
+    "shared-market-sidebar-mover grid grid-cols-[minmax(0,1fr)_72px] items-center gap-3 rounded-[9px] border px-3 py-2",
     highlighted
       ? positive
         ? "border-[rgba(22,163,74,0.16)] bg-[rgba(240,253,244,0.95)]"
@@ -196,9 +196,9 @@ function SidebarMoverRow({
   const content = (
     <>
       <div className="min-w-0">
-        <p className="truncate text-[12px] font-semibold text-[#1F2937]">{name}</p>
+        <p className="shared-market-sidebar-mover-name truncate text-[12px] font-semibold text-[#1F2937]">{name}</p>
       </div>
-      <p className="text-right text-[12px] font-semibold text-[#1B3A6B]">{price}</p>
+      <p className="shared-market-sidebar-mover-price text-right text-[12px] font-semibold text-[#1B3A6B]">{price}</p>
     </>
   );
 

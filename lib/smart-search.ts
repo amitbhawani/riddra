@@ -75,6 +75,15 @@ export const suggestedQueries = [
   "what is open interest",
 ];
 
+export function sanitizeSearchQuery(query: string) {
+  return query
+    .replace(/[<>]/g, " ")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -152,44 +161,61 @@ function buildScreenerHref(prefill: ReturnType<typeof buildScreenerQueryPrefill>
 }
 
 export async function getSmartSearchResults(query: string): Promise<SmartSearchExperience> {
-  const normalized = query.trim().toLowerCase();
-  const searchEngineStatus = await getSearchEngineStatus();
-  const liveEngine = getSearchEnginePublicState(searchEngineStatus);
-  const engine = liveEngine.available
-    ? {
-        ...liveEngine,
-        degraded: false,
-      }
-    : {
+  const normalized = sanitizeSearchQuery(query).toLowerCase();
+
+  try {
+    const searchEngineStatus = await getSearchEngineStatus();
+    const liveEngine = getSearchEnginePublicState(searchEngineStatus);
+    let engine = liveEngine.available
+      ? {
+          ...liveEngine,
+          degraded: false,
+        }
+      : {
+          available: true,
+          degraded: true,
+          statusLabel: "Local search fallback",
+          detail: "Search is using the route-backed local catalog while the live engine recovers.",
+        };
+
+    if (!normalized) {
+      return {
+        results: [],
+        groups: [],
+        actions: [],
+        focusCard: null,
+        engine,
+      };
+    }
+
+    const [stocks, ipos, funds] = await Promise.all([getStocks(), getIpos(), getFunds()]);
+
+    const rawDirectIntentEntries = getDirectIntentEntries(normalized, { stocks, funds, ipos });
+    const rawCompareIntentEntry = getCompareIntentEntry(normalized, { stocks, funds });
+    const screenerPrefill = buildScreenerQueryPrefill(normalized);
+    let indexedEntries = liveEngine.available
+      ? await searchCatalogIndex(normalized, 12)
+      : {
+          configured: searchEngineStatus.configured,
+          available: true,
+          reason: null,
+          hits: await searchCatalogLocally(normalized, 12),
+        };
+
+    if (liveEngine.available && !indexedEntries.available) {
+      indexedEntries = {
+        configured: searchEngineStatus.configured,
+        available: true,
+        reason: indexedEntries.reason,
+        hits: await searchCatalogLocally(normalized, 12),
+      };
+      engine = {
         available: true,
         degraded: true,
         statusLabel: "Local search fallback",
         detail: "Search is using the route-backed local catalog while the live engine recovers.",
       };
-
-  if (!normalized) {
-    return {
-      results: [],
-      groups: [],
-      actions: [],
-      focusCard: null,
-      engine,
-    };
-  }
-
-  const [stocks, ipos, funds] = await Promise.all([getStocks(), getIpos(), getFunds()]);
-
-  const rawDirectIntentEntries = getDirectIntentEntries(normalized, { stocks, funds, ipos });
-  const rawCompareIntentEntry = getCompareIntentEntry(normalized, { stocks, funds });
-  const screenerPrefill = buildScreenerQueryPrefill(normalized);
-  const indexedEntries = liveEngine.available
-    ? await searchCatalogIndex(normalized, 12)
-    : {
-        configured: searchEngineStatus.configured,
-        available: true,
-        reason: null,
-        hits: await searchCatalogLocally(normalized, 12),
-      };
+    }
   const [directIntentEntries, compareIntentEntries, publishableIndexedEntries] =
     await Promise.all([
       filterEntriesToPublishableCms(rawDirectIntentEntries),
@@ -708,4 +734,18 @@ export async function getSmartSearchResults(query: string): Promise<SmartSearchE
     focusCard,
     engine,
   };
+  } catch {
+    return {
+      results: [],
+      groups: [],
+      actions: [],
+      focusCard: null,
+      engine: {
+        available: true,
+        degraded: true,
+        statusLabel: "Local search fallback",
+        detail: "Search is temporarily using a safe fallback while the full index catches up.",
+      },
+    };
+  }
 }

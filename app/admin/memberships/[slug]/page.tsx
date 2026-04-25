@@ -48,9 +48,9 @@ export default async function AdminMembershipEditorPage({
         description="Manage tier access coverage, CTA posture, and future-ready gating rules from one operator screen."
       />
 
-      <AdminStorageStatusCard scope="membership tier editing" />
-
       <AdminMembershipEditorClient tier={tier} allRows={allRows} />
+
+      <AdminStorageStatusCard scope="membership tier editing" />
     </AdminPageFrame>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import {
   ProductBulletListCard,
   ProductInsightGridCard,
@@ -57,6 +58,7 @@ export default async function LearnEventPage({ params }: PageProps) {
     billingSubject: "premium event workflow language",
     supportSubject: "learners coming through event detail pages",
   });
+  const sidebar = await getGlobalSidebarRail("learn");
 
   return (
     <ProductPageShell
@@ -86,6 +88,7 @@ export default async function LearnEventPage({ params }: PageProps) {
       }
       stickyTabs={null}
       summary={null}
+      sidebar={sidebar}
       supportingSections={
         <ProductPageTwoColumnLayout
           left={

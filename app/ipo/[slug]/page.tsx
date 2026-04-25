@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { EntityNewsSection } from "@/components/entity-news-section";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { ContentSectionList } from "@/components/content-section-list";
 import { CoverageScoreCard } from "@/components/coverage-score-card";
 import { DocumentListCard } from "@/components/document-list-card";
@@ -12,11 +14,13 @@ import { JsonLd } from "@/components/json-ld";
 import { ManagedPageSidebarCard } from "@/components/managed-page-sidebar-card";
 import { SourceTrustCard } from "@/components/source-trust-card";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard } from "@/components/ui";
+import { Eyebrow, GlowCard } from "@/components/ui";
 import { auditCoverage } from "@/lib/content-audit";
 import { getContentSections } from "@/lib/content-sections";
 import { getIpo, getIpos } from "@/lib/content";
 import { getEditorialGuidance } from "@/lib/editorial";
+import { getIpoRedirectTarget } from "@/lib/ipo-lifecycle";
+import { getLatestMarketNewsForEntity } from "@/lib/market-news/queries";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSourceByCode } from "@/lib/source-registry";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
@@ -48,6 +52,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function IpoDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const redirectTarget = await getIpoRedirectTarget(slug);
+
+  if (redirectTarget) {
+    permanentRedirect(redirectTarget);
+  }
+
   const [ipo, sections] = await Promise.all([getIpo(slug), getContentSections("ipo", slug)]);
 
   if (!ipo) {
@@ -98,11 +108,31 @@ export default async function IpoDetailPage({ params }: PageProps) {
   const listingReadiness = [
     { label: "Demand signal", value: "Blend GMP, subscription quality, and anchor appetite rather than over-reading any one indicator." },
     { label: "Allotment prep", value: "Keep registrar links, PAN / application checks, and timeline prompts close to the issue page." },
-    { label: "Archive continuity", value: "Once listed, this page remains the event-history record while the stock route becomes the long-term destination." },
+    { label: "Listing cutover", value: "Once listed, this IPO route should permanently redirect into the stock page so the long-term destination stays singular." },
   ];
+  const marketNews = await getLatestMarketNewsForEntity({
+    entityType: "ipo",
+    entitySlug: ipo.slug,
+    allowIpoCategoryFallback: true,
+    allowLatestFallback: true,
+    limit: 5,
+  }).catch(() => ({
+    articles: [],
+    matchedEntityType: null,
+    usedSectorFallback: false,
+    usedEntityFallback: false,
+    usedKeywordFallback: false,
+    usedIpoFallback: false,
+    usedLatestFallback: false,
+  }));
+  const marketNewsDescription = marketNews.usedIpoFallback
+    ? "Direct IPO-linked articles are not available yet, so this section is showing the latest IPO-market stories from the broader Riddra news surface."
+    : marketNews.usedLatestFallback
+      ? "Direct IPO-linked articles are not available yet, so this section is showing the latest market stories from the broader Riddra news surface."
+      : "Latest matched market news for this IPO with direct links into the full Market News archive.";
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -111,7 +141,7 @@ export default async function IpoDetailPage({ params }: PageProps) {
           path: `/ipo/${ipo.slug}`,
         })}
       />
-      <Container className="space-y-8">
+      <GlobalSidebarPageShell category="ipo" leftClassName="riddra-legacy-light-surface space-y-8">
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>{ipo.ipoType}</Eyebrow>
@@ -182,6 +212,15 @@ export default async function IpoDetailPage({ params }: PageProps) {
             </GlowCard>
           ))}
         </div>
+
+        <EntityNewsSection
+          entityType="ipo"
+          entitySlug={ipo.slug}
+          articles={marketNews.articles}
+          usedLatestFallback={marketNews.usedLatestFallback}
+          titleOverride="Latest IPO news"
+          descriptionOverride={marketNewsDescription}
+        />
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
@@ -296,7 +335,7 @@ export default async function IpoDetailPage({ params }: PageProps) {
                 ))}
               </div>
               <div className="rounded-[24px] border border-dashed border-white/12 bg-white/[0.02] p-4 text-sm leading-7 text-mist/72">
-                Once this company officially lists, its long-term destination moves into the stock route family while this IPO page remains the event-history archive.
+                Once this company officially lists, the lifecycle system turns this IPO route into a permanent redirect and hands users over to the stock route family.
               </div>
             </GlowCard>
 
@@ -373,7 +412,7 @@ export default async function IpoDetailPage({ params }: PageProps) {
             <EditorialGuidanceCard guidance={guidance} />
           </div>
         </div>
-      </Container>
-    </div>
+      </GlobalSidebarPageShell>
+    </>
   );
 }

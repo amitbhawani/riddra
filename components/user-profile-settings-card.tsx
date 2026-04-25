@@ -12,6 +12,11 @@ export function UserProfileSettingsCard({
 }) {
   const [name, setName] = useState(profile.name);
   const [username, setUsername] = useState(profile.username);
+  const [websiteUrl, setWebsiteUrl] = useState(profile.websiteUrl ?? "");
+  const [xHandle, setXHandle] = useState(profile.xHandle ?? "");
+  const [linkedinUrl, setLinkedinUrl] = useState(profile.linkedinUrl ?? "");
+  const [instagramHandle, setInstagramHandle] = useState(profile.instagramHandle ?? "");
+  const [youtubeUrl, setYoutubeUrl] = useState(profile.youtubeUrl ?? "");
   const [currentProfile, setCurrentProfile] = useState(profile);
   const [banner, setBanner] = useState<{ tone: "success" | "danger"; text: string; detail?: string } | null>(
     null,
@@ -29,6 +34,11 @@ export function UserProfileSettingsCard({
         body: JSON.stringify({
           name,
           username,
+          websiteUrl,
+          xHandle,
+          linkedinUrl,
+          instagramHandle,
+          youtubeUrl,
         }),
       });
       const data = (await response.json().catch(() => null)) as
@@ -50,6 +60,11 @@ export function UserProfileSettingsCard({
       setCurrentProfile(data.profile);
       setName(data.profile.name);
       setUsername(data.profile.username);
+      setWebsiteUrl(data.profile.websiteUrl ?? "");
+      setXHandle(data.profile.xHandle ?? "");
+      setLinkedinUrl(data.profile.linkedinUrl ?? "");
+      setInstagramHandle(data.profile.instagramHandle ?? "");
+      setYoutubeUrl(data.profile.youtubeUrl ?? "");
       setBanner({
         tone: "success",
         text: "Profile updated.",
@@ -98,8 +113,66 @@ export function UserProfileSettingsCard({
         </label>
       </div>
 
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="space-y-1">
+          <span className="text-xs font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+            Website
+          </span>
+          <input
+            value={websiteUrl}
+            onChange={(event) => setWebsiteUrl(event.target.value)}
+            placeholder="https://yourwebsite.com"
+            className="h-11 w-full rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-white px-4 text-sm text-[#111827]"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-xs font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+            X handle
+          </span>
+          <input
+            value={xHandle}
+            onChange={(event) => setXHandle(event.target.value)}
+            placeholder="@username"
+            className="h-11 w-full rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-white px-4 text-sm text-[#111827]"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-xs font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+            LinkedIn
+          </span>
+          <input
+            value={linkedinUrl}
+            onChange={(event) => setLinkedinUrl(event.target.value)}
+            placeholder="https://linkedin.com/in/yourname"
+            className="h-11 w-full rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-white px-4 text-sm text-[#111827]"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-xs font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+            Instagram
+          </span>
+          <input
+            value={instagramHandle}
+            onChange={(event) => setInstagramHandle(event.target.value)}
+            placeholder="@username"
+            className="h-11 w-full rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-white px-4 text-sm text-[#111827]"
+          />
+        </label>
+        <label className="space-y-1 md:col-span-2">
+          <span className="text-xs font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+            YouTube
+          </span>
+          <input
+            value={youtubeUrl}
+            onChange={(event) => setYoutubeUrl(event.target.value)}
+            placeholder="https://youtube.com/@yourchannel"
+            className="h-11 w-full rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-white px-4 text-sm text-[#111827]"
+          />
+        </label>
+      </div>
+
       <p className="text-xs leading-5 text-[rgba(107,114,128,0.88)]">
-        Usernames can use lowercase letters, numbers, and underscores. If a name is already taken, the system will suggest a safe variation.
+        Usernames can use lowercase letters, numbers, and underscores. Social fields are optional and will be shown on your public profile when saved.
       </p>
 
       {banner ? (

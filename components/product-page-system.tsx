@@ -355,7 +355,7 @@ export function ProductPageContainer({
   className?: string;
 }) {
   return (
-    <div className={clsx("mx-auto w-full max-w-[1320px] px-3 sm:px-4 lg:px-4 xl:px-5", className)}>
+    <div className={clsx("mx-auto w-full max-w-[1220px] px-3 sm:px-4 lg:px-4 xl:px-5", className)}>
       {children}
     </div>
   );
@@ -386,6 +386,7 @@ export function ProductPageShell({
   summary,
   supportingSections,
   similarAssets,
+  sidebar,
   className,
 }: {
   breadcrumbs?: ProductBreadcrumb[];
@@ -394,8 +395,20 @@ export function ProductPageShell({
   summary: ReactNode;
   supportingSections?: ReactNode;
   similarAssets?: ReactNode;
+  sidebar?: ReactNode;
   className?: string;
 }) {
+  const content = (
+    <div className="space-y-3">
+      {breadcrumbs?.length ? <ProductBreadcrumbs items={breadcrumbs} /> : null}
+      {hero}
+      {stickyTabs}
+      {summary}
+      {supportingSections}
+      {similarAssets}
+    </div>
+  );
+
   return (
     <div
       className={clsx(
@@ -403,13 +416,8 @@ export function ProductPageShell({
         className,
       )}
     >
-      <ProductPageContainer className="space-y-3">
-        {breadcrumbs?.length ? <ProductBreadcrumbs items={breadcrumbs} /> : null}
-        {hero}
-        {stickyTabs}
-        {summary}
-        {supportingSections}
-        {similarAssets}
+      <ProductPageContainer className={sidebar ? "space-y-0" : "space-y-3"}>
+        {sidebar ? <ProductPageTwoColumnLayout left={content} right={sidebar} /> : content}
       </ProductPageContainer>
     </div>
   );
@@ -427,7 +435,7 @@ export function ProductPageTwoColumnLayout({
   return (
     <div
       className={clsx(
-        "grid gap-3.5 sm:gap-4 xl:gap-[18px] lg:grid-cols-[minmax(0,69%)_minmax(304px,31%)]",
+        "grid gap-3.5 sm:gap-4 xl:gap-[18px] lg:grid-cols-[minmax(0,76.25%)_minmax(246px,23.75%)] xl:grid-cols-[minmax(0,76.9%)_minmax(252px,23.1%)]",
         className,
       )}
     >

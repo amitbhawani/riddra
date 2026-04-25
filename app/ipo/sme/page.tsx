@@ -16,8 +16,11 @@ export default async function SmeIpoIndexPage() {
   const smeIpos = ipos.filter((ipo) => ipo.ipoType.toLowerCase().includes("sme"));
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="ipo">
+      <GlobalSidebarPageShell
+        category="ipo"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Eyebrow>IPO lifecycle</Eyebrow>
           <SectionHeading
@@ -45,7 +48,7 @@ export default async function SmeIpoIndexPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {[
             "SME IPO pages highlight lot size and minimum capital requirement much more clearly.",
-            "The same company can still move from SME IPO mode into the listed-stock system once listing is complete.",
+            "The same company can still move from SME IPO mode into the listed-stock system once listing is complete, with the old IPO URL redirected automatically.",
             "This hub keeps SME and mainboard investor journeys separate so risk and capital context stay clearer.",
           ].map((item) => (
             <GlowCard key={item}>
@@ -91,6 +94,5 @@ export default async function SmeIpoIndexPage() {
           ))}
         </div>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

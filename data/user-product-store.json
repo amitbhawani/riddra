@@ -9,6 +9,11 @@
         "name": "amitbhawani",
         "email": "amitbhawani@gmail.com",
         "username": "amitbhawani",
+        "websiteUrl": null,
+        "xHandle": "amitbhawani",
+        "linkedinUrl": "https://www.linkedin.com/in/amitbhawani",
+        "instagramHandle": "amitbhawani",
+        "youtubeUrl": "https://www.youtube.com/@AmitBhawani",
         "profileVisible": true,
         "membershipTier": "free",
         "role": "admin",
@@ -22,14 +27,31 @@
           "can_edit_finance_content",
           "can_edit_editorial_content"
         ],
-        "createdAt": "2026-04-24T10:31:47.816Z",
-        "updatedAt": "2026-04-24T10:31:47.816Z",
-        "lastActiveAt": "2026-04-24T10:47:07.972Z"
+        "createdAt": "2026-04-24T16:29:25.240Z",
+        "updatedAt": "2026-04-25T09:40:01.276Z",
+        "lastActiveAt": "2026-04-25T17:14:11.841Z"
       },
       "watchlist": [],
       "portfolio": [],
       "bookmarks": [],
-      "recentlyViewed": []
+      "recentlyViewed": [
+        {
+          "id": "recent_1864ddb6-4455-4a16-bf6a-cdb3c3a06813",
+          "pageType": "stock",
+          "slug": "tata-motors",
+          "title": "Tata Motors Share Price",
+          "href": "/stocks/tata-motors",
+          "viewedAt": "2026-04-24T17:33:31.263Z"
+        },
+        {
+          "id": "recent_eaae1804-3c61-4580-ac13-50a46106e865",
+          "pageType": "stock",
+          "slug": "test-motors",
+          "title": "Tata Motors Test Page",
+          "href": "/stocks/test-motors",
+          "viewedAt": "2026-04-24T17:29:27.615Z"
+        }
+      ]
     }
   ],
   "mediaAssets": [],
@@ -49,10 +71,10 @@
     "mediaUploadsEnabled": true,
     "watchlistEnabled": true,
     "portfolioEnabled": true,
-    "updatedAt": "2026-04-24T10:31:47.816Z"
+    "updatedAt": "2026-04-24T16:29:25.240Z"
   },
   "previews": [],
   "versions": [],
   "refreshJobRuns": [],
-  "updatedAt": "2026-04-24T10:51:11.959Z"
+  "updatedAt": "2026-04-25T17:26:27.949Z"
 }

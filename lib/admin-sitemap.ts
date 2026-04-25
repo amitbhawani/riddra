@@ -365,7 +365,6 @@ export async function buildAdminSitemapAudit(): Promise<AdminSitemapAudit> {
           { id: "build-tracker", title: "Build Tracker", breadcrumb: "Internal > Build Tracker", href: "/build-tracker", publishState: "internal", sourceState: "internal", note: "Operator-facing build/readiness surface." },
           { id: "launch-readiness", title: "Launch Readiness", breadcrumb: "Internal > Launch Readiness", href: "/launch-readiness", publishState: "internal", sourceState: "internal", note: "Operator-facing launch readiness surface." },
           { id: "source-readiness", title: "Source Readiness", breadcrumb: "Internal > Source Readiness", href: "/source-readiness", publishState: "internal", sourceState: "internal", note: "Operator-facing source coverage surface." },
-          { id: "private-beta", title: "Private Beta", breadcrumb: "Internal > Private Beta", href: "/private-beta", publishState: "internal", sourceState: "internal", note: "Private beta landing route." },
           { id: "index-replay", title: "Index Replay", breadcrumb: "Internal > Index Replay", href: "/index-replay", publishState: "internal", sourceState: "internal", note: "Special replay-style route outside the standard navigation." },
         ]),
       ],

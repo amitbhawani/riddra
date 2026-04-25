@@ -20,8 +20,11 @@ export default async function MethodologyPage() {
   const sources = await getSourceRegistry();
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="legal">
+      <GlobalSidebarPageShell
+        category="legal"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Eyebrow>Trust layer</Eyebrow>
           <SectionHeading
@@ -63,8 +66,9 @@ export default async function MethodologyPage() {
             <p className="text-sm text-mist/68">Support continuity</p>
             <p className="mt-2 text-3xl font-semibold text-white">{supportRegistry.total}</p>
             <p className="mt-3 text-sm leading-7 text-mist/72">
-              {supportRegistry.inProgress} in progress, {supportRegistry.blocked} blocked, and support email currently{" "}
-              {config.supportEmail ? "configured" : "not configured yet"}.
+              {config.supportEmail
+                ? "Support guidance and contact coverage are available from the visible support channel."
+                : "Support guidance is available here, and direct contact details will appear once that channel is ready."}
             </p>
           </GlowCard>
         </div>
@@ -94,6 +98,5 @@ export default async function MethodologyPage() {
           </div>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

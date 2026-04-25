@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { GlowCard } from "@/components/ui";
+import { ProductCard } from "@/components/product-page-system";
 import { getPublicSafeHref } from "@/lib/public-surface-links";
 
 type PublicSurfaceTruthStat = {
@@ -36,8 +36,9 @@ export function PublicSurfaceTruthSection({
   hrefLabel,
   secondaryHref,
   secondaryHrefLabel,
+  stats,
 }: PublicSurfaceTruthSectionProps) {
-  const statCards: PublicSurfaceTruthStat[] = [
+  const defaultStatCards: PublicSurfaceTruthStat[] = [
     {
       label: "Account tools",
       value: "Available",
@@ -54,21 +55,22 @@ export function PublicSurfaceTruthSection({
       detail: "Support links point users to account and membership help without exposing setup details.",
     },
   ];
+  const statCards = stats && stats.length > 0 ? stats : defaultStatCards;
   const safeHref = getPublicSafeHref(href);
   const safeSecondaryHref = getPublicSafeHref(secondaryHref);
   const gridClass =
     statCards.length === 1
-      ? "grid gap-6"
+      ? "grid gap-3.5"
       : statCards.length === 2
-        ? "grid gap-6 lg:grid-cols-2"
+        ? "grid gap-3.5 lg:grid-cols-2"
         : statCards.length >= 5
-      ? "grid gap-6 xl:grid-cols-5"
+      ? "grid gap-3.5 xl:grid-cols-4"
       : statCards.length === 4
-        ? "grid gap-6 lg:grid-cols-4"
-        : "grid gap-6 lg:grid-cols-3";
+        ? "grid gap-3.5 lg:grid-cols-2 xl:grid-cols-4"
+        : "grid gap-3.5 md:grid-cols-2 xl:grid-cols-3";
 
   return (
-    <>
+    <div className="space-y-3.5 sm:space-y-4">
       <SubscriberTruthNotice
         eyebrow={eyebrow}
         title="Page tools and access"
@@ -86,23 +88,23 @@ export function PublicSurfaceTruthSection({
 
       <div className={gridClass}>
         {statCards.map((item) => (
-          <GlowCard key={`${item.label}-${item.value}`}>
-            <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">{item.label}</p>
-            <p className="riddra-product-number mt-2 text-[24px] font-semibold text-[#1B3A6B]">{item.value}</p>
+          <ProductCard key={`${item.label}-${item.value}`} tone="secondary" className="riddra-auth-truth-card space-y-3 p-4">
+            <p className="riddra-auth-truth-label riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">{item.label}</p>
+            <p className="riddra-auth-truth-value riddra-product-number text-[20px] font-semibold text-[#1B3A6B]">{item.value}</p>
             {item.detail ? (
-              <p className="riddra-product-body mt-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]">{item.detail}</p>
+              <p className="riddra-auth-truth-copy riddra-product-body text-sm leading-7 text-[rgba(75,85,99,0.84)]">{item.detail}</p>
             ) : null}
             {getPublicSafeHref(item.href) && item.hrefLabel ? (
               <Link
                 href={getPublicSafeHref(item.href)!}
-                className="mt-4 inline-flex rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
+                className="riddra-auth-secondary-link inline-flex rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
               >
                 {item.hrefLabel}
               </Link>
             ) : null}
-          </GlowCard>
+          </ProductCard>
         ))}
       </div>
-    </>
+    </div>
   );
 }

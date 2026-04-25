@@ -12,11 +12,19 @@ type RuntimeLaunchConfig = {
   adminEmails: string;
   canonicalHost: string;
   headerAnnouncement: string;
+  headerBrandMark: string;
+  headerLogoUrl: string;
+  headerLogoWidthPx: string;
+  headerBrandLabel: string;
+  headerBrandHref: string;
+  headerVisibleMenuGroups: string;
+  headerTickerRows: string;
   headerQuickLinks: string;
   headerMarketNav: string;
   headerUtilityNav: string;
   headerPrimaryCtaLabel: string;
   headerPrimaryCtaHref: string;
+  headerHeadCode: string;
   footerSummary: string;
   footerLinks: string;
   stockSidebarMode: string;
@@ -212,11 +220,19 @@ export function getRuntimeLaunchConfig(): RuntimeLaunchConfig {
     adminEmails: pick(env.adminEmails, store?.basic?.adminEmails),
     canonicalHost: pick("", store?.content?.canonicalHost),
     headerAnnouncement: pick("", store?.experience?.headerAnnouncement),
+    headerBrandMark: pick("", store?.experience?.headerBrandMark),
+    headerLogoUrl: pick("", store?.experience?.headerLogoUrl),
+    headerLogoWidthPx: pick("", store?.experience?.headerLogoWidthPx),
+    headerBrandLabel: pick("", store?.experience?.headerBrandLabel),
+    headerBrandHref: pick("", store?.experience?.headerBrandHref),
+    headerVisibleMenuGroups: pick("", store?.experience?.headerVisibleMenuGroups),
+    headerTickerRows: pick("", store?.experience?.headerTickerRows),
     headerQuickLinks: pick("", store?.experience?.headerQuickLinks),
     headerMarketNav: pick("", store?.experience?.headerMarketNav),
     headerUtilityNav: pick("", store?.experience?.headerUtilityNav),
     headerPrimaryCtaLabel: pick("", store?.experience?.headerPrimaryCtaLabel),
     headerPrimaryCtaHref: pick("", store?.experience?.headerPrimaryCtaHref),
+    headerHeadCode: pick("", store?.experience?.headerHeadCode),
     footerSummary: pick("", store?.experience?.footerSummary),
     footerLinks: pick("", store?.experience?.footerLinks),
     stockSidebarMode: pick("", store?.experience?.stockSidebarMode),
@@ -344,7 +360,8 @@ export function hasRuntimeSupabaseAdminEnv() {
 
 export function getConfiguredAdminEmails() {
   const config = getRuntimeLaunchConfig();
-  return splitList(env.adminEmails ?? config.adminEmails);
+  const configured = splitList(env.adminEmails ?? config.adminEmails);
+  return configured.length > 0 ? configured : ["amitbhawani@gmail.com"];
 }
 
 export function getConfiguredSupportDestinations() {

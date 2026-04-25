@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { mobileReadinessRules, mobileReadinessSummary, mobileReadinessTracks } from "@/lib/mobile-readiness";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
@@ -15,8 +16,11 @@ export default function MobileAppPage() {
   const config = getRuntimeLaunchConfig();
   const supportRegistry = getSupportOpsRegistrySummary("account");
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <GlobalSidebarPageShell
+      category="account"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
         <div className="space-y-5">
           <Eyebrow>Phase 12</Eyebrow>
           <SectionHeading
@@ -44,7 +48,9 @@ export default function MobileAppPage() {
             {
               label: "Support continuity",
               value: supportRegistry.total,
-              detail: `${supportRegistry.inProgress} in progress, ${supportRegistry.blocked} blocked, and push key currently ${config.pushProviderKey ? "configured" : "not configured yet"}.`,
+              detail: config.pushProviderKey
+                ? "Support and push planning are visible here, with follow-through ready to extend into mobile once rollout is active."
+                : "Support and push planning are visible here, and delivery details will appear once mobile rollout is ready.",
             },
           ]}
         />
@@ -75,7 +81,6 @@ export default function MobileAppPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

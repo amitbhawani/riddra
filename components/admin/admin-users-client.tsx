@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
-import { formatAdminDateTime, formatAdminSavedState } from "@/lib/admin-time";
+import { formatAdminDateTime, formatAdminStorageDetail } from "@/lib/admin-time";
 import type { ProductUserProfile } from "@/lib/user-product-store";
 import {
   editorAssignableProductCapabilities,
@@ -191,7 +191,7 @@ export function AdminUsersClient({
         tone: "success",
         label: data.operation === "created" ? "Created new user" : "Updated existing user",
         text: `${data.profile.email} is now saved with role ${data.profile.role} and tier ${data.profile.membershipTier || "free"}.`,
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }
@@ -243,7 +243,7 @@ export function AdminUsersClient({
         text: nextVisibility
           ? `${user.name} can appear again on the public profile route.`
           : `${user.name} is now hidden from the public profile route.`,
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }
@@ -302,7 +302,7 @@ export function AdminUsersClient({
         tone: "success",
         label: "User removed",
         text: `${data.removedProfile.email} has been removed from the user registry.`,
-        detail: `${data.storageMode === "durable" ? "Removed from durable store." : "Removed from local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt, "removed"),
       });
     });
   }

@@ -112,7 +112,7 @@ export default async function StocksIndexPage() {
             : "seeded",
       truthDetail:
         stock.snapshotMeta?.marketDetail ??
-        "This route stays conservative until a provider-backed durable quote is written for the symbol.",
+        "This route stays conservative until a verified delayed quote is written for the symbol.",
       primaryMetric: {
         label: "Snapshot",
         value: `${stock.price} • ${stock.change}`,

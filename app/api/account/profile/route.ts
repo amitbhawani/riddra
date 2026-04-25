@@ -26,6 +26,11 @@ export async function POST(request: NextRequest) {
     const payload = (await request.json()) as {
       username?: string;
       name?: string;
+      websiteUrl?: string;
+      xHandle?: string;
+      linkedinUrl?: string;
+      instagramHandle?: string;
+      youtubeUrl?: string;
     };
 
     const nextName = String(payload.name ?? currentProfile.name).trim();
@@ -47,6 +52,11 @@ export async function POST(request: NextRequest) {
       email: currentProfile.email,
       name: nextName,
       username,
+      websiteUrl: payload.websiteUrl,
+      xHandle: payload.xHandle,
+      linkedinUrl: payload.linkedinUrl,
+      instagramHandle: payload.instagramHandle,
+      youtubeUrl: payload.youtubeUrl,
       membershipTier: currentProfile.membershipTier,
       role: currentProfile.role,
       capabilities: currentProfile.capabilities,

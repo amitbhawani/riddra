@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -15,7 +16,7 @@ import { AdminBadge, AdminCard, AdminEmptyState } from "@/components/admin/admin
 type ExperienceField = {
   key: keyof LaunchConfigStore["experience"];
   label: string;
-  type: "text" | "textarea" | "links" | "checkbox_group" | "select";
+  type: "text" | "textarea" | "links" | "checkbox_group" | "select" | "image" | "number";
   rows?: number;
   helper?: string;
   options?: Array<{ label: string; value: string; description?: string }>;
@@ -223,7 +224,7 @@ export function AdminGlobalSiteEditorClient(props: ExperienceEditorProps | Colle
                   <div
                     key={field.key}
                     className={
-                      field.type === "textarea" || field.type === "checkbox_group"
+                      field.type === "textarea" || field.type === "checkbox_group" || field.type === "image"
                         ? "space-y-1 md:col-span-2"
                         : "space-y-1"
                     }
@@ -324,8 +325,25 @@ export function AdminGlobalSiteEditorClient(props: ExperienceEditorProps | Colle
                           </option>
                         ))}
                       </select>
+                    ) : field.type === "image" ? (
+                      <ExperienceImageField
+                        label={field.label}
+                        value={String(experience?.[field.key] ?? "")}
+                        onChange={(nextValue) =>
+                          setExperience((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  [field.key]: nextValue,
+                                }
+                              : current,
+                          )
+                        }
+                        disabled={isPending}
+                      />
                     ) : (
                       <input
+                        type={field.type === "number" ? "number" : "text"}
                         value={experience?.[field.key] ?? ""}
                         onChange={(event) =>
                           setExperience((current) =>
@@ -601,6 +619,152 @@ export function AdminGlobalSiteEditorClient(props: ExperienceEditorProps | Colle
       ),
     );
   }
+}
+
+function ExperienceImageField({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange: (nextValue: string) => void;
+  disabled: boolean;
+}) {
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [notice, setNotice] = useState<{
+    tone: "success" | "danger";
+    text: string;
+  } | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function uploadImage() {
+    if (!uploadFile) {
+      setNotice({ tone: "danger", text: "Choose a logo image before uploading." });
+      return;
+    }
+
+    startTransition(async () => {
+      setNotice(null);
+      const formData = new FormData();
+      formData.set("title", uploadTitle || uploadFile.name);
+      formData.set("altText", label);
+      formData.set("category", "branding");
+      formData.set("file", uploadFile);
+
+      const response = await fetch("/api/admin/media-library", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await response.json().catch(() => null)) as
+        | {
+            error?: string;
+            asset?: { url?: string | null };
+          }
+        | null;
+
+      if (!response.ok || !data?.asset?.url) {
+        setNotice({
+          tone: "danger",
+          text: data?.error ?? "Could not upload the logo right now.",
+        });
+        return;
+      }
+
+      onChange(data.asset.url);
+      setUploadTitle("");
+      setUploadFile(null);
+      setNotice({
+        tone: "success",
+        text: "Logo uploaded and selected for the global header.",
+      });
+    });
+  }
+
+  return (
+    <div className="space-y-2 rounded-lg border border-[#d1d5db] bg-white p-3">
+      <div className="rounded-lg border border-[#d1d5db] bg-[#f8fafc] p-3">
+        {value ? (
+          <div className="space-y-3">
+            <div className="flex min-h-[64px] items-center justify-start rounded-md bg-white px-3">
+              <img src={value} alt={label} className="max-h-12 w-auto object-contain" />
+            </div>
+            <p className="truncate text-[12px] text-[#6b7280]">{value}</p>
+          </div>
+        ) : (
+          <p className="text-[12px] leading-5 text-[#6b7280]">
+            No logo selected yet. Upload one here or paste a logo image URL.
+          </p>
+        )}
+      </div>
+
+      {notice ? (
+        <div
+          className={`rounded-lg border px-3 py-2 text-[12px] leading-5 ${
+            notice.tone === "success"
+              ? "border-[#bbf7d0] bg-[#ecfdf5] text-[#166534]"
+              : "border-[#fecaca] bg-[#fef2f2] text-[#b91c1c]"
+          }`}
+        >
+          {notice.text}
+        </div>
+      ) : null}
+
+      <div className="space-y-2">
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="/media-library/riddra-logo.png or https://..."
+          disabled={disabled || isPending}
+          className="h-9 w-full rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[13px] text-[#111827] placeholder:text-[#9ca3af] outline-none transition focus:border-[#2563eb] focus:bg-white"
+        />
+        <p className="text-[12px] leading-5 text-[#4b5563]">
+          Paste an existing logo URL, or upload a new one below.
+        </p>
+      </div>
+
+      <div className="space-y-2 rounded-lg border border-[#d1d5db] bg-[#f9fafb] p-3">
+        <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#6b7280]">
+          Upload logo
+        </p>
+        <input
+          value={uploadTitle}
+          onChange={(event) => setUploadTitle(event.target.value)}
+          placeholder="Riddra header logo"
+          disabled={disabled || isPending}
+          className="h-9 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-[13px] text-[#111827] placeholder:text-[#9ca3af] outline-none transition focus:border-[#2563eb]"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          disabled={disabled || isPending}
+          onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)}
+          className="block w-full text-sm text-[#111827]"
+        />
+        {uploadFile ? (
+          <p className="text-[12px] leading-5 text-[#6b7280]">Selected file: {uploadFile.name}</p>
+        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={uploadImage}
+            disabled={disabled || isPending}
+            className="inline-flex h-9 items-center rounded-lg border border-[#0f172a] bg-[#0f172a] px-4 text-[13px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPending ? "Uploading..." : "Upload and use logo"}
+          </button>
+          <Link
+            href="/admin/media-library"
+            className="inline-flex h-9 items-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[13px] font-medium text-[#111827]"
+          >
+            Open media library
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ModuleField({

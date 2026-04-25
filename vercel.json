@@ -4,6 +4,14 @@
     {
       "path": "/api/market-data/provider-sync",
       "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/admin/market-news/run",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/admin/lifecycle/ipo-cutover",
+      "schedule": "30 1 * * *"
     }
   ]
 }

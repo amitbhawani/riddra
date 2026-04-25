@@ -19,7 +19,9 @@ import { getFunds } from "@/lib/content";
 import { getFundOverlapLens, getFundPortfolioLens, getFundReturnValue } from "@/lib/fund-research";
 import { getFundCompareTrustCards } from "@/lib/market-truth";
 import type { FundSnapshot } from "@/lib/mock-data";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 
 type PageProps = {
   params: Promise<{ left: string; right: string }>;
@@ -53,17 +55,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function FundComparePage({ params }: PageProps) {
   const { left, right } = await params;
-  const [funds, pair, leftCandidates, rightCandidates, sidebar] = await Promise.all([
-    getFunds(),
-    getFundComparePair(left, right),
-    getFundCompareCandidates(left, { excludeSlug: right, limit: 3 }),
-    getFundCompareCandidates(right, { excludeSlug: left, limit: 3 }),
-    getGlobalSidebarRail("compare"),
-  ]);
+  const pair = await getFundComparePair(left, right);
 
   if (!pair) {
     notFound();
   }
+
+  if (isStockFirstLaunchPlaceholderFamily("mutual_funds")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="mutual_funds"
+        variant="compare"
+        pageCategory="compare"
+        assetName={`${pair.left.name} vs ${pair.right.name}`}
+      />
+    );
+  }
+
+  const [funds, leftCandidates, rightCandidates, sidebar] = await Promise.all([
+    getFunds(),
+    getFundCompareCandidates(left, { excludeSlug: right, limit: 3 }),
+    getFundCompareCandidates(right, { excludeSlug: left, limit: 3 }),
+    getGlobalSidebarRail("compare"),
+  ]);
 
   const canonicalHref = getCanonicalFundCompareHref(funds, left, right);
 

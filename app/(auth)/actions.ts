@@ -12,6 +12,8 @@ export type AuthActionState = {
   success?: string;
 };
 
+const TEMPORARY_AUTH_ERROR = "Sign-in is temporarily unavailable. Please try again later.";
+
 function readCredentials(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
@@ -27,7 +29,7 @@ export async function loginAction(
 
   if (!hasRuntimeSupabaseEnv()) {
     return {
-      error: "Add Supabase keys in .env.local or launch-config before logging in.",
+      error: TEMPORARY_AUTH_ERROR,
     };
   }
 
@@ -62,7 +64,7 @@ export async function signupAction(
 
   if (!hasRuntimeSupabaseEnv()) {
     return {
-      error: "Add Supabase keys in .env.local or launch-config before signing up.",
+      error: TEMPORARY_AUTH_ERROR,
     };
   }
 
@@ -95,7 +97,7 @@ export async function signupAction(
 
 export async function googleAuthAction() {
   if (!hasRuntimeSupabaseEnv()) {
-    redirect("/login?error=Add+Supabase+keys+in+.env.local+or+launch-config+before+using+Google+login.");
+    redirect(`/login?error=${encodeURIComponent(TEMPORARY_AUTH_ERROR)}`);
   }
 
   const supabase = await createSupabaseServerClient();
@@ -107,7 +109,7 @@ export async function googleAuthAction() {
   });
 
   if (error || !data.url) {
-    redirect("/login?error=Google+login+is+not+configured+yet.");
+    redirect(`/login?error=${encodeURIComponent(TEMPORARY_AUTH_ERROR)}`);
   }
 
   redirect(data.url);

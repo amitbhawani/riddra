@@ -55,6 +55,7 @@ import {
   type ProductUserCapability,
   type ProductUserRole,
 } from "@/lib/product-permissions";
+import { sanitizeSystemHeadCodeInput } from "@/lib/system-head-code";
 
 export type { ProductUserCapability, ProductUserRole } from "@/lib/product-permissions";
 
@@ -65,6 +66,11 @@ export type ProductUserProfile = {
   name: string;
   email: string;
   username: string;
+  websiteUrl: string | null;
+  xHandle: string | null;
+  linkedinUrl: string | null;
+  instagramHandle: string | null;
+  youtubeUrl: string | null;
   profileVisible: boolean;
   membershipTier: string | null;
   role: ProductUserRole;
@@ -240,6 +246,11 @@ export type SaveUserProfileInput = {
   email: string;
   name?: string | null;
   username?: string | null;
+  websiteUrl?: string | null;
+  xHandle?: string | null;
+  linkedinUrl?: string | null;
+  instagramHandle?: string | null;
+  youtubeUrl?: string | null;
   profileVisible?: boolean;
   membershipTier?: string | null;
   role?: ProductUserRole;
@@ -307,6 +318,36 @@ let storeCache:
 
 function cleanString(value: string | null | undefined) {
   return String(value ?? "").trim();
+}
+
+function cleanUrlLikeValue(value: string | null | undefined) {
+  const normalized = cleanString(value);
+
+  if (!normalized) {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(
+      normalized.startsWith("http://") || normalized.startsWith("https://")
+        ? normalized
+        : `https://${normalized}`,
+    );
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
+function normalizeSocialHandle(value: string | null | undefined) {
+  const normalized = cleanString(value)
+    .replace(/^@+/, "")
+    .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com|instagram\.com)\//i, "")
+    .replace(/\/+$/, "")
+    .trim();
+
+  return normalized || null;
 }
 
 function normalizeSlug(value: string) {
@@ -435,6 +476,11 @@ function normalizeProfile(value: Partial<ProductUserProfile>): ProductUserProfil
     name: cleanString(value.name) || email.split("@")[0] || "Riddra user",
     email: email || `${userKey}@local-preview.riddra`,
     username,
+    websiteUrl: cleanUrlLikeValue(value.websiteUrl),
+    xHandle: normalizeSocialHandle(value.xHandle),
+    linkedinUrl: cleanUrlLikeValue(value.linkedinUrl),
+    instagramHandle: normalizeSocialHandle(value.instagramHandle),
+    youtubeUrl: cleanUrlLikeValue(value.youtubeUrl),
     profileVisible: value.profileVisible !== false,
     membershipTier: cleanString(value.membershipTier) || null,
     role,
@@ -832,6 +878,11 @@ function mergeProfileWithFallbackRecord(
   return normalizeProfile({
     ...profile,
     username: fallbackRecord.profile.username || profile.username,
+    websiteUrl: fallbackRecord.profile.websiteUrl || profile.websiteUrl,
+    xHandle: fallbackRecord.profile.xHandle || profile.xHandle,
+    linkedinUrl: fallbackRecord.profile.linkedinUrl || profile.linkedinUrl,
+    instagramHandle: fallbackRecord.profile.instagramHandle || profile.instagramHandle,
+    youtubeUrl: fallbackRecord.profile.youtubeUrl || profile.youtubeUrl,
     profileVisible:
       typeof fallbackRecord.profile.profileVisible === "boolean"
         ? fallbackRecord.profile.profileVisible
@@ -1104,6 +1155,16 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
       email,
       name: cleanString(input.name) || existing?.name || email.split("@")[0],
       username,
+      websiteUrl:
+        cleanUrlLikeValue(input.websiteUrl) ?? existing?.websiteUrl ?? null,
+      xHandle:
+        normalizeSocialHandle(input.xHandle) ?? existing?.xHandle ?? null,
+      linkedinUrl:
+        cleanUrlLikeValue(input.linkedinUrl) ?? existing?.linkedinUrl ?? null,
+      instagramHandle:
+        normalizeSocialHandle(input.instagramHandle) ?? existing?.instagramHandle ?? null,
+      youtubeUrl:
+        cleanUrlLikeValue(input.youtubeUrl) ?? existing?.youtubeUrl ?? null,
       profileVisible:
         typeof input.profileVisible === "boolean" ? input.profileVisible : true,
       membershipTier:
@@ -1130,6 +1191,11 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
             ...existingFallbackRecord.profile,
             ...saved,
             username,
+            websiteUrl: saved.websiteUrl,
+            xHandle: saved.xHandle,
+            linkedinUrl: saved.linkedinUrl,
+            instagramHandle: saved.instagramHandle,
+            youtubeUrl: saved.youtubeUrl,
             profileVisible:
               typeof input.profileVisible === "boolean"
                 ? input.profileVisible
@@ -1140,6 +1206,11 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
             profile: normalizeProfile({
               ...saved,
               username,
+              websiteUrl: saved.websiteUrl,
+              xHandle: saved.xHandle,
+              linkedinUrl: saved.linkedinUrl,
+              instagramHandle: saved.instagramHandle,
+              youtubeUrl: saved.youtubeUrl,
               profileVisible:
                 typeof input.profileVisible === "boolean" ? input.profileVisible : true,
             }),
@@ -1189,6 +1260,11 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
           authUserId: normalizeSlug(email),
           name: cleanString(input.name) || email.split("@")[0],
           username,
+          websiteUrl: cleanUrlLikeValue(input.websiteUrl),
+          xHandle: normalizeSocialHandle(input.xHandle),
+          linkedinUrl: cleanUrlLikeValue(input.linkedinUrl),
+          instagramHandle: normalizeSocialHandle(input.instagramHandle),
+          youtubeUrl: cleanUrlLikeValue(input.youtubeUrl),
           profileVisible: typeof input.profileVisible === "boolean" ? input.profileVisible : true,
           membershipTier: cleanString(input.membershipTier) || store.settings.defaultMembershipTier,
           role: input.role ?? defaultRoleForEmail(email),
@@ -1207,6 +1283,21 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
     } else {
       record.profile.name = cleanString(input.name) || record.profile.name;
       record.profile.username = username;
+      if (input.websiteUrl !== undefined) {
+        record.profile.websiteUrl = cleanUrlLikeValue(input.websiteUrl);
+      }
+      if (input.xHandle !== undefined) {
+        record.profile.xHandle = normalizeSocialHandle(input.xHandle);
+      }
+      if (input.linkedinUrl !== undefined) {
+        record.profile.linkedinUrl = cleanUrlLikeValue(input.linkedinUrl);
+      }
+      if (input.instagramHandle !== undefined) {
+        record.profile.instagramHandle = normalizeSocialHandle(input.instagramHandle);
+      }
+      if (input.youtubeUrl !== undefined) {
+        record.profile.youtubeUrl = cleanUrlLikeValue(input.youtubeUrl);
+      }
       if (typeof input.profileVisible === "boolean") {
         record.profile.profileVisible = input.profileVisible;
       }
@@ -1592,11 +1683,11 @@ export async function getPublicUserProfileByUsername(username: string) {
   };
 
   const [watchlist, portfolio, bookmarks, recentlyViewed, tiers] = await Promise.all([
-    getUserWatchlist(pseudoUser),
-    getUserPortfolioHoldings(pseudoUser),
-    getUserBookmarks(pseudoUser),
-    getUserRecentlyViewed(pseudoUser),
-    getAdminMembershipTiers(),
+    getUserWatchlist(pseudoUser).catch(() => []),
+    getUserPortfolioHoldings(pseudoUser).catch(() => []),
+    getUserBookmarks(pseudoUser).catch(() => []),
+    getUserRecentlyViewed(pseudoUser).catch(() => []),
+    getAdminMembershipTiers().catch(() => []),
   ]);
 
   const tier = resolveMembershipTierForProfile(profile, tiers);
@@ -1981,6 +2072,10 @@ export async function getSystemSettings() {
 
 export async function saveSystemSettings(input: SaveSystemSettingsInput): Promise<SaveSystemSettingsResult> {
   const savedAt = new Date().toISOString();
+  const sanitizedPublicHeadCode =
+    input.publicHeadCode === undefined
+      ? undefined
+      : (sanitizeSystemHeadCodeInput(input.publicHeadCode) ?? "");
   if (hasDurableCmsStateStore()) {
     const currentSettings = (await getDurableSystemSettings()) ?? defaultSettings();
     const nextSettings: SystemSettings = {
@@ -1993,7 +2088,10 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
         cleanString(input.defaultMetaDescription) || currentSettings.defaultMetaDescription,
       defaultOgImage: cleanString(input.defaultOgImage),
       defaultCanonicalBase: cleanString(input.defaultCanonicalBase),
-      publicHeadCode: cleanString(input.publicHeadCode),
+      publicHeadCode:
+        sanitizedPublicHeadCode === undefined
+          ? currentSettings.publicHeadCode
+          : sanitizedPublicHeadCode,
       defaultMembershipTier:
         cleanString(input.defaultMembershipTier) || currentSettings.defaultMembershipTier,
       defaultLockedCtaLabel:
@@ -2035,7 +2133,8 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
         cleanString(input.defaultMetaDescription) || store.settings.defaultMetaDescription,
       defaultOgImage: cleanString(input.defaultOgImage),
       defaultCanonicalBase: cleanString(input.defaultCanonicalBase),
-      publicHeadCode: cleanString(input.publicHeadCode),
+      publicHeadCode:
+        sanitizedPublicHeadCode === undefined ? store.settings.publicHeadCode : sanitizedPublicHeadCode,
       defaultMembershipTier:
         cleanString(input.defaultMembershipTier) || store.settings.defaultMembershipTier,
       defaultLockedCtaLabel:

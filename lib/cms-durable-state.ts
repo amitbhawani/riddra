@@ -31,6 +31,11 @@ type ProductUserProfileRow = {
   auth_user_id: string | null;
   email: string;
   name: string;
+  website_url: string | null;
+  x_handle: string | null;
+  linkedin_url: string | null;
+  instagram_handle: string | null;
+  youtube_url: string | null;
   profile_visible: boolean | null;
   membership_tier: string | null;
   role: "admin" | "editor" | "user";
@@ -449,6 +454,11 @@ function mapProfileRow(row: ProductUserProfileRow): ProductUserProfile {
     name: cleanString(row.name),
     email,
     username,
+    websiteUrl: cleanString(row.website_url) || null,
+    xHandle: cleanString(row.x_handle) || null,
+    linkedinUrl: cleanString(row.linkedin_url) || null,
+    instagramHandle: cleanString(row.instagram_handle) || null,
+    youtubeUrl: cleanString(row.youtube_url) || null,
     profileVisible: row.profile_visible !== false,
     membershipTier: cleanString(row.membership_tier) || null,
     role: row.role,
@@ -832,7 +842,7 @@ export async function getDurableUserProfileByUserKey(userKey: string) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from(table)
-      .select("id,user_key,auth_user_id,email,name,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
+      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
       .eq("user_key", cleanString(userKey))
       .maybeSingle();
 
@@ -857,7 +867,7 @@ export async function getDurableUserProfileByEmail(email: string) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from(table)
-      .select("id,user_key,auth_user_id,email,name,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
+      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
       .eq("email", cleanString(email))
       .maybeSingle();
 
@@ -882,7 +892,7 @@ export async function listDurableUserProfiles() {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from(table)
-      .select("id,user_key,auth_user_id,email,name,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
+      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
       .order("last_active_at", { ascending: false });
 
     if (error) {
@@ -910,6 +920,11 @@ export async function saveDurableUserProfile(profile: ProductUserProfile) {
       auth_user_id: cleanString(profile.authUserId) || null,
       email: cleanString(profile.email),
       name: cleanString(profile.name),
+      website_url: cleanString(profile.websiteUrl) || null,
+      x_handle: cleanString(profile.xHandle) || null,
+      linkedin_url: cleanString(profile.linkedinUrl) || null,
+      instagram_handle: cleanString(profile.instagramHandle) || null,
+      youtube_url: cleanString(profile.youtubeUrl) || null,
       profile_visible: profile.profileVisible,
       membership_tier: cleanString(profile.membershipTier) || null,
       role: profile.role,
@@ -921,7 +936,7 @@ export async function saveDurableUserProfile(profile: ProductUserProfile) {
     const { data, error } = await supabase
       .from(table)
       .upsert(payload, { onConflict: "user_key" })
-      .select("id,user_key,auth_user_id,email,name,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
+      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
       .single();
 
     if (error) {

@@ -1035,6 +1035,56 @@
   },
   "globalRevisions": [
     {
+      "id": "admin_global_revision_8d2e6ab5-94d1-4b96-8ce2-a3a3d43c1012",
+      "section": "header",
+      "title": "Header / top navigation",
+      "editor": "amitbhawani@gmail.com",
+      "action": "Published global site header settings",
+      "status": "published",
+      "changedCount": 14,
+      "editedAt": "2026-04-24T15:35:09.736Z"
+    },
+    {
+      "id": "admin_global_revision_71dc57d2-5be1-4279-a092-1a2885960ea0",
+      "section": "header",
+      "title": "Header / top navigation",
+      "editor": "amitbhawani@gmail.com",
+      "action": "Published global site header settings",
+      "status": "published",
+      "changedCount": 14,
+      "editedAt": "2026-04-24T15:34:38.009Z"
+    },
+    {
+      "id": "admin_global_revision_1a7561db-d1b8-445c-abef-eba6b5dbbda8",
+      "section": "header",
+      "title": "Header / top navigation",
+      "editor": "amitbhawani@gmail.com",
+      "action": "Published global site header settings",
+      "status": "published",
+      "changedCount": 14,
+      "editedAt": "2026-04-24T15:34:36.885Z"
+    },
+    {
+      "id": "admin_global_revision_c6e2a6ad-8a57-4ac1-8a86-a212e22481bc",
+      "section": "header",
+      "title": "Header / top navigation",
+      "editor": "amitbhawani@gmail.com",
+      "action": "Published global site header settings",
+      "status": "published",
+      "changedCount": 14,
+      "editedAt": "2026-04-24T15:34:31.568Z"
+    },
+    {
+      "id": "admin_global_revision_15e4368b-f20c-4a53-904f-2b35cfe34b9c",
+      "section": "header",
+      "title": "Header / top navigation",
+      "editor": "amitbhawani@gmail.com",
+      "action": "Published global site header settings",
+      "status": "published",
+      "changedCount": 14,
+      "editedAt": "2026-04-24T15:34:10.504Z"
+    },
+    {
       "id": "admin_global_revision_fada029c-5031-4acf-a6de-a34cdb2ac096",
       "section": "footer",
       "title": "Footer",
@@ -1508,5 +1558,5 @@
     }
   ],
   "membershipTiers": [],
-  "updatedAt": "2026-04-24T03:41:03.286Z"
+  "updatedAt": "2026-04-24T15:35:09.736Z"
 }

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
+import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getDerivativesMemory } from "@/lib/derivatives-memory-store";
 import { getPlaceholderHonestyRowByHref } from "@/lib/placeholder-honesty-registry";
 import { requirePlanTier } from "@/lib/plan-gating";
@@ -37,8 +38,11 @@ export default async function TraderWorkstationPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <Container className="space-y-10">
+    <GlobalSidebarPageShell
+      category="charts"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Premium preview</Eyebrow>
@@ -142,7 +146,6 @@ export default async function TraderWorkstationPage() {
             ))}
           </div>
         </GlowCard>
-      </Container>
-    </div>
+    </GlobalSidebarPageShell>
   );
 }

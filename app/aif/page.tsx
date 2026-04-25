@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
 import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 import { WealthFamilyHubPage } from "@/components/wealth-family-hub-page";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
 import { getPublishableCmsSlugSet } from "@/lib/publishable-content";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
@@ -15,6 +17,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AifIndexPage() {
+  if (isStockFirstLaunchPlaceholderFamily("aif")) {
+    return <StockFirstLaunchPlaceholderPage family="aif" pageCategory="aif" />;
+  }
+
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");

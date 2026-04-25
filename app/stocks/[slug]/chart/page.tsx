@@ -62,7 +62,7 @@ export default async function StockChartPage({ params }: PageProps) {
   const tradingviewSymbol = getTradingviewStockSymbol(stock.symbol);
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -81,7 +81,7 @@ export default async function StockChartPage({ params }: PageProps) {
                 {stock.name} chart
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-mist/74">
-                This is the chart-first route for {stock.name}. It keeps the chart honest: verified delayed bars when provider-backed OHLCV is available, a clearly labeled source-entry series while activation is still underway, and a waiting state until any symbol-bound OHLCV arrives.
+                This is the chart-first route for {stock.name}. It keeps the chart honest: verified delayed bars when symbol-bound OHLCV is available, a clearly labeled source-entry series while activation is still underway, and a waiting state until any symbol-bound OHLCV arrives.
               </p>
               <Link
                 href={`/stocks/${stock.slug}`}
@@ -111,7 +111,7 @@ export default async function StockChartPage({ params }: PageProps) {
 
         <AdvancedChartWorkspace
           title={`${stock.name} chart workspace`}
-          description={`${stock.symbol} chart view now expects symbol-bound OHLCV. It renders from verified provider bars when available, falls back honestly to the source-entry OHLCV lane when needed, and otherwise stays in a clear waiting-for-data state.`}
+          description={`${stock.symbol} chart view now expects symbol-bound OHLCV. It renders from verified delayed bars when available, falls back honestly to the source-entry OHLCV lane when needed, and otherwise stays in a clear waiting-for-data state.`}
           presets={["5M", "15M", "1H", "1D"]}
           tradingviewSymbol={tradingviewSymbol}
           nativeChartData={
@@ -194,6 +194,6 @@ export default async function StockChartPage({ params }: PageProps) {
           </GlowCard>
         </div>
       </GlobalSidebarPageShell>
-    </div>
+    </>
   );
 }

@@ -122,7 +122,7 @@ export function getChartSnapshotPresentation(
       marketLabel:
         session.state === "open" ? "Manual retained OHLCV" : "Manual retained closing series",
       marketDetail:
-        "This chart route is using manually-entered or source-entry OHLCV. It is stored for continuity, but it is not the same as provider-backed durable chart history.",
+        "This chart route is using manually-entered or source-entry OHLCV. It is stored for continuity, but it is not the same as fully verified chart history.",
     };
   }
 
@@ -147,7 +147,7 @@ export function getIndexSnapshotPresentation(
       marketState: session.state,
       marketLabel: "Manual retained index snapshot",
       marketDetail:
-        "This index route is showing retained manual rows. It remains useful for structure, but it is not the same as a verified provider-backed delayed breadth snapshot.",
+        "This index route is showing retained manual rows. It remains useful for structure, but it is not the same as a fully verified delayed breadth snapshot.",
     };
   }
 

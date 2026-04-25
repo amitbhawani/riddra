@@ -32,11 +32,19 @@ export type LaunchConfigStore = {
   };
   experience: {
     headerAnnouncement: string;
+    headerBrandMark: string;
+    headerLogoUrl: string;
+    headerLogoWidthPx: string;
+    headerBrandLabel: string;
+    headerBrandHref: string;
+    headerVisibleMenuGroups: string;
+    headerTickerRows: string;
     headerQuickLinks: string;
     headerMarketNav: string;
     headerUtilityNav: string;
     headerPrimaryCtaLabel: string;
     headerPrimaryCtaHref: string;
+    headerHeadCode: string;
     footerSummary: string;
     footerLinks: string;
     stockSidebarMode: string;
@@ -250,11 +258,20 @@ const emptyStore: LaunchConfigStore = {
   },
   experience: {
     headerAnnouncement: "",
+    headerBrandMark: "R",
+    headerLogoUrl: "",
+    headerLogoWidthPx: "28",
+    headerBrandLabel: "Riddra",
+    headerBrandHref: "/",
+    headerVisibleMenuGroups: "markets\nstocks\nfunds\ntools\nlearn",
+    headerTickerRows:
+      "NIFTY 50|22,487.20|+0.74%|/nifty50\nSENSEX|73,904.55|+0.66%|/sensex\nBANKNIFTY|48,211.80|+0.92%|/banknifty\nFINNIFTY|22,541.10|+0.36%|/finnifty\nUSD/INR|83.19|-0.08%|/markets\nGOLD|₹71,842|+0.44%|/markets\nSILVER|₹81,420|+0.27%|/markets\nBRENT|$87.42|-0.22%|/markets\nDOW JONES|38,944.20|+0.31%|/markets\nHANG SENG|16,489.10|+0.58%|/markets\nSHANGHAI|3,062.84|-0.19%|/markets",
     headerQuickLinks: "Pricing|/pricing\nSearch|/search\nMarkets|/markets\nContact|/contact",
     headerMarketNav: "Home|/\nIndian Stocks|/stocks\nSensex|/sensex\nNifty50|/nifty50\nFinNifty|/finnifty\nBankNifty|/banknifty",
     headerUtilityNav: "Screener|/screener\nCourses|/courses\nCalculators|/tools\nCharts|/charts\nMarkets|/markets\nMutual Funds|/mutual-funds\nLearn|/learn\nNewsletter|/newsletter",
     headerPrimaryCtaLabel: "Open launch readiness",
     headerPrimaryCtaHref: "/launch-readiness",
+    headerHeadCode: "",
     footerSummary:
       "Built on Next.js, Supabase, and Trigger.dev with official-source-first data planning and controlled launch execution.",
     footerLinks: "Launch Readiness|/launch-readiness\nMethodology|/methodology\nPrivacy|/privacy\nTerms|/terms\nContact|/contact",

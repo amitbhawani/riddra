@@ -99,7 +99,7 @@ export const productPageDesignSystem = {
       summary: "Retained delayed market snapshot with timestamped source context.",
     },
     partial: {
-      label: "Coverage Limited",
+      label: "Partial coverage",
       color: "#6B7280",
       summary: "Some route coverage is visible, but the current read is not complete.",
     },
@@ -109,7 +109,7 @@ export const productPageDesignSystem = {
       summary: "The source read failed and the page should say so explicitly.",
     },
     unavailable: {
-      label: "Unavailable",
+      label: "Data pending",
       color: "#6B7280",
       summary: "The required source data has not been written for this block yet.",
     },
@@ -140,7 +140,7 @@ const publicDataStateMeta: Record<
     description: "The source could not be read for this block, so the page is staying explicit about the failure instead of guessing.",
   },
   unavailable: {
-    label: "Unavailable",
+    label: "Data pending",
     title: "Data not available yet",
     description: "This block stays withheld until the source data exists in the retained public layer.",
   },
@@ -180,7 +180,7 @@ export function parseDesignNumericValue(value: number | string | null | undefine
 
 export function formatProductCurrency(
   value: number | string | null | undefined,
-  fallback = "Unavailable",
+  fallback = "Data pending",
 ) {
   const parsed = parseDesignNumericValue(value);
 
@@ -193,7 +193,7 @@ export function formatProductCurrency(
 
 export function formatProductNumber(
   value: number | string | null | undefined,
-  fallback = "Unavailable",
+  fallback = "Data pending",
 ) {
   const parsed = parseDesignNumericValue(value);
 
@@ -207,7 +207,7 @@ export function formatProductNumber(
 export function formatProductPercent(
   value: number | string | null | undefined,
   digits = 2,
-  fallback = "Unavailable",
+  fallback = "Data pending",
 ) {
   const parsed = parseDesignNumericValue(value);
 
@@ -220,7 +220,7 @@ export function formatProductPercent(
 
 export function formatProductDate(
   value: string | number | Date | null | undefined,
-  fallback = "Unavailable",
+  fallback = "Data pending",
 ) {
   if (!value) {
     return fallback;
@@ -241,7 +241,7 @@ export function formatProductDate(
 
 export function formatProductDateTime(
   value: string | number | Date | null | undefined,
-  fallback = "Unavailable",
+  fallback = "Data pending",
 ) {
   if (!value) {
     return fallback;

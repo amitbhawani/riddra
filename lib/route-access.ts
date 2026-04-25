@@ -5,7 +5,6 @@ const PUBLIC_PAGE_EXACT_PATHS = new Set([
   "/",
   "/login",
   "/signup",
-  "/private-beta",
   "/contact",
   "/help",
   "/privacy",
@@ -43,7 +42,7 @@ function normalizeEmailList(value: string | undefined) {
 }
 
 export function isPrivateBetaModeEnabled() {
-  return env.launchMode !== "public_beta" && env.launchMode !== "full_launch";
+  return false;
 }
 
 export function getConfiguredAdminEmailsFromEnv() {

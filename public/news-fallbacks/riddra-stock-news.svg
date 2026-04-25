@@ -1,0 +1,20 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="104" y="110" width="182" height="42" rx="21" fill="#EEF3FF"/>
+  <text x="195" y="137" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#36558F">Riddra Stocks</text>
+  <text x="104" y="236" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#26364F">Stock update</text>
+  <text x="104" y="290" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#70819B">Company-specific market coverage will use this fallback when no valid story image is available.</text>
+  <rect x="104" y="362" width="430" height="18" rx="9" fill="#E7EDF8"/>
+  <rect x="104" y="402" width="382" height="18" rx="9" fill="#E7EDF8"/>
+  <rect x="104" y="442" width="304" height="18" rx="9" fill="#E7EDF8"/>
+  <rect x="792" y="164" width="228" height="228" rx="24" fill="#F4F7FF"/>
+  <path d="M838 332L888 278L924 302L978 228" stroke="#3D5A97" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M968 228H1000V260" stroke="#3D5A97" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E1EBFF"/>
+      <stop offset="1" stop-color="#F4F7FE"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -87,24 +87,21 @@ export default async function AdminRecordEditorPage({
         description={`Manage every meaningful frontend-visible field for this ${adminFamilyMeta[typedFamily].singular} without dropping into raw JSON.`}
       />
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
-        <AdminGuidanceCard
-          title="How this editor works"
-          description="This editor is arranged to match the public page flow, then the deeper operator controls."
-          items={[
-            "Source versus manual: source-backed values come from the data lane, while manual values let an operator override or lock what appears on the frontend.",
-            "Preview versus live: preview creates a temporary draft route and never changes the live public page by itself.",
-            role === "admin"
-              ? "Publish, schedule, and archive: publish sends the saved state live, scheduling sets a timed future change, and archive removes the record from the active publishing flow."
-              : "Approval workflow: your saves stay in the approval queue until an admin approves them, so the live page is never overwritten directly from an editor session.",
-          ]}
-          links={[
-            { href: "/admin/help", label: "Help", tone: "primary" },
-            { href: "/admin/activity-log", label: "Activity log" },
-          ]}
-        />
-        <AdminStorageStatusCard scope={`${adminFamilyMeta[typedFamily].label.toLowerCase()} editing`} />
-      </div>
+      <AdminGuidanceCard
+        title="How this editor works"
+        description="This editor is arranged to match the public page flow, then the deeper operator controls."
+        items={[
+          "Source versus manual: source-backed values come from the data lane, while manual values let an operator override or lock what appears on the frontend.",
+          "Preview versus live: preview creates a temporary draft route and never changes the live public page by itself.",
+          role === "admin"
+            ? "Publish, schedule, and archive: publish sends the saved state live, scheduling sets a timed future change, and archive removes the record from the active publishing flow."
+            : "Approval workflow: your saves stay in the approval queue until an admin approves them, so the live page is never overwritten directly from an editor session.",
+        ]}
+        links={[
+          { href: "/admin/help", label: "Help", tone: "primary" },
+          { href: "/admin/activity-log", label: "Activity log" },
+        ]}
+      />
 
       <AdminRecordEditorClient
         record={editorWithRevisionCount}
@@ -120,6 +117,8 @@ export default async function AdminRecordEditorPage({
           isAdmin: role === "admin",
         }}
       />
+
+      <AdminStorageStatusCard scope={`${adminFamilyMeta[typedFamily].label.toLowerCase()} editing`} />
     </AdminPageFrame>
   );
 }

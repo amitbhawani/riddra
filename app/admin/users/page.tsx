@@ -31,28 +31,27 @@ export default async function AdminUsersPage() {
         description="Manage member profiles, role assignments, membership tiers, and last-activity posture from one backend screen."
       />
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <AdminGuidanceCard
-          title="Roles versus capabilities"
-          description="Use role first, then narrow editor access with capabilities only when needed."
-          items={[
-            "Admin has full backend access.",
-            "Editor can work inside allowed admin areas, and capabilities decide which editing or operator actions are visible.",
-            "User has no admin access and should not appear in operator workflows except for profile, tier, and activity review.",
-          ]}
-          links={[
-            { href: "/admin/help", label: "Help", tone: "primary" },
-            { href: "/admin/activity-log", label: "Activity log" },
-          ]}
-        />
-        <AdminStorageStatusCard scope="users and role management" />
-      </div>
+      <AdminGuidanceCard
+        title="Roles versus capabilities"
+        description="Use role first, then narrow editor access with capabilities only when needed."
+        items={[
+          "Admin has full backend access.",
+          "Editor can work inside allowed admin areas, and capabilities decide which editing or operator actions are visible.",
+          "User has no admin access and should not appear in operator workflows except for profile, tier, and activity review.",
+        ]}
+        links={[
+          { href: "/admin/help", label: "Help", tone: "primary" },
+          { href: "/admin/activity-log", label: "Activity log" },
+        ]}
+      />
 
       <AdminUsersClient
         initialUsers={users}
         membershipTiers={tiers.map((tier) => tier.slug)}
         currentAdminEmail={currentUser?.email ?? null}
       />
+
+      <AdminStorageStatusCard scope="users and role management" />
     </AdminPageFrame>
   );
 }

@@ -86,9 +86,9 @@ export function AdvancedChartWorkspace({
             <div>
               <p className="text-sm text-mist/62">
                 {dataStatus.mode === "verified"
-                  ? "Data mode: verified provider-backed chart route"
+                  ? "Data mode: verified chart route"
                   : dataStatus.mode === "source_entry"
-                    ? "Data mode: source-entry OHLCV with provider verification still pending"
+                    ? "Data mode: source-entry OHLCV while full verification continues"
                   : dataStatus.mode === "pending"
                     ? "Data mode: TradingView front-end chart with verified feed still being prepared"
                     : "Data mode: TradingView reference chart"}

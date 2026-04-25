@@ -429,6 +429,125 @@
           "note": "SMS should stay blocked until the user explicitly opts into time-sensitive fallback delivery."
         }
       ]
+    },
+    {
+      "userKey": "amitbhawani-gmail-com",
+      "email": "amitbhawani@gmail.com",
+      "updatedAt": "2026-04-24T12:10:40.654Z",
+      "channelRoutes": [
+        {
+          "channel": "Email",
+          "mappedScopes": "Alert and campaign consent, Portfolio-sensitive workflows, Lifecycle journey eligibility, Operator-safe consent rules",
+          "consentStatus": "Allowed",
+          "deliveryState": "Healthy",
+          "preferenceSource": "Consent center + billing recovery",
+          "note": "Email stays the primary lifecycle, billing, and research delivery lane."
+        },
+        {
+          "channel": "WhatsApp",
+          "mappedScopes": "Lifecycle campaigns, urgent nudges",
+          "consentStatus": "Allowed",
+          "deliveryState": "Retry watch",
+          "preferenceSource": "Consent center preview scope",
+          "note": "WhatsApp should remain permission-sensitive and never outrun explicit subscriber consent."
+        },
+        {
+          "channel": "SMS",
+          "mappedScopes": "Fallback urgency only",
+          "consentStatus": "Blocked",
+          "deliveryState": "Suppressed",
+          "preferenceSource": "Consent center fallback policy",
+          "note": "SMS should be reserved for high-urgency fallback moments once consent is explicit."
+        },
+        {
+          "channel": "Push",
+          "mappedScopes": "Priority alerts, watchlists, portfolio reviews",
+          "consentStatus": "Allowed",
+          "deliveryState": "Healthy",
+          "preferenceSource": "Alert preferences + workspace routing",
+          "note": "Push and in-app should coordinate so subscribers are not spammed across multiple urgent surfaces."
+        },
+        {
+          "channel": "In-app",
+          "mappedScopes": "Workspace notices, portfolio reviews, account recovery",
+          "consentStatus": "Allowed",
+          "deliveryState": "Healthy",
+          "preferenceSource": "Workspace continuity rules",
+          "note": "In-app should remain the safest route for context-heavy review tasks before external delivery broadens."
+        }
+      ],
+      "recentEvents": [
+        {
+          "id": "notif_evt_001_amitbhawani@gmail.com",
+          "title": "Priority alert delivery rehearsal",
+          "channel": "Push",
+          "audienceScope": "Priority alerts",
+          "triggeredBy": "alerts.priority_signal",
+          "consentState": "Allowed",
+          "deliveryState": "Queued",
+          "emailDeliveryState": "Skipped",
+          "emailMessageId": null,
+          "emailError": null,
+          "nextAttempt": "Apr 15, 2026 · 3:10 PM",
+          "note": "Queue this for push and in-app once the subscriber route confirms alert eligibility and channel preference together."
+        },
+        {
+          "id": "notif_evt_002_amitbhawani@gmail.com",
+          "title": "Billing recovery reminder",
+          "channel": "Email",
+          "audienceScope": "Billing lifecycle",
+          "triggeredBy": "billing.recovery_day_1",
+          "consentState": "Allowed",
+          "deliveryState": "Retrying",
+          "emailDeliveryState": "Queued",
+          "emailMessageId": null,
+          "emailError": null,
+          "nextAttempt": "Apr 15, 2026 · 4:00 PM",
+          "note": "Email delivery should retry after payment recovery state and support posture are checked again."
+        },
+        {
+          "id": "notif_evt_003_amitbhawani@gmail.com",
+          "title": "WhatsApp re-engagement campaign",
+          "channel": "WhatsApp",
+          "audienceScope": "Lifecycle campaigns",
+          "triggeredBy": "campaign.win_back",
+          "consentState": "Needs reconfirmation",
+          "deliveryState": "Suppressed",
+          "emailDeliveryState": "Skipped",
+          "emailMessageId": null,
+          "emailError": null,
+          "nextAttempt": "Awaiting consent refresh",
+          "note": "Do not re-enable WhatsApp until the subscriber consent center confirms campaign scope again."
+        },
+        {
+          "id": "notif_evt_004_amitbhawani@gmail.com",
+          "title": "Portfolio mismatch escalation",
+          "channel": "In-app",
+          "audienceScope": "Portfolio review",
+          "triggeredBy": "portfolio.reconciliation_gap",
+          "consentState": "Allowed",
+          "deliveryState": "Delivered",
+          "emailDeliveryState": "Skipped",
+          "emailMessageId": null,
+          "emailError": null,
+          "nextAttempt": "Delivered",
+          "note": "In-app delivery remains the safest default for high-urgency workspace review notices."
+        },
+        {
+          "id": "notif_evt_005_amitbhawani@gmail.com",
+          "title": "SMS listing-day fallback",
+          "channel": "SMS",
+          "audienceScope": "IPO lifecycle",
+          "triggeredBy": "ipo.listing_watch",
+          "consentState": "Blocked",
+          "deliveryState": "Suppressed",
+          "emailDeliveryState": "Skipped",
+          "emailMessageId": null,
+          "emailError": null,
+          "nextAttempt": "Blocked by consent",
+          "note": "SMS should stay blocked until the user explicitly opts into time-sensitive fallback delivery."
+        }
+      ]
     }
   ]
 }

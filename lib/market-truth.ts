@@ -13,13 +13,13 @@ export function getStockTruthLabel(stock: StockSnapshot) {
     return "Manual retained close";
   }
 
-  return "Provider-backed quote unavailable";
+  return "Verified quote pending";
 }
 
 export function getStockTruthDetail(stock: StockSnapshot) {
   return (
     stock.snapshotMeta?.marketDetail ??
-    "This stock route stays conservative until a provider-backed durable quote is written for the symbol."
+    "This stock route stays conservative until a verified delayed quote is written for the symbol."
   );
 }
 
@@ -32,13 +32,13 @@ export function getFundTruthLabel(fund: FundSnapshot) {
     return "Manual retained NAV";
   }
 
-  return "Provider-backed NAV unavailable";
+  return "Verified NAV pending";
 }
 
 export function getFundTruthDetail(fund: FundSnapshot) {
   return (
     fund.snapshotMeta?.marketDetail ??
-    "This fund route stays conservative until a provider-backed durable NAV is written for the scheme."
+    "This fund route stays conservative until a verified delayed NAV is written for the scheme."
   );
 }
 

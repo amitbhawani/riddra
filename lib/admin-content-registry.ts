@@ -2155,6 +2155,85 @@ function buildIpoSections(ipo: IpoSnapshot | null) {
     },
     {
       definition: {
+        key: "lifecycle",
+        label: "Listing transition",
+        description: "Use the IPO listing date to trigger an automatic handoff into the stock route family and activate the permanent redirect.",
+        fields: [
+          {
+            key: "listingDate",
+            label: "Listing date",
+            type: "text",
+            placeholder: "2026-05-15 or May 15, 2026",
+          },
+          {
+            key: "targetStockSlug",
+            label: "Target stock slug",
+            type: "text",
+            placeholder: "company-stock-slug",
+          },
+          {
+            key: "targetStockName",
+            label: "Target stock name",
+            type: "text",
+            placeholder: "Company name without IPO suffix",
+          },
+          {
+            key: "autoConvertOnListingDate",
+            label: "Auto-convert on listing date",
+            type: "select",
+            options: [
+              { label: "Yes", value: "yes" },
+              { label: "No", value: "no" },
+            ],
+          },
+          {
+            key: "redirectActive",
+            label: "Redirect active",
+            type: "select",
+            options: [
+              { label: "Yes", value: "yes" },
+              { label: "No", value: "no" },
+            ],
+            readOnly: true,
+            warningText:
+              "This turns on automatically after the lifecycle cron job completes the listing cutover.",
+          },
+          {
+            key: "redirectPath",
+            label: "Redirect path",
+            type: "text",
+            placeholder: "/stocks/company-slug",
+            readOnly: true,
+          },
+          {
+            key: "cutoverCompletedAt",
+            label: "Cutover completed at",
+            type: "text",
+            placeholder: "2026-05-15T06:30:00+05:30",
+            readOnly: true,
+          },
+          {
+            key: "cutoverStatus",
+            label: "Cutover status",
+            type: "text",
+            placeholder: "Waiting for listing date",
+            readOnly: true,
+          },
+        ],
+      },
+      values: {
+        listingDate: ipo?.listingDate ?? "",
+        targetStockSlug: ipo?.slug?.replace(/-ipo$/i, "") ?? "",
+        targetStockName: ipo?.name?.replace(/\s+IPO$/i, "") ?? "",
+        autoConvertOnListingDate: "yes",
+        redirectActive: "no",
+        redirectPath: "",
+        cutoverCompletedAt: "",
+        cutoverStatus: "Waiting for listing date",
+      },
+    },
+    {
+      definition: {
         key: "publishing",
         label: "Publishing",
         description: "Public route, lifecycle posture, and operator review state.",

@@ -3,6 +3,11 @@ import type { MetadataRoute } from "next";
 import { canonicalCompareCoverageRows } from "@/lib/canonical-compare-coverage";
 import { canonicalCoverageRows } from "@/lib/canonical-coverage";
 import { getFundCategoryHubs, getStockSectorHubs } from "@/lib/hubs";
+import {
+  getPublishedAdminManagedStockFallbackRecords,
+  getRedirectingIpoSlugSet,
+} from "@/lib/ipo-lifecycle";
+import { getPublishedMarketNewsSitemapEntries } from "@/lib/market-news/queries";
 import { getPublishableCmsSlugSet } from "@/lib/publishable-content";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 
@@ -47,25 +52,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     stockSlugs,
     fundSlugs,
     ipoSlugs,
+    redirectingIpoSlugs,
+    adminStockFallbackRecords,
     etfSlugs,
     pmsSlugs,
     aifSlugs,
     sifSlugs,
+    publishedMarketNewsEntries,
   ] = await Promise.all([
     getStockSectorHubs(),
     getFundCategoryHubs(),
     getPublishableCmsSlugSet("stock"),
     getPublishableCmsSlugSet("mutual_fund"),
     getPublishableCmsSlugSet("ipo"),
+    getRedirectingIpoSlugSet(),
+    getPublishedAdminManagedStockFallbackRecords(),
     getPublishableCmsSlugSet("etf"),
     getPublishableCmsSlugSet("pms"),
     getPublishableCmsSlugSet("aif"),
     getPublishableCmsSlugSet("sif"),
+    getPublishedMarketNewsSitemapEntries(),
   ]);
+  const mergedStockSlugs = new Set([
+    ...stockSlugs,
+    ...adminStockFallbackRecords.map((record) => record.slug),
+  ]);
+  const activeIpoSlugs = new Set(
+    [...ipoSlugs].filter((slug) => !redirectingIpoSlugs.has(slug)),
+  );
   const publishableSlugSets = {
-    stock: stockSlugs,
+    stock: mergedStockSlugs,
     mutual_fund: fundSlugs,
-    ipo: ipoSlugs,
+    ipo: activeIpoSlugs,
     etf: etfSlugs,
     pms: pmsSlugs,
     aif: aifSlugs,
@@ -77,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const publishableStockRows = publishableCoverageRows.filter((row) => row.family === "stock");
   const publishableCompareRows = canonicalCompareCoverageRows.filter((row) => {
     if (row.family === "stock_compare") {
-      return stockSlugs.has(row.leftSlug) && stockSlugs.has(row.rightSlug);
+      return mergedStockSlugs.has(row.leftSlug) && mergedStockSlugs.has(row.rightSlug);
     }
 
     return fundSlugs.has(row.leftSlug) && fundSlugs.has(row.rightSlug);
@@ -107,6 +125,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...fundCategoryHubs.map((hub) => ({
       url: `${siteUrl}/fund-categories/${hub.slug}`,
       lastModified: new Date(),
+    })),
+    ...publishedMarketNewsEntries.map((article) => ({
+      url: `${siteUrl}/markets/news/${article.slug}`,
+      lastModified: new Date(article.published_at),
     })),
   ];
 }

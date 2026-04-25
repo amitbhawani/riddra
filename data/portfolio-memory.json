@@ -336,6 +336,33 @@
           "id": "portfolio-portfolio-snapshot-ready-2026-04-17T14:22:48.348Z"
         }
       ]
+    },
+    {
+      "userKey": "amitbhawani-gmail-com",
+      "email": "amitbhawani@gmail.com",
+      "updatedAt": "2026-04-24T12:10:40.646Z",
+      "importRuns": [],
+      "reconciliations": [],
+      "reviewQueue": [],
+      "portfolioSnapshot": [],
+      "manualDraft": {
+        "symbol": "",
+        "quantity": "",
+        "avgCost": "",
+        "portfolioTag": "",
+        "draftState": "Needs validation",
+        "updatedAt": "2026-04-24T12:10:40.646Z"
+      },
+      "activityLog": [
+        {
+          "scope": "portfolio",
+          "title": "Portfolio workspace initialized",
+          "detail": "This account starts with an empty persisted portfolio state until the user imports holdings or saves a manual draft.",
+          "action": "Logged",
+          "timestamp": "2026-04-24T12:10:40.646Z",
+          "id": "portfolio-portfolio-workspace-initialized-2026-04-24T12:10:40.646Z"
+        }
+      ]
     }
   ]
 }

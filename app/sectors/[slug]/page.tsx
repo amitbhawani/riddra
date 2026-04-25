@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/asset-discovery-workspace";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { EntityNewsSection } from "@/components/entity-news-section";
 import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
@@ -17,6 +18,7 @@ import {
   getRankedStockCompareCandidates,
 } from "@/lib/compare-routing";
 import { getStocksBySectorSlug, getStockSectorHubs } from "@/lib/hubs";
+import { getLatestMarketNewsForEntity } from "@/lib/market-news/queries";
 import { getStockTruthLabel } from "@/lib/market-truth";
 import type { StockSnapshot } from "@/lib/mock-data";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
@@ -157,6 +159,19 @@ export default async function SectorDetailPage({ params }: PageProps) {
   const verifiedCount = sector.items.filter((stock) => stock.snapshotMeta?.mode === "delayed_snapshot").length;
   const compareReadyCount = discoveryRows.filter((row) => row.compareHref).length;
   const leadStock = getPreferredStockShowcaseRoutes(sector.items, 1)[0] ?? sector.items[0] ?? null;
+  const sectorNews = await getLatestMarketNewsForEntity({
+    entityType: "sector",
+    entitySlug: sector.hub.slug,
+    limit: 5,
+  }).catch(() => ({
+    articles: [],
+    matchedEntityType: null,
+    usedSectorFallback: false,
+    usedEntityFallback: false,
+    usedKeywordFallback: false,
+    usedIpoFallback: false,
+    usedLatestFallback: false,
+  }));
   const breadcrumbs = [
     { name: "Home", href: "/" },
     { name: "Sectors", href: "/sectors" },
@@ -164,7 +179,7 @@ export default async function SectorDetailPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -173,7 +188,11 @@ export default async function SectorDetailPage({ params }: PageProps) {
           path: `/sectors/${sector.hub.slug}`,
         })}
       />
-      <GlobalSidebarPageShell category="sectors">
+      <GlobalSidebarPageShell
+        category="sectors"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Sector hub</Eyebrow>
@@ -244,6 +263,13 @@ export default async function SectorDetailPage({ params }: PageProps) {
           items={showcaseSequence}
         />
 
+        <EntityNewsSection
+          entityType="sector"
+          entitySlug={sector.hub.slug}
+          articles={sectorNews.articles}
+          usedLatestFallback={sectorNews.usedLatestFallback}
+        />
+
         <GlowCard className="space-y-5">
           <p className="text-sm uppercase tracking-[0.18em] text-mist/52">Sector compare routes</p>
           <h2 className="text-2xl font-semibold text-white">Best same-sector debates</h2>
@@ -265,7 +291,7 @@ export default async function SectorDetailPage({ params }: PageProps) {
           </div>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
+    </>
   );
 }
 

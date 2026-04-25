@@ -64,6 +64,7 @@ export function getSectionOrderForFamily(family: AdminFamilyKey) {
   return [
     "identity",
     "workflow",
+    ...(family === "ipos" ? ["lifecycle"] : []),
     "frontend_fields",
     "seo",
     "access_control",
@@ -144,6 +145,15 @@ export function getSectionPresentation(
   }
 
   if (sectionKey === "frontend_fields") {
+    if (family === "ipos") {
+      return {
+        title: "Issue details, GMP, and listing context",
+        description:
+          "Edit the public IPO summary, issue details, subscription watch, listing context, FAQs, and investor-facing support copy.",
+        frontendSection: "IPO summary, issue detail, and listing watch",
+      };
+    }
+
     if (family === "stocks") {
       return {
         title: "Performance, fundamentals, and support",
@@ -198,6 +208,15 @@ export function getSectionPresentation(
         frontendSection: "Summary, body, and support blocks",
       };
     }
+  }
+
+  if (sectionKey === "lifecycle") {
+    return {
+      title: "IPO to stock transition",
+      description:
+        "Set the listing date, stock destination, and automatic handoff posture. The cron job flips the redirect on once the listing date arrives.",
+      frontendSection: "Internal lifecycle automation",
+    };
   }
 
   if (sectionKey === "workflow") {

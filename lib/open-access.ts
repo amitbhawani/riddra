@@ -1,4 +1,3 @@
-import { canUseDebugFallbackPaths } from "@/lib/durable-data-runtime";
 import { env } from "@/lib/env";
 
 export const OPEN_ACCESS_SURFACE_HEADER = "x-riddra-open-access-surface";
@@ -32,7 +31,7 @@ export function isTrustedLocalRequestHost(value: string | null | undefined) {
 }
 
 export function isOpenAdminAccessEnabled() {
-  return canUseDebugFallbackPaths() && env.openAdminAccess === "true";
+  return env.openAdminAccess === "true";
 }
 
 export function isOpenAccessSurfacePath(pathname: string) {

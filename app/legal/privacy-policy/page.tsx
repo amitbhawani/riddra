@@ -20,8 +20,11 @@ export default function LegalPrivacyPolicyPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="legal">
+      <GlobalSidebarPageShell
+        category="legal"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Legal</Eyebrow>
@@ -57,6 +60,5 @@ export default function LegalPrivacyPolicyPage() {
           </p>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

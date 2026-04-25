@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
@@ -114,7 +115,7 @@ function averagePercent(values: string[]) {
     .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
 
   if (!parsed.length) {
-    return "Unavailable";
+    return "Data pending";
   }
 
   const average = parsed.reduce((sum, value) => sum + value, 0) / parsed.length;
@@ -125,7 +126,7 @@ function normalizeFundValue(value: string) {
   const normalized = value.trim();
 
   if (!normalized || /^pending/i.test(normalized)) {
-    return "Unavailable";
+    return "Data pending";
   }
 
   return normalized;
@@ -300,6 +301,7 @@ export function MutualFundDetailBriefPage({
   viewerSignedIn,
   premiumAnalyticsUnlocked,
   performanceContext,
+  marketNewsSection,
 }: {
   fund: FundSnapshot;
   peerFunds: FundSnapshot[];
@@ -315,6 +317,7 @@ export function MutualFundDetailBriefPage({
   viewerSignedIn: boolean;
   premiumAnalyticsUnlocked: boolean;
   performanceContext: PerformanceContext;
+  marketNewsSection?: ReactNode;
 }) {
   const historyFallbackLabel =
     performanceContext.chartState === "source_read_failed"
@@ -404,14 +407,14 @@ export function MutualFundDetailBriefPage({
     },
     {
       label: "Factsheet",
-      value: displayFund.factsheetMeta?.documentLabel ?? "Unavailable",
+      value: displayFund.factsheetMeta?.documentLabel ?? "Data pending",
       helper: displayFund.factsheetMeta?.sourceDate
         ? `Source date: ${displayFund.factsheetMeta.sourceDate}`
         : "Factsheet source date unavailable.",
     },
     {
       label: "AMC",
-      value: displayFund.factsheetMeta?.amcName ?? "Unavailable",
+      value: displayFund.factsheetMeta?.amcName ?? "Data pending",
       helper: displayFund.factsheetMeta?.source ?? "Fund house source label unavailable.",
     },
   ];
@@ -502,7 +505,7 @@ export function MutualFundDetailBriefPage({
       items: [
         { label: "NAV", value: displayFund.nav },
         { label: "1Y return", value: displayFund.returns1Y },
-        { label: "Updated", value: displayFund.snapshotMeta?.lastUpdated ?? "Unavailable" },
+        { label: "Updated", value: displayFund.snapshotMeta?.lastUpdated ?? "Data pending" },
       ],
     },
     {
@@ -546,7 +549,7 @@ export function MutualFundDetailBriefPage({
             ? "Partial"
             : truthState === "read_failed"
               ? "Read failed"
-              : "Unavailable",
+            : "Data pending",
       helper: `${fund.snapshotMeta?.source ?? "Source unavailable"} • ${fund.snapshotMeta?.lastUpdated ?? "Update unavailable"}`,
     },
     {
@@ -561,14 +564,14 @@ export function MutualFundDetailBriefPage({
     },
   ];
   const fundDetailRows = [
-    { label: "AMC", value: displayFund.factsheetMeta?.amcName ?? "Unavailable" },
+    { label: "AMC", value: displayFund.factsheetMeta?.amcName ?? "Data pending" },
     { label: "Benchmark", value: displayFund.benchmark },
     { label: "AUM", value: displayFund.aum },
     { label: "Expense Ratio", value: displayFund.expenseRatio },
     { label: "Risk Level", value: displayFund.riskLabel },
     { label: "Best Window", value: `${rollingLens.bestWindowLabel} • ${rollingLens.bestWindowValue}` },
-    { label: "Factsheet Date", value: displayFund.factsheetMeta?.sourceDate ?? "Unavailable" },
-    { label: "Truth State", value: truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "partial" ? "Partial" : truthState === "read_failed" ? "Read Failed" : "Unavailable" },
+    { label: "Factsheet Date", value: displayFund.factsheetMeta?.sourceDate ?? "Data pending" },
+    { label: "Truth State", value: truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "partial" ? "Partial" : truthState === "read_failed" ? "Read Failed" : "Data pending" },
   ];
 
   return (
@@ -586,7 +589,7 @@ export function MutualFundDetailBriefPage({
           metaLine={displayFund.factsheetMeta?.amcName ?? displayFund.snapshotMeta?.source ?? "Verified source unavailable"}
           price={displayFund.nav}
           change={displayFund.returns1Y}
-          asOf={displayFund.snapshotMeta?.lastUpdated ?? "Unavailable"}
+          asOf={displayFund.snapshotMeta?.lastUpdated ?? "Data pending"}
           truthState={truthState}
           supportingNote={displayFund.snapshotMeta?.marketDetail ?? displayFund.summary}
           cta={
@@ -961,6 +964,8 @@ export function MutualFundDetailBriefPage({
                   items={fundRouteLinks}
                 />
               </ProductEditorialCluster>
+
+              {marketNewsSection ? <div id="news">{marketNewsSection}</div> : null}
             </>
           }
           right={
@@ -982,7 +987,7 @@ export function MutualFundDetailBriefPage({
                   { label: "Benchmark", value: displayFund.benchmark },
                   { label: "Best Window", value: `${rollingLens.bestWindowLabel} • ${rollingLens.bestWindowValue}` },
                   { label: "Consistency", value: rollingLens.consistencySpread },
-                  { label: "Factsheet Date", value: displayFund.factsheetMeta?.sourceDate ?? "Unavailable" },
+                  { label: "Factsheet Date", value: displayFund.factsheetMeta?.sourceDate ?? "Data pending" },
                 ]}
                 brand={{
                   name: displayFund.factsheetMeta?.amcName ?? "Fund house unavailable",
@@ -1008,10 +1013,10 @@ export function MutualFundDetailBriefPage({
                   Fees & docs
                 </p>
                 <p className="riddra-product-body text-sm leading-7 text-[rgba(107,114,128,0.9)]">
-                  Factsheet: {displayFund.factsheetMeta?.documentLabel ?? "Unavailable"}
+                  Factsheet: {displayFund.factsheetMeta?.documentLabel ?? "Data pending"}
                 </p>
                 <p className="riddra-product-body text-sm leading-7 text-[rgba(107,114,128,0.9)]">
-                  Source date: {displayFund.factsheetMeta?.sourceDate ?? "Unavailable"}
+                  Source date: {displayFund.factsheetMeta?.sourceDate ?? "Data pending"}
                 </p>
                 {displayFund.factsheetMeta?.referenceUrl ? (
                   <Link href={displayFund.factsheetMeta.referenceUrl} className="riddra-product-body inline-flex text-sm font-medium text-[#1B3A6B] transition hover:text-[#D4853B]">

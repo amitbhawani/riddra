@@ -5,11 +5,21 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { SearchAssistForm } from "@/components/search-assist-form";
-import type { ManagedNavLink } from "@/lib/site-experience";
+import { isStockFirstHeaderGroupEnabled } from "@/lib/public-launch-scope";
+import type { HeaderMenuGroupKey, ManagedNavLink, ManagedTickerItem } from "@/lib/site-experience";
 
 type SiteHeaderNavClientProps = {
+  brand: {
+    mark: string;
+    logoUrl: string;
+    logoWidthPx: number;
+    label: string;
+    href: string;
+  };
+  tickerItems: ManagedTickerItem[];
   marketNav: ManagedNavLink[];
   utilityNav: ManagedNavLink[];
+  visibleMenuGroups: HeaderMenuGroupKey[];
   accountLabel?: string | null;
   isSignedIn: boolean;
 };
@@ -27,20 +37,6 @@ type HeaderGroup = {
 };
 
 type ContentTheme = "dark" | "light";
-
-const tickerItems = [
-  { label: "NIFTY 50", value: "22,487.20", change: "+0.74%", href: "/nifty50" },
-  { label: "SENSEX", value: "73,904.55", change: "+0.66%", href: "/sensex" },
-  { label: "BANKNIFTY", value: "48,211.80", change: "+0.92%", href: "/banknifty" },
-  { label: "FINNIFTY", value: "22,541.10", change: "+0.36%", href: "/finnifty" },
-  { label: "USD/INR", value: "83.19", change: "-0.08%", href: "/markets" },
-  { label: "GOLD", value: "₹71,842", change: "+0.44%", href: "/markets" },
-  { label: "SILVER", value: "₹81,420", change: "+0.27%", href: "/markets" },
-  { label: "BRENT", value: "$87.42", change: "-0.22%", href: "/markets" },
-  { label: "DOW JONES", value: "38,944.20", change: "+0.31%", href: "/markets" },
-  { label: "HANG SENG", value: "16,489.10", change: "+0.58%", href: "/markets" },
-  { label: "SHANGHAI", value: "3,062.84", change: "-0.19%", href: "/markets" },
-];
 
 function applyContentTheme(theme: ContentTheme) {
   document.documentElement.dataset.riddraContentTheme = theme;
@@ -80,8 +76,13 @@ function resolveNavItem(
   };
 }
 
-function buildHeaderGroups(marketNav: ManagedNavLink[], utilityNav: ManagedNavLink[]): HeaderGroup[] {
+function buildHeaderGroups(
+  marketNav: ManagedNavLink[],
+  utilityNav: ManagedNavLink[],
+  visibleMenuGroups: HeaderMenuGroupKey[],
+): HeaderGroup[] {
   const links = [...marketNav, ...utilityNav];
+  const allowedGroups = new Set<HeaderMenuGroupKey>(visibleMenuGroups);
 
   return [
     {
@@ -129,7 +130,10 @@ function buildHeaderGroups(marketNav: ManagedNavLink[], utilityNav: ManagedNavLi
         resolveNavItem(links, { label: "Newsletter", href: "/newsletter" }),
       ]),
     },
-  ];
+  ].filter((group) =>
+    allowedGroups.has(group.key as HeaderMenuGroupKey) &&
+    isStockFirstHeaderGroupEnabled(group.key as HeaderMenuGroupKey),
+  );
 }
 
 function isHrefActive(pathname: string, href: string) {
@@ -204,15 +208,22 @@ function getAccountInitial(label?: string | null) {
 }
 
 export function SiteHeaderNavClient({
+  brand,
+  tickerItems,
   marketNav,
   utilityNav,
+  visibleMenuGroups,
   accountLabel,
   isSignedIn,
 }: SiteHeaderNavClientProps) {
   const pathname = usePathname();
-  const navGroups = useMemo(() => buildHeaderGroups(marketNav, utilityNav), [marketNav, utilityNav]);
+  const navGroups = useMemo(
+    () => buildHeaderGroups(marketNav, utilityNav, visibleMenuGroups),
+    [marketNav, utilityNav, visibleMenuGroups],
+  );
   const [contentTheme, setContentTheme] = useState<ContentTheme>("light");
   const [openDesktopGroup, setOpenDesktopGroup] = useState<string | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
@@ -224,6 +235,7 @@ export function SiteHeaderNavClient({
   });
   const openTimerRef = useRef<number | null>(null);
   const closeTimerRef = useRef<number | null>(null);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("riddra-site-content-theme");
@@ -251,9 +263,37 @@ export function SiteHeaderNavClient({
 
   useEffect(() => {
     setOpenDesktopGroup(null);
+    setAccountMenuOpen(false);
     setMobileMenuOpen(false);
     setMobileSearchOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (accountMenuRef.current?.contains(target)) {
+        return;
+      }
+
+      setAccountMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
+  }, [accountMenuOpen]);
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
@@ -275,6 +315,16 @@ export function SiteHeaderNavClient({
 
   const isDark = true;
   const accountName = accountLabel?.trim() || (isSignedIn ? "Account" : "Sign in");
+  const brandMark = brand.mark.trim().slice(0, 2) || "R";
+  const brandLogoUrl = brand.logoUrl.trim();
+  const brandLogoWidthPx = Number.isFinite(brand.logoWidthPx) ? brand.logoWidthPx : 28;
+  const brandLabel = brand.label.trim() || "Riddra";
+  const brandHref = brand.href.trim() || "/";
+  const signedOutAccountLinks = [
+    { label: "Sign in", href: "/login" },
+    { label: "Sign up", href: "/signup" },
+    { label: "View plans", href: "/pricing" },
+  ];
   const renderTickerItems = (suffix: string, ariaHidden = false) =>
     tickerItems.map((item) => {
       const positive = item.change?.startsWith("+");
@@ -322,6 +372,7 @@ export function SiteHeaderNavClient({
     if (openTimerRef.current) {
       window.clearTimeout(openTimerRef.current);
     }
+    setAccountMenuOpen(false);
 
     openTimerRef.current = window.setTimeout(() => {
       setOpenDesktopGroup(groupKey);
@@ -386,9 +437,18 @@ export function SiteHeaderNavClient({
     <header className="fixed inset-x-0 top-0 z-[60]">
       <div className={`relative z-[70] ${shellClasses.bar}`}>
         <div className="mx-auto flex h-[56px] w-full max-w-[1220px] items-center gap-3 px-4 sm:px-4 lg:px-3 xl:px-4">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <div className={`grid h-7 w-7 place-items-center rounded-[6px] text-[12px] font-bold ${shellClasses.logoBox}`}>R</div>
-            <span className="text-[20px] font-semibold tracking-[-0.03em]">Riddra</span>
+          <Link href={brandHref} className="flex shrink-0 items-center gap-2.5">
+            {brandLogoUrl ? (
+              <img
+                src={brandLogoUrl}
+                alt={brandLabel}
+                className="block h-auto shrink-0 object-contain"
+                style={{ width: `${brandLogoWidthPx}px` }}
+              />
+            ) : (
+              <div className={`grid h-7 w-7 place-items-center rounded-[6px] text-[12px] font-bold ${shellClasses.logoBox}`}>{brandMark}</div>
+            )}
+            <span className="text-[20px] font-semibold tracking-[-0.03em]">{brandLabel}</span>
           </Link>
 
           <nav className="hidden min-w-0 flex-1 items-center gap-1 md:flex">
@@ -429,7 +489,10 @@ export function SiteHeaderNavClient({
                               className={`flex items-center rounded-[6px] px-3 py-2 text-[13px] transition ${shellClasses.dropdownItem} ${
                                 itemActive ? "border-l-2 border-[#D4853B] bg-[rgba(255,255,255,0.06)] pl-[10px] font-semibold text-white" : ""
                               } ${!isDark && itemActive ? "bg-[rgba(15,23,42,0.04)] text-[#111827]" : ""}`}
-                              onClick={() => setOpenDesktopGroup(null)}
+                              onClick={() => {
+                                setOpenDesktopGroup(null);
+                                setAccountMenuOpen(false);
+                              }}
                             >
                               {item.label}
                             </Link>
@@ -462,16 +525,60 @@ export function SiteHeaderNavClient({
               <SearchAssistForm compact chromeTheme="dark" placeholder="Search stocks, indices..." />
             </div>
 
-            <Link
-              href={isSignedIn ? "/account" : "/login"}
-              className={`inline-flex h-8 items-center gap-2 rounded-[6px] px-3 text-[13px] font-medium transition ${shellClasses.accountButton}`}
-            >
-              <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
-                {getAccountInitial(accountName)}
-              </span>
-              <span className="max-w-[140px] truncate">{accountName}</span>
-              <Chevron />
-            </Link>
+            {isSignedIn ? (
+              <Link
+                href="/account"
+                className={`inline-flex h-8 items-center gap-2 rounded-[6px] px-3 text-[13px] font-medium transition ${shellClasses.accountButton}`}
+              >
+                <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
+                  {getAccountInitial(accountName)}
+                </span>
+                <span className="max-w-[140px] truncate">{accountName}</span>
+                <Chevron />
+              </Link>
+            ) : (
+              <div ref={accountMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenDesktopGroup(null);
+                    setAccountMenuOpen((current) => !current);
+                  }}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
+                  className={`inline-flex h-8 items-center gap-2 rounded-[6px] px-3 text-[13px] font-medium transition ${shellClasses.accountButton}`}
+                >
+                  <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
+                    {getAccountInitial(accountName)}
+                  </span>
+                  <span className="max-w-[140px] truncate">{accountName}</span>
+                  <Chevron />
+                </button>
+
+                <div
+                  className={`absolute right-0 top-[calc(100%+10px)] z-[85] min-w-[180px] rounded-[10px] p-2 transition duration-150 ${shellClasses.dropdown} ${
+                    accountMenuOpen ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0"
+                  }`}
+                >
+                  {signedOutAccountLinks.map((item) => {
+                    const itemActive = isHrefActive(pathname, item.href);
+                    return (
+                      <Link
+                        key={`signed-out-account-${item.href}`}
+                        href={item.href}
+                        role="menuitem"
+                        className={`flex items-center rounded-[6px] px-3 py-2 text-[13px] transition ${shellClasses.dropdownItem} ${
+                          itemActive ? "border-l-2 border-[#D4853B] bg-[rgba(255,255,255,0.06)] pl-[10px] font-semibold text-white" : ""
+                        } ${!isDark && itemActive ? "bg-[rgba(15,23,42,0.04)] text-[#111827]" : ""}`}
+                        onClick={() => setAccountMenuOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="ml-auto flex items-center gap-2 md:hidden">
@@ -527,9 +634,18 @@ export function SiteHeaderNavClient({
           />
           <div className={`fixed inset-y-0 left-0 z-[70] flex w-[min(86vw,360px)] flex-col px-4 py-4 ${shellClasses.drawer}`}>
             <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
-                <div className={`grid h-7 w-7 place-items-center rounded-[6px] text-[12px] font-bold ${shellClasses.logoBox}`}>R</div>
-                <span className="text-[20px] font-semibold tracking-[-0.03em]">Riddra</span>
+              <Link href={brandHref} className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
+                {brandLogoUrl ? (
+                  <img
+                    src={brandLogoUrl}
+                    alt={brandLabel}
+                    className="block h-auto shrink-0 object-contain"
+                    style={{ width: `${brandLogoWidthPx}px` }}
+                  />
+                ) : (
+                  <div className={`grid h-7 w-7 place-items-center rounded-[6px] text-[12px] font-bold ${shellClasses.logoBox}`}>{brandMark}</div>
+                )}
+                <span className="text-[20px] font-semibold tracking-[-0.03em]">{brandLabel}</span>
               </Link>
               <button
                 type="button"
@@ -555,6 +671,20 @@ export function SiteHeaderNavClient({
                 </span>
                 <span className="text-sm font-medium">{accountName}</span>
               </Link>
+              {!isSignedIn ? (
+                <div className="mt-3 grid gap-2">
+                  {signedOutAccountLinks.map((item) => (
+                    <Link
+                      key={`mobile-signed-out-account-${item.href}`}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`inline-flex items-center justify-center rounded-[8px] px-3 py-2 text-[13px] font-medium transition ${shellClasses.toggleButton}`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-5 space-y-2 overflow-y-auto pr-1">

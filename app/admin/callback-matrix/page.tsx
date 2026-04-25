@@ -9,7 +9,7 @@ import { getCallbackMatrix } from "@/lib/callback-matrix";
 export const metadata: Metadata = {
   title: "Callback Matrix",
   description:
-    "Protected callback-matrix page for exact auth, redirect, and provider callback values across local, production, and Supabase setup.",
+    "Protected callback-matrix page for exact auth, redirect, and provider callback values across the primary site and Supabase setup.",
 };
 
 export default async function AdminCallbackMatrixPage() {
@@ -37,7 +37,7 @@ export default async function AdminCallbackMatrixPage() {
           <Eyebrow>Redirect readiness</Eyebrow>
           <SectionHeading
             title="Callback matrix"
-            description="This page gives the team the exact redirect and callback values required during Supabase, Google, and domain setup so auth activation is less error-prone."
+            description="This page gives the team the exact redirect and callback values required during Supabase, Google, and domain setup so auth activation is less error-prone on the live site."
           />
         </div>
 

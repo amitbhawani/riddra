@@ -1,5 +1,5 @@
 import { env } from "@/lib/env";
-import { getConfiguredPublicSiteUrl, getLocalSiteUrl } from "@/lib/public-site-url";
+import { getConfiguredPublicSiteUrl } from "@/lib/public-site-url";
 
 type CallbackItem = {
   label: string;
@@ -10,18 +10,11 @@ type CallbackItem = {
 
 export function getCallbackMatrix() {
   const siteUrl = getConfiguredPublicSiteUrl();
-  const localSiteUrl = getLocalSiteUrl();
   const supabaseProjectCallback = env.supabaseUrl
     ? `${env.supabaseUrl.replace(/\/$/, "")}/auth/v1/callback`
     : "Add NEXT_PUBLIC_SUPABASE_URL to reveal the exact Supabase callback";
 
   const items: CallbackItem[] = [
-    {
-      label: "Local app auth callback",
-      value: `${localSiteUrl}/auth/callback`,
-      status: "Ready",
-      notes: "Add this to Supabase additional redirect URLs so local Google and email auth can return to the app safely.",
-    },
     {
       label: "Primary site auth callback",
       value: siteUrl ? `${siteUrl}/auth/callback` : "Configure NEXT_PUBLIC_SITE_URL or Launch Config site URL",

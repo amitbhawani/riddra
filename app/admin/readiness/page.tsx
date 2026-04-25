@@ -19,7 +19,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Readiness",
-  description: "Final backend readiness, blocker explainers, durable-state visibility, and operator signoff status.",
+  description: "Final backend readiness, blocker explainers, storage visibility, and operator signoff status.",
 };
 
 type ScoreStatus = "pass" | "attention" | "blocked";
@@ -111,11 +111,11 @@ export default async function AdminReadinessPage() {
       detail: "Help, system health, readiness, and targeted inline guidance now explain the main operator flows.",
     },
     {
-      category: "Durable storage",
+      category: "Storage path",
       status: report.usesDurableOperatorState ? "pass" : "attention",
       detail: report.usesDurableOperatorState
-        ? "The operator backbone is using the durable DB-first path."
-        : "This runtime is still on local fallback storage, so hosted proof is not ready yet.",
+        ? "This runtime is saving through the primary shared storage path."
+        : "This runtime is still using the current workspace storage path, so final deployment proof is still pending.",
     },
     {
       category: "Role safety",
@@ -130,7 +130,7 @@ export default async function AdminReadinessPage() {
         : "No active schema-alignment blockers are currently flagged by system health.",
     },
     {
-      category: "Hosted-proof readiness",
+      category: "Deployment proof",
       status:
         schemaBlockers.length || runtimeWarnings.length || report.failedRefreshJobs.length
           ? "blocked"
@@ -139,8 +139,8 @@ export default async function AdminReadinessPage() {
             : "pass",
       detail:
         schemaBlockers.length || runtimeWarnings.length || report.failedRefreshJobs.length
-          ? "Migrations and runtime/env follow-through are still required before hosted proof can be signed off."
-          : "No hard hosted-proof blockers are currently flagged.",
+          ? "A few migrations, environment settings, or refresh lanes still need follow-through before final deployment sign-off."
+          : "No hard deployment-proof blockers are currently flagged.",
     },
   ];
 
@@ -153,7 +153,7 @@ export default async function AdminReadinessPage() {
         ]}
         eyebrow="Readiness"
         title="Backend readiness and closure"
-        description="One operator-facing place to understand what is done, what is blocked, what still needs migration or runtime work, and what is safe to ignore for now."
+        description="One operator-facing place to understand what is done, what is blocked, what still needs follow-up, and what is safe to ignore for now."
         actions={
           <>
             <AdminActionLink href="/admin/system-health" label="Open system health" />
@@ -162,25 +162,22 @@ export default async function AdminReadinessPage() {
         }
       />
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-        <AdminGuidanceCard
-          title="Start here"
-          description="Use this page as the final backend closure view before hosted proof work."
-          items={[
-            "Use Content for daily record editing, Users for access/roles, and Memberships for gated content policy.",
-            "Use System Health for stale data, refresh failures, incomplete flagship routes, and schema blockers.",
-            "Use Activity Log to confirm who changed what after an important save or publish action.",
-          ]}
-          links={[
-            { href: "/admin/content", label: "Content", tone: "primary" },
-            { href: "/admin/users", label: "Users" },
-            { href: "/admin/memberships", label: "Memberships" },
-            { href: "/admin/system-health", label: "System Health" },
-            { href: "/admin/help", label: "Help" },
-          ]}
-        />
-        <AdminStorageStatusCard scope="the operator backend" />
-      </div>
+      <AdminGuidanceCard
+        title="Start here"
+        description="Use this page as the final launch-readiness view before deployment sign-off."
+        items={[
+          "Use Content for daily record editing, Users for access/roles, and Memberships for gated content policy.",
+          "Use System Health for stale data, refresh failures, incomplete flagship routes, and schema blockers.",
+          "Use Activity Log to confirm who changed what after an important save or publish action.",
+        ]}
+        links={[
+          { href: "/admin/content", label: "Content", tone: "primary" },
+          { href: "/admin/users", label: "Users" },
+          { href: "/admin/memberships", label: "Memberships" },
+          { href: "/admin/system-health", label: "System Health" },
+          { href: "/admin/help", label: "Help" },
+        ]}
+      />
 
       <AdminStatGrid
         stats={[
@@ -239,7 +236,7 @@ export default async function AdminReadinessPage() {
 
         <AdminSectionCard
           title="Operator durability"
-          description="These systems are part of the durable backend backbone and no longer rely on a fragile JSON-first admin core."
+          description="These systems are the main backend lanes that now keep the admin trustworthy."
         >
           <div className="space-y-2.5">
             {[
@@ -250,7 +247,7 @@ export default async function AdminReadinessPage() {
               `Refresh jobs active: ${jobs.length}`,
             ].map((item) => (
               <div key={item} className="flex items-start gap-2 rounded-lg border border-[#d1d5db] bg-[#f8fafc] px-3 py-2.5">
-                <AdminBadge label={report.usesDurableOperatorState ? "DB-first" : "Fallback"} tone={report.usesDurableOperatorState ? "success" : "warning"} />
+                <AdminBadge label={report.usesDurableOperatorState ? "Hosted" : "Local"} tone={report.usesDurableOperatorState ? "success" : "warning"} />
                 <p className="text-sm leading-6 text-[#4b5563]">{item}</p>
               </div>
             ))}
@@ -276,7 +273,7 @@ export default async function AdminReadinessPage() {
 
       <AdminSectionCard
         title="Schema blockers and migration explainers"
-        description="These blockers stay visible until the active database is actually aligned. Localhost fallback behavior is not treated as a fix."
+        description="These blockers stay visible until the active database is actually aligned. Local fallback behavior does not count as the final fix."
       >
         {schemaBlockers.length ? (
           <div className="space-y-3">
@@ -322,8 +319,8 @@ export default async function AdminReadinessPage() {
 
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <AdminSectionCard
-          title="Hosted proof blockers"
-          description="These still need migration, environment, or production-runtime follow-through before hosted proof can be signed off."
+          title="Deployment blockers"
+          description="These still need migration, environment, or refresh follow-through before deployment sign-off."
         >
           {runtimeWarnings.length || report.failedRefreshJobs.length || report.staleDataLanes.length ? (
             <div className="space-y-2.5">
@@ -331,7 +328,7 @@ export default async function AdminReadinessPage() {
                 <div className="rounded-lg border border-[#fde68a] bg-[#fffbeb] p-[14px] shadow-sm">
                   <div className="flex items-center gap-2">
                     <AdminBadge label="Runtime / env" tone="warning" />
-                    <p className="text-sm font-medium text-[#111827]">Hosted runtime configuration still needs follow-through.</p>
+                    <p className="text-sm font-medium text-[#111827]">Some deployment settings still need follow-through.</p>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {runtimeWarnings.map((item) => (
@@ -363,7 +360,7 @@ export default async function AdminReadinessPage() {
             </div>
           ) : (
             <AdminEmptyState
-              title="No extra hosted-proof blockers"
+              title="No extra deployment blockers"
               description="Outside schema alignment, refresh jobs, and runtime config, no other major readiness blockers are currently flagged."
             />
           )}
@@ -377,7 +374,7 @@ export default async function AdminReadinessPage() {
             {[
               "If saves are succeeding and the activity log records the action, users, settings, memberships, media metadata, and content writes are already trustworthy.",
               "The two active schema blockers do not stop preview, versioning, audit logging, or routine operator editing. They specifically block clean stock/fund schema alignment in the active DB.",
-              "Localhost public routes may still work through safe fallback behavior while system health stays yellow or blocked. That is expected until the migration is applied.",
+              "Public routes in the current workspace may still work through safe fallback behavior while system health stays yellow or blocked. That is expected until the migration is applied.",
             ].map((item) => (
               <div key={item} className="rounded-lg border border-[#d1d5db] bg-[#f8fafc] px-3 py-2.5">
                 <p className="text-sm leading-6 text-[#4b5563]">{item}</p>
@@ -386,6 +383,8 @@ export default async function AdminReadinessPage() {
           </div>
         </AdminSectionCard>
       </div>
+
+      <AdminStorageStatusCard scope="the operator backend" />
     </AdminPageFrame>
   );
 }

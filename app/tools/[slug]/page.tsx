@@ -3,10 +3,13 @@ import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { CommodityHistoryPreview } from "@/components/commodity-history-preview";
-import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
+import {
+  ProductCard,
+  ProductSectionTitle,
+} from "@/components/product-page-system";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
 import { ToolCalculatorPanel } from "@/components/tool-calculator-panel";
-import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
 import { Eyebrow, GlowCard } from "@/components/ui";
 import { getCommodityHistory, type GoldHistoryEntry, type SilverHistoryEntry } from "@/lib/commodity-history";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
@@ -58,20 +61,17 @@ export default async function ToolDetailPage({ params }: PageProps) {
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");
-  const sidebar = await getGlobalSidebarRail("tools");
-
   return (
-    <div className="riddra-product-page py-3 sm:py-4">
-      <ProductPageContainer>
-        <ProductPageTwoColumnLayout
-          left={
-            <div className="riddra-legacy-light-surface space-y-6">
-              <div className="space-y-5">
-          <Breadcrumbs items={breadcrumbs} />
-          <Eyebrow>{tool.category}</Eyebrow>
-          <h1 className="display-font text-4xl font-semibold tracking-tight text-white sm:text-6xl">{tool.title}</h1>
-          <p className="max-w-3xl text-base leading-8 text-mist/76">{tool.summary}</p>
-              </div>
+    <GlobalSidebarPageShell
+      category="tools"
+      className="space-y-3.5 sm:space-y-4"
+      leftClassName="riddra-legacy-light-surface space-y-6"
+    >
+      <div className="space-y-5">
+        <Breadcrumbs items={breadcrumbs} />
+        <Eyebrow>{tool.category}</Eyebrow>
+        <ProductSectionTitle title={tool.title} description={tool.summary} />
+      </div>
 
         <SubscriberTruthNotice
           eyebrow="Tool detail truth"
@@ -95,27 +95,27 @@ export default async function ToolDetailPage({ params }: PageProps) {
         />
 
         <div className="grid gap-6 lg:grid-cols-4">
-          <GlowCard>
-            <p className="text-sm text-mist/68">Support registry rows</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{supportRegistry.total}</p>
-          </GlowCard>
-          <GlowCard>
-            <p className="text-sm text-mist/68">In progress</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{supportRegistry.inProgress}</p>
-          </GlowCard>
-          <GlowCard>
-            <p className="text-sm text-mist/68">Blocked</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{supportRegistry.blocked}</p>
-          </GlowCard>
-          <GlowCard>
-            <p className="text-sm text-mist/68">Support continuity</p>
-            <p className="mt-2 text-base font-semibold text-white">
+          <ProductCard tone="secondary">
+            <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">Support registry rows</p>
+            <p className="riddra-product-number mt-2 text-3xl font-semibold text-[#1B3A6B]">{supportRegistry.total}</p>
+          </ProductCard>
+          <ProductCard tone="secondary">
+            <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">In progress</p>
+            <p className="riddra-product-number mt-2 text-3xl font-semibold text-[#1B3A6B]">{supportRegistry.inProgress}</p>
+          </ProductCard>
+          <ProductCard tone="secondary">
+            <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">Blocked</p>
+            <p className="riddra-product-number mt-2 text-3xl font-semibold text-[#1B3A6B]">{supportRegistry.blocked}</p>
+          </ProductCard>
+          <ProductCard tone="secondary">
+            <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">Support continuity</p>
+            <p className="riddra-product-body mt-2 text-base font-semibold text-[#1B3A6B]">
               {config.supportEmail || config.billingSupportEmail || "Not configured yet"}
             </p>
-            <p className="mt-3 text-sm leading-7 text-mist/72">
+            <p className="riddra-product-body mt-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
               Tool-detail usage is now framed against the real support and continuity posture instead of a cleaner utility-only shell.
             </p>
-          </GlowCard>
+          </ProductCard>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -124,10 +124,10 @@ export default async function ToolDetailPage({ params }: PageProps) {
             { label: "Typical input", value: tool.inputLabel },
             { label: "Outcome", value: tool.outcome },
           ].map((item) => (
-            <GlowCard key={item.label}>
-              <p className="text-sm text-mist/66">{item.label}</p>
-              <p className="mt-3 text-lg font-semibold text-white">{item.value}</p>
-            </GlowCard>
+            <ProductCard key={item.label} tone="secondary">
+              <p className="riddra-product-body text-sm text-[rgba(107,114,128,0.76)]">{item.label}</p>
+              <p className="riddra-product-body mt-3 text-lg font-semibold text-[#1B3A6B]">{item.value}</p>
+            </ProductCard>
           ))}
         </div>
 
@@ -148,7 +148,7 @@ export default async function ToolDetailPage({ params }: PageProps) {
           <CommodityHistoryPreview tool="silver" entries={silverHistory} />
         ) : null}
 
-        <GlowCard>
+      <GlowCard>
           <h2 className="text-2xl font-semibold text-white">Smart query flow</h2>
           <div className="mt-5 rounded-[24px] border border-white/8 bg-black/15 p-5">
             <p className="text-sm text-mist/66">Example query</p>
@@ -165,12 +165,7 @@ export default async function ToolDetailPage({ params }: PageProps) {
               </div>
             ))}
           </div>
-        </GlowCard>
-            </div>
-          }
-          right={sidebar}
-        />
-      </ProductPageContainer>
-    </div>
+      </GlowCard>
+    </GlobalSidebarPageShell>
   );
 }

@@ -10,8 +10,8 @@ import type { SharedSidebarPageCategory } from "@/lib/shared-sidebar-config";
 export async function GlobalSidebarPageShell({
   category,
   children,
-  className = "space-y-10",
-  leftClassName = "riddra-legacy-light-surface space-y-10",
+  className = "space-y-3.5 sm:space-y-4",
+  leftClassName = "riddra-legacy-light-surface space-y-6",
 }: {
   category: SharedSidebarPageCategory;
   children: ReactNode;

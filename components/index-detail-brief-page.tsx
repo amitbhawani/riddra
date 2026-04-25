@@ -185,7 +185,7 @@ function describeTimelineCoverage(snapshot: IndexSnapshot) {
   }
 
   if (snapshot.timeline.length < 2) {
-    return "Unavailable";
+    return "Data pending";
   }
 
   const first = snapshot.timeline[0];
@@ -201,7 +201,7 @@ function buildRelatedIndices(currentSlug: IndexSnapshot["slug"], snapshots: Inde
     .map(
       (item): RelatedIndexCard => ({
         name: item.title,
-        change1Y: formatProductPercent(item.movePercent, 2, "Unavailable"),
+        change1Y: formatProductPercent(item.movePercent, 2, "Data pending"),
         ratioLabel: "Positive weight",
         ratioValue: formatPlainPercent(item.positiveWeightShare, 1),
         sparklinePoints:
@@ -238,7 +238,7 @@ function getLeadershipRows(items: IndexComponent[]) {
             className="riddra-product-number text-sm font-medium"
             style={{ color: item.changePercent >= 0 ? "#1A7F4B" : "#C0392B" }}
           >
-            {formatProductPercent(item.changePercent, 2, "Unavailable")}
+            {formatProductPercent(item.changePercent, 2, "Data pending")}
           </p>
         </div>
       ))}
@@ -281,30 +281,30 @@ function buildIndexSignalRows(snapshot: IndexSnapshot) {
     },
     {
       label: "Top puller",
-      value: snapshot.topPullers[0]?.name ?? "Unavailable",
+      value: snapshot.topPullers[0]?.name ?? "Data pending",
       helper: snapshot.topPullers[0]
-        ? `${formatProductPercent(snapshot.topPullers[0].changePercent, 2, "Unavailable")} • ${formatSignedScore(snapshot.topPullers[0].contribution)} contribution`
+        ? `${formatProductPercent(snapshot.topPullers[0].changePercent, 2, "Data pending")} • ${formatSignedScore(snapshot.topPullers[0].contribution)} contribution`
         : "No top puller is available on this route.",
     },
     {
       label: "Top dragger",
-      value: snapshot.topDraggers[0]?.name ?? "Unavailable",
+      value: snapshot.topDraggers[0]?.name ?? "Data pending",
       helper: snapshot.topDraggers[0]
-        ? `${formatProductPercent(snapshot.topDraggers[0].changePercent, 2, "Unavailable")} • ${formatSignedScore(snapshot.topDraggers[0].contribution)} contribution`
+        ? `${formatProductPercent(snapshot.topDraggers[0].changePercent, 2, "Data pending")} • ${formatSignedScore(snapshot.topDraggers[0].contribution)} contribution`
         : "No top dragger is available on this route.",
     },
     {
       label: "Strongest gainer",
-      value: strongestGainer?.name ?? "Unavailable",
+      value: strongestGainer?.name ?? "Data pending",
       helper: strongestGainer
-        ? `${formatProductPercent(strongestGainer.changePercent, 2, "Unavailable")} on ${strongestGainer.weight.toFixed(2)}% weight`
+        ? `${formatProductPercent(strongestGainer.changePercent, 2, "Data pending")} on ${strongestGainer.weight.toFixed(2)}% weight`
         : "No positive mover is available in the visible set.",
     },
     {
       label: "Weakest decliner",
-      value: weakestDecliner?.name ?? "Unavailable",
+      value: weakestDecliner?.name ?? "Data pending",
       helper: weakestDecliner
-        ? `${formatProductPercent(weakestDecliner.changePercent, 2, "Unavailable")} on ${weakestDecliner.weight.toFixed(2)}% weight`
+        ? `${formatProductPercent(weakestDecliner.changePercent, 2, "Data pending")} on ${weakestDecliner.weight.toFixed(2)}% weight`
         : "No negative mover is available in the visible set.",
     },
   ];
@@ -323,7 +323,7 @@ function buildIndexCompositionRows(snapshot: IndexSnapshot) {
   return [
     {
       label: "Top component",
-      value: topComponents[0]?.name ?? "Unavailable",
+      value: topComponents[0]?.name ?? "Data pending",
       helper: topComponents[0] ? `${topComponents[0].weight.toFixed(2)}% weight` : "No component roster available.",
     },
     {
@@ -362,26 +362,26 @@ function buildTimelineSummaryRows(snapshot: IndexSnapshot) {
   return [
     {
       label: "Opening read",
-      value: first ? `${first.timeLabel} • ${formatSignedScore(first.weightedBreadthScore)}` : "Unavailable",
-      helper: first ? formatProductPercent(first.movePercent, 2, "Unavailable") : "No opening point available.",
+      value: first ? `${first.timeLabel} • ${formatSignedScore(first.weightedBreadthScore)}` : "Data pending",
+      helper: first ? formatProductPercent(first.movePercent, 2, "Data pending") : "No opening point available.",
     },
     {
       label: "Latest read",
-      value: last ? `${last.timeLabel} • ${formatSignedScore(last.weightedBreadthScore)}` : "Unavailable",
-      helper: last ? formatProductPercent(last.movePercent, 2, "Unavailable") : "No latest point available.",
+      value: last ? `${last.timeLabel} • ${formatSignedScore(last.weightedBreadthScore)}` : "Data pending",
+      helper: last ? formatProductPercent(last.movePercent, 2, "Data pending") : "No latest point available.",
     },
     {
       label: "Strongest breadth",
       value: strongestBreadth
         ? `${strongestBreadth.timeLabel} • ${formatSignedScore(strongestBreadth.weightedBreadthScore)}`
-        : "Unavailable",
+        : "Data pending",
       helper: strongestBreadth?.marketMood ?? "No strongest breadth point available.",
     },
     {
       label: "Weakest breadth",
       value: weakestBreadth
         ? `${weakestBreadth.timeLabel} • ${formatSignedScore(weakestBreadth.weightedBreadthScore)}`
-        : "Unavailable",
+        : "Data pending",
       helper: weakestBreadth?.marketMood ?? "No weakest breadth point available.",
     },
   ];
@@ -497,7 +497,7 @@ export function IndexDetailBriefPage({
       title: "Move and breadth",
       note: "The opening scan should immediately show the session tone.",
       items: [
-        { label: "Move", value: formatProductPercent(snapshot.movePercent, 2, "Unavailable") },
+        { label: "Move", value: formatProductPercent(snapshot.movePercent, 2, "Data pending") },
         { label: "Breadth", value: formatSignedScore(snapshot.weightedBreadthScore) },
         { label: "Updated", value: snapshot.lastUpdated },
       ],
@@ -517,8 +517,8 @@ export function IndexDetailBriefPage({
       title: "Index leaders",
       note: "Top pushers and draggers sit early in the read.",
       items: [
-        { label: "Top puller", value: snapshot.topPullers[0]?.symbol ?? "Unavailable" },
-        { label: "Top dragger", value: snapshot.topDraggers[0]?.symbol ?? "Unavailable" },
+        { label: "Top puller", value: snapshot.topPullers[0]?.symbol ?? "Data pending" },
+        { label: "Top dragger", value: snapshot.topDraggers[0]?.symbol ?? "Data pending" },
         { label: "Trend", value: snapshot.trendLabel },
       ],
     },
@@ -530,7 +530,7 @@ export function IndexDetailBriefPage({
         { label: "Mood", value: snapshot.marketMood },
         { label: "Dominance", value: snapshot.dominanceLabel },
         { label: "Timeline", value: timelineCoverage },
-        { label: "Truth", value: truthState === "verified" ? "Verified" : truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "partial" ? "Coverage Limited" : "Unavailable" },
+        { label: "Truth", value: truthState === "verified" ? "Verified" : truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "partial" ? "Partial coverage" : "Data pending" },
       ],
     },
   ];
@@ -543,8 +543,8 @@ export function IndexDetailBriefPage({
           : truthState === "delayed_snapshot"
             ? "Delayed snapshot"
             : truthState === "partial"
-              ? "Coverage limited"
-              : "Unavailable",
+              ? "Partial coverage"
+              : "Data pending",
       helper: `${sourceLabel} • ${snapshot.lastUpdated}`,
     },
     {
@@ -567,8 +567,8 @@ export function IndexDetailBriefPage({
     { label: "Session shape", value: snapshot.sessionPhase },
     { label: "Weight moving higher", value: formatPlainPercent(snapshot.positiveWeightShare, 1) },
     { label: "Weight moving lower", value: formatPlainPercent(snapshot.negativeWeightShare, 1) },
-    { label: "Top puller", value: snapshot.topPullers[0]?.name ?? "Unavailable" },
-    { label: "Top dragger", value: snapshot.topDraggers[0]?.name ?? "Unavailable" },
+    { label: "Top puller", value: snapshot.topPullers[0]?.name ?? "Data pending" },
+    { label: "Top dragger", value: snapshot.topDraggers[0]?.name ?? "Data pending" },
     { label: "Timeline coverage", value: timelineCoverage },
   ];
 
@@ -585,7 +585,7 @@ export function IndexDetailBriefPage({
           categoryBadge="Index"
           subtitle={`${snapshot.marketMood} • ${snapshot.breadthLabel}`}
           metaLine={`${sourceLabel} • ${snapshot.marketLabel}`}
-          price={formatProductPercent(snapshot.movePercent, 2, "Unavailable")}
+          price={formatProductPercent(snapshot.movePercent, 2, "Data pending")}
           change={formatSignedScore(snapshot.weightedBreadthScore)}
           asOf={snapshot.lastUpdated}
           truthState={truthState}
@@ -857,7 +857,7 @@ export function IndexDetailBriefPage({
                             className="riddra-product-number mt-2 text-sm"
                             style={{ color: component.changePercent >= 0 ? "#1A7F4B" : "#C0392B" }}
                           >
-                            {formatProductPercent(component.changePercent, 2, "Unavailable")}
+                            {formatProductPercent(component.changePercent, 2, "Data pending")}
                           </p>
                         </div>
                         <div>
@@ -928,7 +928,7 @@ export function IndexDetailBriefPage({
                                 className="riddra-product-number mt-2 text-sm"
                                 style={{ color: point.movePercent >= 0 ? "#1A7F4B" : "#C0392B" }}
                               >
-                                {formatProductPercent(point.movePercent, 2, "Unavailable")}
+                                {formatProductPercent(point.movePercent, 2, "Data pending")}
                               </p>
                             </div>
                             <div>
@@ -990,7 +990,7 @@ export function IndexDetailBriefPage({
                 description="Keep this rail open while reading the opening brief and the breadth chapter."
                 attribution={{
                   label: "Benchmark source",
-                  value: `${sourceLabel} • ${truthState === "partial" ? "Coverage Limited" : truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "verified" ? "Verified" : "Unavailable"}`,
+                  value: `${sourceLabel} • ${truthState === "partial" ? "Partial coverage" : truthState === "delayed_snapshot" ? "Delayed Snapshot" : truthState === "verified" ? "Verified" : "Data pending"}`,
                 }}
                 items={[
                   { label: "Breadth score", value: formatSignedScore(snapshot.weightedBreadthScore) },
@@ -998,8 +998,8 @@ export function IndexDetailBriefPage({
                   { label: "Session shape", value: snapshot.sessionPhase },
                   { label: "Stocks rising", value: String(snapshot.advancingCount) },
                   { label: "Stocks falling", value: String(snapshot.decliningCount) },
-                  { label: "Top Puller", value: snapshot.topPullers[0]?.symbol ?? "Unavailable" },
-                  { label: "Top Dragger", value: snapshot.topDraggers[0]?.symbol ?? "Unavailable" },
+                  { label: "Top Puller", value: snapshot.topPullers[0]?.symbol ?? "Data pending" },
+                  { label: "Top Dragger", value: snapshot.topDraggers[0]?.symbol ?? "Data pending" },
                   { label: "Weight moving higher", value: formatPlainPercent(snapshot.positiveWeightShare, 1) },
                   { label: "Updated", value: snapshot.lastUpdated },
                 ]}
@@ -1121,11 +1121,11 @@ export function IndexDetailUnavailablePage({
               : "Waiting for retained benchmark data"
           }
           metaLine={sourceLabel}
-          price="Unavailable"
+          price="Data pending"
           change={
             roster ? `${roster.components.length} roster components` : "No verified component roster yet"
           }
-          asOf={roster?.lastUpdated ?? "Unavailable"}
+          asOf={roster?.lastUpdated ?? "Data pending"}
           truthState={truthState}
           supportingNote={
             readFailureDetail
@@ -1165,7 +1165,7 @@ export function IndexDetailUnavailablePage({
                   description="The chart slot stays in place, but it remains withheld until the route has a real retained benchmark timeline."
                   attribution={{
                     label: "Benchmark source",
-                    value: `${sourceLabel} • ${readFailureDetail ? "Read Failed" : "Unavailable"}`,
+                    value: `${sourceLabel} • ${readFailureDetail ? "Read Failed" : "Data pending"}`,
                   }}
                   timeframes={[
                     { id: "1D", label: "1D", active: true },
@@ -1182,7 +1182,7 @@ export function IndexDetailUnavailablePage({
                     { label: "Route status", value: readFailureDetail ? "Read failed" : "Data not available yet" },
                     { label: "Roster rows", value: String(rosterItems.length) },
                     { label: "Source", value: sourceLabel },
-                    { label: "Last updated", value: roster?.lastUpdated ?? "Unavailable" },
+                    { label: "Last updated", value: roster?.lastUpdated ?? "Data pending" },
                   ]}
                   truthState={truthState}
                   emptyState={{
@@ -1242,17 +1242,17 @@ export function IndexDetailUnavailablePage({
                 description="Even the unavailable route keeps the same shell and numeric summary rules."
                 attribution={{
                   label: "Benchmark source",
-                  value: `${sourceLabel} • ${readFailureDetail ? "Read Failed" : "Unavailable"}`,
+                  value: `${sourceLabel} • ${readFailureDetail ? "Read Failed" : "Data pending"}`,
                 }}
                 items={[
                   { label: "Route status", value: readFailureDetail ? "Read failed" : "Data not available yet" },
                   { label: "Roster rows", value: String(rosterItems.length) },
-                  { label: "Last updated", value: roster?.lastUpdated ?? "Unavailable" },
+                  { label: "Last updated", value: roster?.lastUpdated ?? "Data pending" },
                   { label: "Source", value: sourceLabel },
-                  { label: "Mood", value: "Unavailable" },
-                  { label: "Dominance", value: "Unavailable" },
-                  { label: "Breadth", value: "Unavailable" },
-                  { label: "Timeline", value: "Unavailable" },
+                  { label: "Mood", value: "Data pending" },
+                  { label: "Dominance", value: "Data pending" },
+                  { label: "Breadth", value: "Data pending" },
+                  { label: "Timeline", value: "Data pending" },
                 ]}
                 brand={{ name: title }}
               />
@@ -1260,7 +1260,7 @@ export function IndexDetailUnavailablePage({
               {globalSidebarRail}
               <CategoryRankBadge
                 title="Route status"
-                rankLabel={readFailureDetail ? "Read failed" : "Unavailable"}
+                rankLabel={readFailureDetail ? "Read failed" : "Data pending"}
                 detail={
                   readFailureDetail
                     ? "The benchmark source is disconnected on this route right now."

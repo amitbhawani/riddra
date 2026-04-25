@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
 import {
   ProductBulletListCard,
   ProductInsightGridCard,
@@ -56,6 +57,7 @@ export default async function LearningTrackPage({ params }: PageProps) {
     billingSubject: "premium learning-track language",
     supportSubject: "users coming through guided tracks",
   });
+  const sidebar = await getGlobalSidebarRail("learn");
 
   return (
     <ProductPageShell
@@ -90,6 +92,7 @@ export default async function LearningTrackPage({ params }: PageProps) {
       }
       stickyTabs={null}
       summary={null}
+      sidebar={sidebar}
       supportingSections={
         <ProductPageTwoColumnLayout
           left={

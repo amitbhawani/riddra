@@ -21,7 +21,7 @@ export default async function IpoIndexPage() {
   const hubCards = [
     "Track upcoming IPOs, SME IPOs, GMP, subscription trends, allotment updates, and listing-day coverage from one hub.",
     "Each IPO page brings together issue details, company context, strengths, risks, and official-document links in one decision-focused view.",
-    "After listing, the IPO page remains the event-history archive while the long-term company destination shifts to the stock route.",
+    "After listing, the lifecycle job moves the company into the stock route and permanently redirects the old IPO URL there.",
   ];
 
   if (ipos.length === 0) {
@@ -140,7 +140,7 @@ export default async function IpoIndexPage() {
             <p className="text-xs uppercase tracking-[0.16em] text-mist/58">Lifecycle reminder</p>
             <h2 className="mt-3 text-2xl font-semibold text-white">One company, one long-term route</h2>
             <p className="mt-3 text-sm leading-7 text-mist/76">
-              IPO pages remain event-history archives after listing, while the long-term company destination shifts into the listed-stock route family.
+              On listing day, the lifecycle job moves the company into the listed-stock route family and turns the old IPO page into a permanent redirect.
             </p>
           </GlowCard>
         </div>

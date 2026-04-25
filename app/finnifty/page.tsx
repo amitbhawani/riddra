@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { IndexDetailRoutePage } from "@/components/index-detail-brief-page";
+import { IndexDetailStandardPage } from "@/components/index-detail-standard-page";
 import { getIndexSnapshot } from "@/lib/index-content";
 import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 
@@ -23,5 +23,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function FinNiftyPage() {
-  return <IndexDetailRoutePage slug="finnifty" />;
+  return <IndexDetailStandardPage slug="finnifty" />;
 }

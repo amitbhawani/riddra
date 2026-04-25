@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
-import { formatAdminDateTime, formatAdminSavedState } from "@/lib/admin-time";
+import { formatAdminDateTime, formatAdminStorageDetail } from "@/lib/admin-time";
 import type { MediaAsset } from "@/lib/user-product-store";
 import {
   AdminBadge,
@@ -167,7 +167,7 @@ export function AdminMediaLibraryClient({
             : data.asset.assetType === "document"
               ? "External document saved to the media library."
               : "External image saved to the media library.",
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }
@@ -217,7 +217,7 @@ export function AdminMediaLibraryClient({
       setBanner({
         tone: "success",
         text: "Image uploaded to the media library.",
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }
@@ -297,7 +297,7 @@ export function AdminMediaLibraryClient({
       setBanner({
         tone: "success",
         text: `${data.asset.title} details updated.`,
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }

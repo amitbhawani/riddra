@@ -28,8 +28,6 @@ export default async function AdminSettingsPage() {
         description="Manage site identity, default SEO posture, support configuration, membership defaults, and global product toggles."
       />
 
-      <AdminStorageStatusCard scope="system settings" />
-
       <AdminGuidanceCard
         title="Shared page sidebar"
         description="Market snapshot and common sidebar functions are controlled from one backend-owned checklist so you do not have to tweak every page one by one."
@@ -42,14 +40,17 @@ export default async function AdminSettingsPage() {
 
       <AdminGuidanceCard
         title="Header code and tracking"
-        description="Global analytics, ad, and verification snippets can now be managed from system settings instead of editing the app shell by hand."
+        description="Global header navigation, logo settings, and trusted head snippets are managed from the dedicated Global Header screen so operators have one clear place for all shared top-of-site controls."
         items={[
-          "Use the Header code field to paste site-wide public snippets that should load inside the real document head.",
+          "Use Global Header settings to choose the top menu groups, manage the brand logo text, and paste trusted analytics or verification snippets that should load in the real document head.",
           "This is intended for trusted admin-managed code such as Google Analytics, Google Ads, or search-console verification tags.",
         ]}
+        links={[{ href: "/admin/global-site/header", label: "Open global header settings", tone: "primary" }]}
       />
 
       <AdminSettingsClient initialSettings={settings} />
+
+      <AdminStorageStatusCard scope="system settings" />
     </AdminPageFrame>
   );
 }

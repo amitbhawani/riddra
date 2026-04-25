@@ -301,24 +301,36 @@ export async function searchCatalogIndex(query: string, limit = 12) {
   const client = getSearchEngineClient();
   const index = client.index<SearchIndexDocument>(status.indexUid);
 
-  const response = await index.search<SearchIndexDocument>(query, {
-    limit,
-    showRankingScore: true,
-    attributesToRetrieve: ["title", "href", "category", "query", "reasonBase"],
-  });
+  try {
+    const response = await index.search<SearchIndexDocument>(query, {
+      limit,
+      showRankingScore: true,
+      attributesToRetrieve: ["title", "href", "category", "query", "reasonBase"],
+    });
 
-  return {
-    configured: true,
-    available: true,
-    reason: null,
-    hits: response.hits.map((item) => ({
-      title: item.title,
-      href: item.href,
-      category: item.category,
-      query: item.query,
-      reasonBase: item.reasonBase,
-    })),
-  };
+    return {
+      configured: true,
+      available: true,
+      reason: null,
+      hits: response.hits.map((item) => ({
+        title: item.title,
+        href: item.href,
+        category: item.category,
+        query: item.query,
+        reasonBase: item.reasonBase,
+      })),
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      available: false,
+      reason:
+        error instanceof Error
+          ? error.message
+          : "The live search index could not be read right now.",
+      hits: [] as SearchEngineHit[],
+    };
+  }
 }
 
 export async function rebuildSearchEngineIndex(): Promise<SearchEngineRebuildResult> {

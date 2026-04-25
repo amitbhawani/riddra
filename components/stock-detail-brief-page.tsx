@@ -49,8 +49,8 @@ type SimilarStockCard = {
 };
 
 const stockPlaceholderCopy = {
-  notConnected: "Data not connected yet",
-  extended: "Awaiting extended dataset",
+  notConnected: "Data pending",
+  extended: "More data coming soon",
   soon: "Will be enabled soon",
 } as const;
 
@@ -69,7 +69,7 @@ function isRenderableStockNewsItem(item: StockSnapshot["newsItems"][number]) {
 }
 
 function readStockStat(stock: StockSnapshot, label: string) {
-  return stock.stats.find((item) => item.label === label)?.value ?? "Unavailable";
+  return stock.stats.find((item) => item.label === label)?.value ?? "Data pending";
 }
 
 function readOptionalPeRatio(stock: StockSnapshot) {
@@ -77,7 +77,7 @@ function readOptionalPeRatio(stock: StockSnapshot) {
     ["P/E", "PE", "P/E Ratio", "PE Ratio"].includes(item.label),
   )?.value;
 
-  return fromStats ?? "Unavailable";
+  return fromStats ?? "Data pending";
 }
 
 function isUnavailableLike(value: string | null | undefined) {
@@ -161,14 +161,14 @@ function computeChartReturn(
   const bars = chartSnapshot.bars;
 
   if (bars.length <= sessions) {
-    return fallback ?? "Unavailable";
+    return fallback ?? "Data pending";
   }
 
   const current = bars[bars.length - 1]?.close;
   const previous = bars[bars.length - 1 - sessions]?.close;
 
   if (typeof current !== "number" || typeof previous !== "number" || previous === 0) {
-    return fallback ?? "Unavailable";
+    return fallback ?? "Data pending";
   }
 
   const percent = ((current - previous) / previous) * 100;
@@ -190,7 +190,7 @@ function describeChartWindow(chartSnapshot: StockChartSnapshot) {
 
 function describeChartCoverage(chartSnapshot: StockChartSnapshot) {
   if (chartSnapshot.bars.length < 2) {
-    return "Unavailable";
+    return "Data pending";
   }
 
   return `${chartSnapshot.bars.length} retained daily bars`;
@@ -205,7 +205,7 @@ function describeChartTruth(chartSnapshot: StockChartSnapshot) {
     return "Delayed Snapshot";
   }
 
-  return "Unavailable";
+  return "Data pending";
 }
 
 function buildStockChartEmptyState(chartSnapshot: StockChartSnapshot) {

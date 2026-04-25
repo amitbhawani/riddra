@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/auth";
 import { appendAdminActivityLog } from "@/lib/admin-activity-log";
+import { AdminOperatorValidationError } from "@/lib/admin-operator-guards";
 import { appendAdminGlobalRevision } from "@/lib/admin-operator-store";
 import { sanitizeAdminFailureMessage } from "@/lib/admin-operator-guards";
 import {
@@ -9,6 +10,7 @@ import {
   saveLaunchConfigSection,
   type LaunchConfigStore,
 } from "@/lib/launch-config-store";
+import { sanitizeSystemHeadCodeInput } from "@/lib/system-head-code";
 
 const stringKeysBySection = {
   basic: ["siteUrl", "launchMode", "supportEmail", "adminEmails"],
@@ -30,11 +32,16 @@ const stringKeysBySection = {
   ],
   experience: [
     "headerAnnouncement",
+    "headerBrandMark",
+    "headerBrandLabel",
+    "headerBrandHref",
+    "headerVisibleMenuGroups",
     "headerQuickLinks",
     "headerMarketNav",
     "headerUtilityNav",
     "headerPrimaryCtaLabel",
     "headerPrimaryCtaHref",
+    "headerHeadCode",
     "footerSummary",
     "footerLinks",
     "stockSidebarMode",
@@ -225,7 +232,20 @@ function sanitizeSectionData<TSection extends keyof Omit<LaunchConfigStore, "upd
 
   for (const key of stringKeysBySection[section]) {
     if (key in data) {
-      next[key] = String(data[key] ?? "").trim();
+      if (section === "experience" && key === "headerHeadCode") {
+        try {
+          next[key] =
+            sanitizeSystemHeadCodeInput(data[key]) ?? "";
+        } catch (error) {
+          if (error instanceof Error) {
+            throw new AdminOperatorValidationError(error.message);
+          }
+
+          throw error;
+        }
+      } else {
+        next[key] = String(data[key] ?? "").trim();
+      }
     }
   }
 
@@ -280,11 +300,16 @@ export async function POST(request: NextRequest) {
 
       if (
         "headerAnnouncement" in data ||
+        "headerBrandMark" in data ||
+        "headerBrandLabel" in data ||
+        "headerBrandHref" in data ||
+        "headerVisibleMenuGroups" in data ||
         "headerQuickLinks" in data ||
         "headerMarketNav" in data ||
         "headerUtilityNav" in data ||
         "headerPrimaryCtaLabel" in data ||
-        "headerPrimaryCtaHref" in data
+        "headerPrimaryCtaHref" in data ||
+        "headerHeadCode" in data
       ) {
         await appendAdminGlobalRevision({
           section: "header",

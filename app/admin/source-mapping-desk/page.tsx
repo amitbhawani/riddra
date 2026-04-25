@@ -25,6 +25,7 @@ import {
   sourceMappingDeskSummary,
 } from "@/lib/source-mapping-desk";
 import { sourceMappingRegistrySummary } from "@/lib/source-mapping-registry";
+import { getConfiguredPublicSiteUrl } from "@/lib/public-site-url";
 
 export const metadata: Metadata = {
   title: "Source Mapping Desk",
@@ -48,11 +49,12 @@ export default async function SourceMappingDeskPage() {
   const marketDataNeedsRemoteMigration = Boolean(
     latestMarketDataRun?.errorMessage?.includes("db/migrations/0011_market_data_durability.sql"),
   );
+  const publicProofOrigin = getConfiguredPublicSiteUrl() || "https://www.riddra.com";
   const refreshProofCommands = [
     `npm run trigger:dev`,
-    `curl -s -X POST http://127.0.0.1:3000/api/market-data/refresh \\
+    `curl -s -X POST ${publicProofOrigin}/api/market-data/refresh \\
   -H 'x-riddra-refresh-secret: <MARKET_DATA_REFRESH_SECRET>'`,
-    `curl -s 'http://127.0.0.1:3000/api/admin/durable-jobs?family=market_data'`,
+    `curl -s '${publicProofOrigin}/api/admin/durable-jobs?family=market_data'`,
   ];
   const refreshProofQueries = [
     `select id, series_type, asset_slug, run_status, records_written, error_message

@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import {
   ProductBreadcrumbs,
   ProductCard,
-  ProductPageContainer,
-  ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
 import { getMarketEvents } from "@/lib/learn";
@@ -21,7 +19,6 @@ export const metadata: Metadata = {
 };
 
 export default async function ResultsCalendarPage() {
-  const sidebar = await getGlobalSidebarRail("reports");
   const truthCopy = getPublicTruthCopy({
     continuitySubject: "event-calendar usage",
     handoffLabel: "calendar-to-account handoff",
@@ -37,7 +34,7 @@ export default async function ResultsCalendarPage() {
   const breadcrumbSchemaItems = breadcrumbs.map((item) => ({ name: item.label, href: item.href }));
 
   return (
-    <div className="riddra-product-page border-y border-[rgba(221,215,207,0.82)] bg-[linear-gradient(180deg,rgba(248,246,242,0.98)_0%,rgba(250,249,247,0.98)_100%)] py-2 sm:py-2.5">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbSchemaItems)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -46,46 +43,47 @@ export default async function ResultsCalendarPage() {
           path: "/reports/results-calendar",
         })}
       />
-      <ProductPageContainer>
-        <ProductPageTwoColumnLayout
-          left={
-            <div className="space-y-6">
-              <ProductBreadcrumbs items={breadcrumbs} />
+      <GlobalSidebarPageShell
+        category="reports"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
+        <ProductBreadcrumbs items={breadcrumbs} />
 
-              <ProductCard tone="primary" className="p-4 sm:p-5">
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                  <div className="space-y-4">
-                    <ProductSectionTitle
-                      eyebrow="Event-led discovery"
-                      title="Results and event calendar"
-                      description="Follow results windows, IPO milestones, and recurring market events from one place, then move quickly into the related stocks, funds, and learning routes."
-                    />
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Tracked events</p>
-                        <p className="mt-1 text-[20px] font-semibold text-[#111827]">{events.length}</p>
-                      </div>
-                      <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Primary use</p>
-                        <p className="mt-1 text-[15px] font-semibold text-[#111827]">Calendar-led follow-through</p>
-                      </div>
-                      <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Connected routes</p>
-                        <p className="mt-1 text-[15px] font-semibold text-[#111827]">Reports, stocks, learn</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid gap-3">
-                    <div className="rounded-[10px] border border-[rgba(27,58,107,0.12)] bg-[rgba(27,58,107,0.04)] px-4 py-4">
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Reading flow</p>
-                      <p className="mt-2 text-[15px] font-semibold text-[#1B3A6B]">Event first, then asset follow-through</p>
-                      <p className="mt-2 text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">
-                        This page now opens with the same public research shell as the rest of the product instead of the older report-only wrapper.
-                      </p>
-                    </div>
-                  </div>
+        <ProductCard tone="primary" className="p-4 sm:p-5">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <div className="space-y-4">
+              <ProductSectionTitle
+                eyebrow="Event-led discovery"
+                title="Results and event calendar"
+                description="Follow results windows, IPO milestones, and recurring market events from one place, then move quickly into the related stocks, funds, and learning routes."
+              />
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Tracked events</p>
+                  <p className="mt-1 text-[20px] font-semibold text-[#111827]">{events.length}</p>
                 </div>
-              </ProductCard>
+                <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Primary use</p>
+                  <p className="mt-1 text-[15px] font-semibold text-[#111827]">Calendar-led follow-through</p>
+                </div>
+                <div className="rounded-[10px] border border-[rgba(226,222,217,0.86)] bg-white/92 px-4 py-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Connected routes</p>
+                  <p className="mt-1 text-[15px] font-semibold text-[#111827]">Reports, stocks, learn</p>
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-3">
+              <div className="rounded-[10px] border border-[rgba(27,58,107,0.12)] bg-[rgba(27,58,107,0.04)] px-4 py-4">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">Reading flow</p>
+                <p className="mt-2 text-[15px] font-semibold text-[#1B3A6B]">Event first, then asset follow-through</p>
+                <p className="mt-2 text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">
+                  This page now opens with the same public research shell as the rest of the product instead of the older report-only wrapper.
+                </p>
+              </div>
+            </div>
+          </div>
+        </ProductCard>
 
               <PublicSurfaceTruthSection
                 eyebrow="Results-calendar truth"
@@ -103,9 +101,9 @@ export default async function ResultsCalendarPage() {
                 secondaryHrefLabel="Open support continuity"
               />
 
-              <div className="grid gap-6">
-                {events.map((event) => (
-                  <ProductCard key={event.slug} tone="secondary" className="space-y-4 p-4">
+        <div className="grid gap-6">
+          {events.map((event) => (
+            <ProductCard key={event.slug} tone="secondary" className="space-y-4 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-[20px] font-semibold text-[#1B3A6B]">{event.title}</h2>
@@ -136,14 +134,10 @@ export default async function ResultsCalendarPage() {
                   </Link>
                 ))}
               </div>
-                  </ProductCard>
-                ))}
-              </div>
-            </div>
-          }
-          right={sidebar}
-        />
-      </ProductPageContainer>
-    </div>
+            </ProductCard>
+          ))}
+        </div>
+      </GlobalSidebarPageShell>
+    </>
   );
 }

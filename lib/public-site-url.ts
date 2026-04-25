@@ -31,7 +31,7 @@ export function getPublicSiteUrl() {
   const requirements = getHostedRuntimeRequirements();
   const missing = requirements.missingSite.length > 0 ? requirements.missingSite.join(", ") : "NEXT_PUBLIC_SITE_URL";
   throw new Error(
-    `Hosted runtime is missing a valid public site origin. Set ${missing} to the final beta domain instead of relying on localhost or repo-backed defaults.`,
+    `Hosted runtime is missing a valid public site origin. Set ${missing} to the final beta domain instead of relying on unfinished local defaults.`,
   );
 }
 

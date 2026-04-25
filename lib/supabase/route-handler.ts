@@ -1,14 +1,16 @@
-import type { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 import { getRuntimeLaunchConfig, hasRuntimeSupabaseEnv } from "@/lib/runtime-launch-config";
 import { createSupabaseTimedFetch } from "@/lib/supabase/shared";
 
-export function createSupabaseRouteHandlerClient(request: NextRequest, response: NextResponse) {
+export async function createSupabaseRouteHandlerClient(response: NextResponse) {
   if (!hasRuntimeSupabaseEnv()) {
     throw new Error("Supabase environment variables are missing.");
   }
 
+  const cookieStore = await cookies();
   const config = getRuntimeLaunchConfig();
 
   return createServerClient(config.supabaseUrl, config.supabaseAnonKey, {
@@ -17,11 +19,13 @@ export function createSupabaseRouteHandlerClient(request: NextRequest, response:
     },
     cookies: {
       getAll() {
-        return request.cookies.getAll();
+        return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+        cookiesToSet.forEach(({ name, value, options }) => {
+          cookieStore.set(name, value, options);
+          response.cookies.set(name, value, options);
+        });
       },
     },
   });

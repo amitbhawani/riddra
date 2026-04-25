@@ -151,15 +151,15 @@ export default function AdminHelpPage() {
         </AdminSectionCard>
 
         <AdminSectionCard
-          title="Durable versus fallback state"
-          description="The backend will now tell you which path is active."
+          title="Where your saves are going"
+          description="Open this only when you want extra backend detail."
           collapsible
           defaultOpen={false}
         >
           <ul className="space-y-2 text-sm leading-6 text-[#4b5563]">
-            <li><span className="font-medium text-[#111827]">DB-first path active:</span> the area is writing through the durable backend path and local JSON is only a mirror or safety net.</li>
-            <li><span className="font-medium text-[#111827]">Local fallback mode:</span> saves still persist locally, but hosted proof and production readiness should not be considered complete yet.</li>
-            <li><span className="font-medium text-[#111827]">Safe to ignore for now:</span> if a schema blocker is clearly explained in System Health or Readiness, everyday editing can still continue while the migration follow-up remains visible.</li>
+            <li><span className="font-medium text-[#111827]">Primary storage active:</span> this area is saving into the main shared storage path.</li>
+            <li><span className="font-medium text-[#111827]">Current workspace storage:</span> your edits still save here, but this area is still using the active workspace path while shared-storage proof is being completed.</li>
+            <li><span className="font-medium text-[#111827]">Safe to ignore for now:</span> if everyday editing is working and System Health does not show a critical blocker for your task, you can usually keep working.</li>
           </ul>
         </AdminSectionCard>
       </div>

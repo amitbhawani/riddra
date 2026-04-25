@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { formatAdminDateTime, formatAdminSavedState } from "@/lib/admin-time";
+import { formatAdminDateTime, formatAdminStorageDetail } from "@/lib/admin-time";
 import type { SystemSettings } from "@/lib/user-product-store";
 import {
   AdminBadge,
@@ -60,7 +60,7 @@ export function AdminSettingsClient({
       setBanner({
         tone: "success",
         text: "System settings updated successfully.",
-        detail: `${data.storageMode === "durable" ? "Saved to durable store." : "Saved to local fallback store."} ${formatAdminSavedState(data.savedAt)}`,
+        detail: formatAdminStorageDetail(data.storageMode, data.savedAt),
       });
     });
   }
@@ -123,25 +123,6 @@ export function AdminSettingsClient({
               placeholder="https://riddra.com"
               className="h-9 w-full rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[13px] text-[#111827]"
             />
-          </div>
-        </div>
-      </AdminSectionCard>
-
-      <AdminSectionCard
-        id="head-code"
-        title="Header code"
-        description="Paste public-site code that should be injected before the closing </head> tag, such as Google Analytics, ads, or verification snippets."
-      >
-        <div className="space-y-3">
-          <textarea
-            value={settings.publicHeadCode}
-            onChange={(event) => update("publicHeadCode", event.target.value)}
-            rows={8}
-            placeholder={`<!-- Example -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-XXXX\"></script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag('js', new Date());\n  gtag('config', 'G-XXXX');\n</script>`}
-            className="w-full rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 py-2 text-[13px] leading-6 text-[#111827]"
-          />
-          <div className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] px-3 py-2 text-[12px] leading-5 text-[#4b5563]">
-            This runs on the public-facing site only. Do not paste full <code>&lt;html&gt;</code>, <code>&lt;head&gt;</code>, or <code>&lt;body&gt;</code> wrappers.
           </div>
         </div>
       </AdminSectionCard>

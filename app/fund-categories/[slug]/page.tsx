@@ -6,6 +6,7 @@ import { AssetDiscoveryWorkspace, type AssetDiscoveryRow } from "@/components/as
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
 import { Eyebrow, GlowCard } from "@/components/ui";
@@ -20,6 +21,7 @@ import { getFundCategorySearchAliases } from "@/lib/fund-search-aliases";
 import { getFundPortfolioLens, getFundReturnValue } from "@/lib/fund-research";
 import { getFundsByCategorySlug, getFundCategoryHubs } from "@/lib/hubs";
 import { getFundTruthLabel } from "@/lib/market-truth";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
 type PageProps = {
@@ -51,6 +53,17 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
 
   if (!category) {
     notFound();
+  }
+
+  if (isStockFirstLaunchPlaceholderFamily("fund_categories")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="fund_categories"
+        variant="detail"
+        pageCategory="mutual_funds"
+        assetName={category.hub.name}
+      />
+    );
   }
 
   const showcaseSequence = getPreferredFundShowcaseRoutes(category.items, 3).map((fund, index) => {
@@ -172,7 +185,7 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
+    <>
       <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
       <JsonLd
         data={buildWebPageSchema({
@@ -181,7 +194,11 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
           path: `/fund-categories/${category.hub.slug}`,
         })}
       />
-      <GlobalSidebarPageShell category="mutual_funds">
+      <GlobalSidebarPageShell
+        category="mutual_funds"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Fund category hub</Eyebrow>
@@ -273,7 +290,7 @@ export default async function FundCategoryDetailPage({ params }: PageProps) {
           </div>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
+    </>
   );
 }
 

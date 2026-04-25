@@ -7,10 +7,12 @@ import { WealthDetailHeader } from "@/components/wealth-detail-header";
 import { WealthDetailSections } from "@/components/wealth-detail-sections";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
 import { getPublishableCmsRecordBySlug, getPublishableCmsSlugSet } from "@/lib/publishable-content";
+import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
 import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
 import { getWealthProductBySlug, getWealthProductsByFamily } from "@/lib/wealth-products";
+import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -36,6 +38,16 @@ export default async function AifDetailPage({ params }: PageProps) {
   if (!publishableRecord) notFound();
   const product = getWealthProductBySlug("aif", slug);
   if (!product) notFound();
+  if (isStockFirstLaunchPlaceholderFamily("aif")) {
+    return (
+      <StockFirstLaunchPlaceholderPage
+        family="aif"
+        variant="detail"
+        pageCategory="aif"
+        assetName={product.name}
+      />
+    );
+  }
   const config = getRuntimeLaunchConfig();
   const truth = getSubscriberSurfaceTruth();
   const supportRegistry = getSupportOpsRegistrySummary("account");

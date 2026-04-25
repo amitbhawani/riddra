@@ -587,7 +587,7 @@ async function buildManualSourceEntrySnapshot(slug: string): Promise<IndexSnapsh
     marketLabel: marketPresentation.marketLabel,
     marketDetail: marketPresentation.marketDetail,
     narrative:
-      "This index route is currently using retained source-entry component rows because a provider-backed durable snapshot has not been written yet.",
+      "This index route is currently using retained source-entry component rows because a verified delayed snapshot has not been written yet.",
     topPullers: sortPullers(components),
     topDraggers: sortDraggers(components),
     timeline,

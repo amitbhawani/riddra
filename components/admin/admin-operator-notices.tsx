@@ -14,21 +14,30 @@ export function AdminStorageStatusCard({
   scope: string;
 }) {
   const durableActive = hasDurableCmsStateStore();
+  const summaryLabel = durableActive ? "Primary storage active" : "Current workspace storage";
+  const summaryText = durableActive
+    ? `${scope} is saving through the primary shared storage path for this environment.`
+    : `${scope} is currently saving through the active workspace storage path for this environment.`;
+  const detailText = durableActive
+    ? `This area is already using the main shared storage path. Save banners show when the latest change was recorded.`
+    : `This area is still using the current workspace storage path. Your saves continue to work here while the final shared-storage proof is being completed.`;
 
   return (
-    <AdminCard tone={durableActive ? "compact" : "warning"} className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <AdminBadge
-          label={durableActive ? "DB-first path active" : "Local fallback mode"}
-          tone={durableActive ? "success" : "warning"}
-        />
-        <p className="text-sm font-medium text-[#111827]">Storage mode for {scope}</p>
-      </div>
-      <p className="text-sm leading-6 text-[#4b5563]">
-        {durableActive
-          ? `${scope} is using the durable DB-first path. Save banners confirm write timing, and the local JSON copy is only a safe development mirror.`
-          : `${scope} is using the local fallback path because the durable operator store is not available in this runtime. Saves still persist locally, but hosted proof stays blocked until the DB-first path is active.`}
-      </p>
+    <AdminCard tone="compact" className="space-y-0">
+      <details className="group">
+        <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 py-0.5 marker:content-none">
+          <AdminBadge
+            label={summaryLabel}
+            tone={durableActive ? "success" : "warning"}
+          />
+          <p className="text-sm font-medium text-[#111827]">Storage details for {scope}</p>
+          <span className="text-xs text-[#6b7280]">Advanced</span>
+        </summary>
+        <div className="space-y-2 pt-2">
+          <p className="text-sm leading-6 text-[#4b5563]">{summaryText}</p>
+          <p className="text-sm leading-6 text-[#6b7280]">{detailText}</p>
+        </div>
+      </details>
     </AdminCard>
   );
 }

@@ -119,6 +119,162 @@ html[data-riddra-content-theme="dark"] .riddra-member-page select {
   color: #f8fafc !important;
 }
 
+html[data-riddra-content-theme="dark"] .riddra-product-page input,
+html[data-riddra-content-theme="dark"] .riddra-product-page textarea,
+html[data-riddra-content-theme="dark"] .riddra-product-page select {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-color: rgba(100, 116, 139, 0.42) !important;
+  color: #f8fafc !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-product-page input::placeholder,
+html[data-riddra-content-theme="dark"] .riddra-product-page textarea::placeholder,
+html[data-riddra-content-theme="dark"] .riddra-member-page input::placeholder,
+html[data-riddra-content-theme="dark"] .riddra-member-page textarea::placeholder {
+  color: rgba(203, 213, 225, 0.68) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-form-panel,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-mini-card,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-status-chip,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-helper,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(17, 24, 39, 0.96) 100%) !important;
+  border-color: rgba(100, 116, 139, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.22) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-mini-card-accent {
+  background: linear-gradient(180deg, rgba(62, 39, 12, 0.8) 0%, rgba(17, 24, 39, 0.96) 100%) !important;
+  border-color: rgba(212, 133, 59, 0.34) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-google-button,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-secondary-link {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(100, 116, 139, 0.44) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-google-button:hover,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-secondary-link:hover {
+  background: rgba(30, 41, 59, 0.96) !important;
+  border-color: rgba(212, 133, 59, 0.42) !important;
+  color: #ffffff !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-submit-button,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-primary-link {
+  background: #274d87 !important;
+  color: #ffffff !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-submit-button:hover,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-primary-link:hover {
+  background: #315c9f !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-title,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-form-title,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-mini-card-value,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-status-strong,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-strong,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-value,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-notice-title {
+  color: #e5efff !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-copy,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-mini-card-copy,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-status-copy,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-copy,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-notice-copy {
+  color: rgba(226, 232, 240, 0.86) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-mini-card-label,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-label,
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-notice-eyebrow {
+  color: rgba(191, 219, 254, 0.72) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-notice {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(17, 24, 39, 0.98) 100%) !important;
+  border-color: rgba(100, 116, 139, 0.38) !important;
+  box-shadow: 0 16px 32px rgba(2, 6, 23, 0.2) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-panel {
+  background: rgba(15, 23, 42, 0.96) !important;
+  border-color: rgba(100, 116, 139, 0.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 10px 24px rgba(2, 6, 23, 0.16) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-action {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(100, 116, 139, 0.42) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-truth-action:hover {
+  background: rgba(30, 41, 59, 0.96) !important;
+  border-color: rgba(212, 133, 59, 0.42) !important;
+  color: #ffffff !important;
+}
+
+html[data-riddra-content-theme="dark"] .subscriber-truth-notice-panel {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border-color: rgba(100, 116, 139, 0.34) !important;
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.14) !important;
+}
+
+html[data-riddra-content-theme="dark"] .subscriber-truth-notice-action {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(100, 116, 139, 0.44) !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-riddra-content-theme="dark"] .subscriber-truth-notice-action:hover {
+  background: rgba(30, 41, 59, 0.96) !important;
+  border-color: rgba(212, 133, 59, 0.42) !important;
+  color: #ffffff !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-divider {
+  color: rgba(203, 213, 225, 0.78) !important;
+}
+
+html[data-riddra-content-theme="dark"] .riddra-auth-shell .riddra-auth-divider-line {
+  background: rgba(100, 116, 139, 0.42) !important;
+}
+
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-table,
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-mover {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(17, 24, 39, 0.98) 100%) !important;
+  border-color: rgba(100, 116, 139, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(2, 6, 23, 0.2) !important;
+}
+
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-header,
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-row {
+  background: rgba(15, 23, 42, 0.82) !important;
+  border-color: rgba(100, 116, 139, 0.34) !important;
+}
+
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-table-label {
+  color: rgba(203, 213, 225, 0.72) !important;
+}
+
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-name,
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-mover-name {
+  color: #f8fafc !important;
+}
+
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-value,
+html[data-riddra-content-theme="dark"] .shared-market-sidebar-rail .shared-market-sidebar-mover-price {
+  color: #bfdbfe !important;
+}
+
 html[data-riddra-content-theme="dark"] .public-profile-inline-card {
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.95) 100%) !important;
   border-color: rgba(148, 163, 184, 0.26) !important;
@@ -216,11 +372,31 @@ a {
 }
 
 .riddra-legacy-light-surface [class*="text-white"] {
-  color: #111827 !important;
+  color: #1b3a6b !important;
+}
+
+.riddra-legacy-light-surface .riddra-auth-submit-button,
+.riddra-legacy-light-surface .riddra-auth-primary-link,
+.riddra-legacy-light-surface .riddra-button-link-primary {
+  color: #ffffff !important;
+}
+
+.riddra-legacy-light-surface .riddra-auth-submit-button:hover,
+.riddra-legacy-light-surface .riddra-auth-primary-link:hover,
+.riddra-legacy-light-surface .riddra-button-link-primary:hover {
+  color: #ffffff !important;
 }
 
 .riddra-legacy-light-surface [class*="text-mist"] {
   color: rgba(75, 85, 99, 0.84) !important;
+}
+
+.riddra-legacy-light-surface [class*="text-sky"] {
+  color: #1b3a6b !important;
+}
+
+.riddra-legacy-light-surface [class*="text-aurora"] {
+  color: #1a7f4b !important;
 }
 
 .riddra-legacy-light-surface [class*="border-white"] {
@@ -228,11 +404,33 @@ a {
 }
 
 .riddra-legacy-light-surface [class*="bg-black/"] {
-  background: rgba(255, 255, 255, 0.86) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(247, 244, 240, 0.92) 100%) !important;
+  box-shadow: 0 10px 28px rgba(27, 58, 107, 0.045) !important;
 }
 
 .riddra-legacy-light-surface [class*="bg-white/"] {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 246, 242, 0.92) 100%) !important;
+  box-shadow: 0 10px 28px rgba(27, 58, 107, 0.04) !important;
+}
+
+.riddra-legacy-light-surface [class*="from-aurora/"],
+.riddra-legacy-light-surface [class*="from-sky/"],
+.riddra-legacy-light-surface [class*="to-white/"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(247, 244, 240, 0.92) 100%) !important;
+}
+
+.riddra-legacy-light-surface [class*="hover:border-white/"],
+.riddra-legacy-light-surface [class*="hover:border-white"] {
+  border-color: rgba(27, 58, 107, 0.18) !important;
+}
+
+.riddra-legacy-light-surface [class*="hover:bg-white/"],
+.riddra-legacy-light-surface [class*="hover:bg-black/"] {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 244, 240, 0.95) 100%) !important;
+}
+
+.riddra-legacy-light-surface [class*="bg-gradient-to-b"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 246, 242, 0.92) 100%) !important;
 }
 
 .riddra-product-section {
@@ -269,7 +467,7 @@ a {
   align-items: center;
   gap: 1rem;
   white-space: nowrap;
-  padding-inline: 0;
+  padding-inline: 0 1rem;
 }
 
 .riddra-site-ticker-manual {

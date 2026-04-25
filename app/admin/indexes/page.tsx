@@ -65,7 +65,7 @@ export default async function AdminIndexesPage() {
           </GlowCard>
           <GlowCard>
             <p className="text-sm text-mist/68">Realtime status</p>
-            <p className="mt-2 text-3xl font-semibold text-white">{hasSupabaseEnv() ? "DB-ready" : "Planned"}</p>
+            <p className="mt-2 text-3xl font-semibold text-white">{hasSupabaseEnv() ? "Hosted ready" : "Planned"}</p>
           </GlowCard>
         </div>
 

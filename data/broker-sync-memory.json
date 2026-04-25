@@ -351,6 +351,25 @@
           "id": "broker_sync-broker-sync-preview-ready-2026-04-17T14:22:48.349Z"
         }
       ]
+    },
+    {
+      "userKey": "amitbhawani-gmail-com",
+      "email": "amitbhawani@gmail.com",
+      "updatedAt": "2026-04-24T12:10:40.646Z",
+      "targets": [],
+      "syncRuns": [],
+      "linkedAccounts": [],
+      "reviewItems": [],
+      "activityLog": [
+        {
+          "scope": "broker_sync",
+          "title": "Broker workspace initialized",
+          "detail": "This account starts with an empty persisted broker state until the user adds a broker target, linked account, sync run, or review row.",
+          "action": "Logged",
+          "timestamp": "2026-04-24T12:10:40.646Z",
+          "id": "broker_sync-broker-workspace-initialized-2026-04-24T12:10:40.646Z"
+        }
+      ]
     }
   ]
 }

@@ -32,7 +32,11 @@ import { getDurableStockFundamentalsEntries } from "@/lib/stock-fundamentals-sto
 import { getSourceEntryStore } from "@/lib/source-entry-store";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getAdminManagedRecord } from "@/lib/admin-operator-store";
+import { type AdminManagedRecord, getAdminManagedRecord } from "@/lib/admin-operator-store";
+import {
+  getPublishedAdminManagedStockFallbackRecords,
+  getRedirectingIpoSlugSet,
+} from "@/lib/ipo-lifecycle";
 
 export type SubscriptionSummary = {
   planCode: string;
@@ -529,6 +533,132 @@ async function getPublishedAdminManagedContentOverride(
   };
 }
 
+function parseMultilineValues(value: string | null | undefined) {
+  return String(value ?? "")
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseLabelValuePairs(value: string | null | undefined) {
+  return parseMultilineValues(value)
+    .map((line) => line.split("|").map((item) => item.trim()))
+    .filter((parts) => parts[0] && parts[1])
+    .map(([label, pairValue]) => ({ label, value: pairValue }));
+}
+
+function parseLabelValueNotePairs(value: string | null | undefined) {
+  return parseMultilineValues(value)
+    .map((line) => line.split("|").map((item) => item.trim()))
+    .filter((parts) => parts[0] && parts[1])
+    .map(([label, pairValue, note = ""]) => ({ label, value: pairValue, note }));
+}
+
+function parseNewsItems(value: string | null | undefined) {
+  return parseMultilineValues(value)
+    .map((line) => line.split("|").map((item) => item.trim()))
+    .filter((parts) => parts[0])
+    .map(([title, source = "Manual editorial", type = "News watch"]) => ({
+      title,
+      source,
+      type,
+    }));
+}
+
+function parseFaqItems(value: string | null | undefined) {
+  return parseMultilineValues(value)
+    .map((line) => line.split("|").map((item) => item.trim()))
+    .filter((parts) => parts[0] && parts[1])
+    .map(([question, answer]) => ({ question, answer }));
+}
+
+function readAdminSectionText(
+  record: AdminManagedRecord,
+  sectionKey: string,
+  fieldKey: string,
+) {
+  return readAdminManagedTextField(record.sections[sectionKey]?.values, fieldKey);
+}
+
+function buildAdminManagedStockFallback(record: AdminManagedRecord): StockSnapshot {
+  const identityCompanyName =
+    readAdminSectionText(record, "identity", "companyName") ?? record.title;
+  const sector =
+    readAdminSectionText(record, "identity", "sector") ?? "Unclassified";
+  const sectorIndexSlug =
+    readAdminSectionText(record, "identity", "sectorIndexSlug") ??
+    record.benchmarkMapping ??
+    null;
+  const frontendSummary = readAdminSectionText(record, "frontend_fields", "summary");
+  const frontendManualNotes = readAdminSectionText(record, "frontend_fields", "manualNotes");
+  const baseSnapshot = mapStockRow({
+    slug: record.slug,
+    name: identityCompanyName,
+    symbol: readAdminSectionText(record, "identity", "symbol") ?? record.symbol,
+    sector,
+    sector_index_slug: sectorIndexSlug,
+    hero_summary: frontendSummary,
+    seo_description: frontendManualNotes,
+  });
+  const quickStats = parseLabelValuePairs(
+    readAdminSectionText(record, "frontend_fields", "quickStatsText"),
+  );
+  const fundamentals = parseLabelValueNotePairs(
+    readAdminSectionText(record, "frontend_fields", "fundamentalsText"),
+  );
+  const shareholding = parseLabelValueNotePairs(
+    readAdminSectionText(record, "frontend_fields", "shareholdingText"),
+  );
+  const newsItems = parseNewsItems(
+    readAdminSectionText(record, "frontend_fields", "newsItemsText"),
+  );
+  const faqItems = parseFaqItems(readAdminSectionText(record, "frontend_fields", "faqText"));
+
+  return {
+    ...baseSnapshot,
+    name: identityCompanyName,
+    symbol:
+      readAdminSectionText(record, "identity", "symbol") ??
+      record.symbol ??
+      baseSnapshot.symbol,
+    sector,
+    sectorIndexSlug,
+    primarySourceCode:
+      readAdminSectionText(record, "data_sources", "primarySourceCode") ??
+      record.sourceLabel ??
+      baseSnapshot.primarySourceCode,
+    summary: frontendSummary ?? frontendManualNotes ?? baseSnapshot.summary,
+    thesis:
+      readAdminSectionText(record, "frontend_fields", "thesis") ?? baseSnapshot.thesis,
+    momentumLabel:
+      readAdminSectionText(record, "frontend_fields", "momentumLabel") ??
+      baseSnapshot.momentumLabel,
+    keyPoints: (() => {
+      const values = parseMultilineValues(
+        readAdminSectionText(record, "frontend_fields", "keyPointsText"),
+      );
+      return values.length ? values : baseSnapshot.keyPoints;
+    })(),
+    stats: quickStats.length ? quickStats : baseSnapshot.stats,
+    fundamentals: fundamentals.length ? fundamentals : baseSnapshot.fundamentals,
+    shareholding: shareholding.length ? shareholding : baseSnapshot.shareholding,
+    newsItems: newsItems.length ? newsItems : baseSnapshot.newsItems,
+    faqItems: faqItems.length ? faqItems : baseSnapshot.faqItems,
+  };
+}
+
+async function getPublishedAdminManagedStockFallback(
+  slug: string,
+): Promise<StockSnapshot | null> {
+  const record = await getAdminManagedRecord("stocks", slug, null);
+
+  if (!record || record.status !== "published") {
+    return null;
+  }
+
+  return buildAdminManagedStockFallback(record);
+}
+
 type StockCatalogSourceRow = {
   slug: string;
   name: string;
@@ -791,20 +921,20 @@ function mapStockRow(row: {
     slug: row.slug,
     name: row.name,
     symbol: row.symbol ?? row.slug.toUpperCase(),
-    sector: row.sector ?? "Unclassified",
+    sector: row.sector ?? "Sector pending",
     sectorIndexSlug: sectorMapping.sectorIndexSlug,
     primarySourceCode: "nse_equities",
     price: verifiedSnapshot
-      ? livePrice ?? "Awaiting provider-backed quote"
-      : "Awaiting provider-backed quote",
+      ? livePrice ?? "Quote data pending"
+      : "Quote data pending",
     change: verifiedSnapshot
-      ? liveChange ?? "Awaiting provider-backed move"
-      : "Awaiting provider-backed move",
+      ? liveChange ?? "Move data pending"
+      : "Move data pending",
     thesis: verifiedSnapshot
       ? manualSnapshot
         ? "This stock route is reading a retained manual close. It stays useful for continuity while the automated quote lane catches up."
         : "This stock route is now reading a durable delayed quote. Financial depth and ratio coverage can still expand separately."
-      : "This stock route is catalog-ready, but quote, range, and financial evidence stay conservative until provider-backed durable market writes land for the symbol.",
+      : "This stock route is catalog-ready. Quote, range, and financial details will appear here once available.",
     summary:
       row.hero_summary ??
       row.seo_description ??
@@ -814,52 +944,52 @@ function mapStockRow(row: {
         ? manualSnapshot
           ? "This stock route is live with a retained manual close while the automated quote lane is still being hardened."
           : "This stock route is live with a durable delayed quote from the retained market-data path."
-        : "This stock route exists in the catalog, but provider-backed durable quote data is still missing for the public market layer."),
+        : "This stock route exists in the catalog. Additional market data will appear here once available."),
     momentumLabel:
       verifiedSnapshot && manualSnapshot
         ? "Manual retained close"
         : verifiedSnapshot
           ? "Delayed snapshot connected"
-          : "Provider-backed quote pending",
+          : "Quote data pending",
     keyPoints: [
       verifiedSnapshot
         ? "This route is now reading retained market data instead of sample or seeded quote context."
-        : "This route now prefers provider-backed durable quote writes over sample market context.",
+        : "This route will show fresh market data here once available.",
       verifiedSnapshot
         ? manualSnapshot
           ? "The current quote is retained and stored, but it still carries a manual-source truth label."
           : "The quote lane is now connected through the durable delayed-snapshot path."
-        : "If the quote pipeline has not written trusted data yet, the page stays intentionally conservative.",
+        : "If the latest quote is not ready yet, the page keeps the market view conservative instead of guessing.",
       "Range, ratio, and event blocks will become more useful as durable market and financial sources expand.",
     ],
     stats: [
-      { label: "Market Cap", value: "Awaiting verified market cap" },
-      { label: "52W Range", value: "Awaiting verified range" },
-      { label: "ROE", value: "Awaiting verified ROE" },
-      { label: "Debt / Equity", value: "Awaiting verified leverage" },
+      { label: "Market Cap", value: "Data pending" },
+      { label: "52W Range", value: "Data pending" },
+      { label: "ROE", value: "Data pending" },
+      { label: "Debt / Equity", value: "Data pending" },
     ],
     fundamentals: [
       {
         label: "Sales growth",
-        value: "Awaiting verified financials",
-        note: "Quarterly trend blocks stay intentionally blank until structured financial data is wired in.",
+        value: "Data pending",
+        note: "Quarterly trend blocks will appear here once structured financial data is available.",
       },
       {
         label: "Profit growth",
-        value: "Awaiting verified financials",
-        note: "Public routes no longer borrow seeded financial metrics to look more complete than the real feed path.",
+        value: "Data pending",
+        note: "Profit trend details will appear here once the financial dataset is connected.",
       },
     ],
     shareholding: [
       {
         label: "Promoters",
-        value: "Awaiting verified ownership",
-        note: "Ownership mix remains unavailable until a real stored holdings source is wired in.",
+        value: "Data pending",
+        note: "Ownership mix will appear here once shareholding data is available.",
       },
       {
         label: "Public",
-        value: "Awaiting verified ownership",
-        note: "Retail and institutional participation will appear here once the holdings layer is durable and trustworthy.",
+        value: "Data pending",
+        note: "Retail and institutional participation will appear here once the holdings layer is ready.",
       },
     ],
     newsItems: [
@@ -877,9 +1007,9 @@ function mapStockRow(row: {
             ? `The durable quote read failed for this stock route, so the page is staying explicit instead of pretending no quote exists. ${liveSnapshot.readFailureDetail}`
             : verifiedSnapshot
             ? manualSnapshot
-              ? "This route is using a retained manual close. It is stored and visible, but it is labeled conservatively until the automated provider-backed quote lane is fully active."
+              ? "This route is using a retained manual close. It is stored and visible while the automated quote lane catches up."
               : "This route is using a retained durable delayed snapshot from the live market-data path."
-            : "This route now refuses to show sample market data as if it were live. Provider-backed durable quote writes must exist before the public quote layer is treated as real.",
+            : "This route keeps the market view conservative until quote data is available here.",
       },
     ],
     snapshotMeta: verifiedSnapshot
@@ -891,11 +1021,11 @@ function mapStockRow(row: {
               formatSnapshotTimestamp(liveSnapshot?.lastUpdated) ?? "Recent manual retained close",
             marketLabel: "Manual retained close",
             marketDetail:
-              "This stock route is using a manually-entered or source-entry retained close. It is stored, but it is not the same as an automated provider-backed durable quote.",
+              "This stock route is using a manually-entered or retained close. It is stored, but it is not the same as the regular delayed quote feed.",
           }
         : {
             mode: "delayed_snapshot",
-            source: liveSnapshot?.source ?? "Provider-backed durable quote",
+            source: liveSnapshot?.source ?? "Retained delayed quote",
             lastUpdated:
               formatSnapshotTimestamp(liveSnapshot?.lastUpdated) ?? "Recent delayed snapshot",
             marketLabel: marketPresentation.marketLabel,
@@ -903,11 +1033,11 @@ function mapStockRow(row: {
           }
       : {
           mode: "fallback",
-          source: liveSnapshot?.source ?? "Provider-backed durable quote missing",
-          lastUpdated: liveSnapshot?.readFailureDetail ? "Durable quote read failed" : "Awaiting provider-backed durable quote",
-          marketLabel: liveSnapshot?.readFailureDetail ? "Durable quote read failed" : "Provider-backed quote unavailable",
+          source: liveSnapshot?.source ?? "Quote data pending",
+          lastUpdated: liveSnapshot?.readFailureDetail ? "Quote read failed" : "Data update pending",
+          marketLabel: liveSnapshot?.readFailureDetail ? "Quote read failed" : "Quote data pending",
           marketDetail: liveSnapshot?.readFailureDetail ??
-            "This stock route is intentionally withholding live-looking quote data until a provider-backed durable quote is written for the symbol.",
+            "Quote data will appear here once available.",
         },
   };
 }
@@ -1352,7 +1482,7 @@ function mapFundRow(row: {
     formatPercent,
   );
   const fallbackAmcName = pickRealContentValue(row.amc_name);
-  const benchmarkLabel = pickRealContentValue(row.benchmark) ?? "Awaiting verified benchmark mapping";
+  const benchmarkLabel = pickRealContentValue(row.benchmark) ?? "Benchmark mapping pending";
   const benchmarkMapping = resolveMutualFundBenchmarkMapping({
     fundSlug: row.slug,
     benchmarkLabel,
@@ -1366,50 +1496,50 @@ function mapFundRow(row: {
     category: row.category,
     primarySourceCode: "amfi_nav",
     nav: verifiedSnapshot
-      ? liveNav ?? "Awaiting provider-backed NAV"
-      : "Awaiting provider-backed NAV",
+      ? liveNav ?? "NAV data pending"
+      : "NAV data pending",
     returns1Y: verifiedSnapshot
-      ? liveReturns1Y ?? "Awaiting provider-backed returns"
-      : "Awaiting provider-backed returns",
+      ? liveReturns1Y ?? "Returns data pending"
+      : "Returns data pending",
     returnsTable: [
-      { label: "1M", value: "Awaiting verified returns" },
-      { label: "1Y", value: "Awaiting verified returns" },
-      { label: "3Y CAGR", value: "Awaiting verified returns" },
+      { label: "1M", value: "Data pending" },
+      { label: "1Y", value: "Data pending" },
+      { label: "3Y CAGR", value: "Data pending" },
     ],
     riskLabel: manualSnapshot
       ? "Manual retained NAV"
       : verifiedSnapshot && liveNav
         ? "Delayed NAV snapshot connected"
-        : "Provider-backed NAV pending",
+        : "NAV data pending",
     benchmark: benchmarkLabel,
     benchmarkIndexSlug: benchmarkMapping.benchmarkIndexSlug,
     benchmarkMappingMeta: {
       source: benchmarkMapping.mappingSource,
       usedFallback: benchmarkMapping.usedFallback,
     },
-    aum: "Awaiting verified AUM",
-    expenseRatio: "Awaiting verified expense ratio",
-    holdings: [{ name: "Awaiting verified holdings", sector: "Pending", weight: "Pending" }],
-    sectorAllocation: [{ name: "Awaiting verified allocation", weight: "Pending" }],
+    aum: "Data pending",
+    expenseRatio: "Data pending",
+    holdings: [{ name: "Data pending", sector: "Pending", weight: "Pending" }],
+    sectorAllocation: [{ name: "Data pending", weight: "Pending" }],
     fundManager: {
-      name: "Awaiting verified fund manager",
+      name: "Data pending",
       since: "Pending",
       experience: "Pending",
-      style: "Manager evidence appears here once the factsheet and structured fund profile are attached.",
+      style: "Manager details appear here once the factsheet and fund profile are attached.",
     },
     angle:
-      "Mutual fund page driven from a reusable structured content system, with NAV and return evidence shown conservatively until provider-backed durable writes are available.",
+      "Mutual fund page driven from a reusable structured content system, with NAV and return evidence shown conservatively until more data is available.",
     summary:
       row.hero_summary ??
       row.seo_description ??
       (liveSnapshot?.readFailureDetail
         ? "This fund route found the real catalog record, but the durable NAV read failed so the page is staying explicit about that backend problem."
-        : "This fund route exists in the catalog, but provider-backed durable NAV data is still missing for the public market layer."),
+        : "This fund route exists in the catalog. NAV and return data will appear here once available."),
     keyPoints: [
-      "This route now prefers provider-backed durable NAV writes over sample allocator context.",
+      "This route will show fund NAV and return data here once available.",
       liveSnapshot?.readFailureDetail
         ? "If the durable NAV read fails, the page now says so explicitly instead of implying the scheme simply has no stored NAV."
-        : "If the NAV pipeline has not written trusted data yet, the public route stays intentionally conservative.",
+        : "If the latest NAV is not ready yet, the public route stays intentionally conservative.",
       "Factsheet evidence can still be attached explicitly without pretending the NAV layer is already live.",
     ],
     factsheetMeta: fallbackAmcName
@@ -1428,11 +1558,11 @@ function mapFundRow(row: {
               formatSnapshotTimestamp(liveSnapshot?.lastUpdated) ?? "Recent manual retained NAV",
             marketLabel: "Manual retained NAV",
             marketDetail:
-              "This fund route is using a manually-entered or source-entry retained NAV. It is stored, but it is not the same as an automated provider-backed durable NAV feed.",
+              "This fund route is using a manually-entered or retained NAV. It is stored, but it is not the same as the regular delayed NAV feed.",
           }
         : {
             mode: "delayed_snapshot",
-            source: liveSnapshot?.source ?? "Provider-backed durable NAV",
+            source: liveSnapshot?.source ?? "Retained delayed NAV",
             lastUpdated:
               formatSnapshotTimestamp(liveSnapshot?.lastUpdated) ?? "Recent delayed snapshot",
             marketLabel: marketPresentation.marketLabel,
@@ -1440,11 +1570,11 @@ function mapFundRow(row: {
           }
       : {
           mode: "fallback",
-          source: liveSnapshot?.source ?? "Provider-backed durable NAV missing",
-          lastUpdated: liveSnapshot?.readFailureDetail ? "Durable NAV read failed" : "Awaiting provider-backed durable NAV",
-          marketLabel: liveSnapshot?.readFailureDetail ? "Durable NAV read failed" : "Provider-backed NAV unavailable",
+          source: liveSnapshot?.source ?? "NAV data pending",
+          lastUpdated: liveSnapshot?.readFailureDetail ? "NAV read failed" : "Data update pending",
+          marketLabel: liveSnapshot?.readFailureDetail ? "NAV read failed" : "NAV data pending",
           marketDetail: liveSnapshot?.readFailureDetail ??
-            "This fund route is intentionally withholding live-looking NAV data until a provider-backed durable NAV is written for the scheme.",
+            "NAV data will appear here once available.",
         },
   };
 }
@@ -1492,27 +1622,22 @@ export const getStocks = cache(async (): Promise<StockSnapshot[]> => {
 
   try {
     const publishableRecords = await getPublishableCmsRecords("stock");
-
-    if (publishableRecords.length === 0) {
-      const stocks: StockSnapshot[] = [];
-      writeTimedCache(stockCatalogCache, "all", stocks);
-      return stocks;
-    }
-
     const publishableSlugs = publishableRecords.map((record) => record.canonicalSlug);
     let rawRows: StockCatalogSourceRow[] = [];
 
-    try {
-      rawRows = await readStockCatalogSourceRows(publishableSlugs);
-    } catch (error) {
-      logPublicContentReadWarning("stock catalog source read failed; using CMS publishable fallback rows", error);
+    if (publishableSlugs.length > 0) {
+      try {
+        rawRows = await readStockCatalogSourceRows(publishableSlugs);
+      } catch (error) {
+        logPublicContentReadWarning("stock catalog source read failed; using CMS publishable fallback rows", error);
+      }
     }
 
     const rawRowMap = new Map(rawRows.map((row) => [row.slug, row]));
-
-    const durableSnapshots = await getDurableStockQuoteSnapshots(
-      publishableSlugs,
-    );
+    const durableSnapshots =
+      publishableSlugs.length > 0
+        ? await getDurableStockQuoteSnapshots(publishableSlugs)
+        : { snapshots: new Map<string, Awaited<ReturnType<typeof getDurableStockQuoteSnapshot>>>(), readFailures: new Map<string, unknown>() };
     const mappedStocks = publishableRecords.map((record) => {
       const row = rawRowMap.get(record.canonicalSlug);
       const publishableRow = buildPublishableStockRow(record);
@@ -1541,8 +1666,15 @@ export const getStocks = cache(async (): Promise<StockSnapshot[]> => {
     const stocks = await applySourceEntryStockCloses(
       await applyDurableStockShareholding(await applyDurableStockFundamentals(mappedStocks)),
     );
-    writeTimedCache(stockCatalogCache, "all", stocks);
-    return stocks;
+    const adminFallbackRecords = await getPublishedAdminManagedStockFallbackRecords();
+    const adminFallbackStocks = adminFallbackRecords
+      .filter((record) => !publishableSlugs.includes(record.slug))
+      .map((record) => buildAdminManagedStockFallback(record));
+    const mergedStocks = [...stocks, ...adminFallbackStocks].sort((left, right) =>
+      left.name.localeCompare(right.name),
+    );
+    writeTimedCache(stockCatalogCache, "all", mergedStocks);
+    return mergedStocks;
   } catch (error) {
     throw error instanceof Error
       ? error
@@ -1572,8 +1704,20 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
     const publishableRecord = await getPublishableCmsRecordBySlug("stock", normalizedSlug);
 
     if (!publishableRecord) {
-      writeTimedCache(stockDetailCache, normalizedSlug, null);
-      return null;
+      const fallbackStock = await getPublishedAdminManagedStockFallback(normalizedSlug);
+
+      if (!fallbackStock) {
+        writeTimedCache(stockDetailCache, normalizedSlug, null);
+        return null;
+      }
+
+      const [sourceEntryAppliedStock] = await applySourceEntryStockCloses([fallbackStock]);
+      const [enrichedFallbackStock] = await applyResearchArchiveStockItems([
+        sourceEntryAppliedStock ?? fallbackStock,
+      ]);
+      const fallbackResult = enrichedFallbackStock ?? fallbackStock;
+      writeTimedCache(stockDetailCache, normalizedSlug, fallbackResult);
+      return fallbackResult;
     }
 
     let liveSnapshot: SourceSnapshotPayload | null = null;
@@ -1699,6 +1843,7 @@ export const getIpos = cache(async (): Promise<IpoSnapshot[]> => {
     }
 
     const rawRowMap = new Map(rawRows.map((row) => [row.slug, row]));
+    const redirectingIpoSlugs = await getRedirectingIpoSlugSet();
     const ipos = publishableRecords.map((record) => {
       const row = rawRowMap.get(record.canonicalSlug);
 
@@ -1716,7 +1861,7 @@ export const getIpos = cache(async (): Promise<IpoSnapshot[]> => {
             }
           : buildPublishableIpoRow(record),
       );
-    });
+    }).filter((ipo) => !redirectingIpoSlugs.has(ipo.slug));
     writeTimedCache(ipoCatalogCache, "all", ipos);
     return ipos;
   } catch (error) {

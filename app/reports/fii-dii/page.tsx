@@ -1,177 +1,196 @@
 import type { Metadata } from "next";
 
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { JsonLd } from "@/components/json-ld";
-import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
-import { ProductPageContainer, ProductPageTwoColumnLayout } from "@/components/product-page-system";
-import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
-import { fiiDiiReport, type FiiDiiParticipantRow } from "@/lib/fii-dii-report";
-import { getPublicTruthCopy } from "@/lib/public-route-truth";
+import {
+  ProductBreadcrumbs,
+  ProductCard,
+  ProductSectionTitle,
+} from "@/components/product-page-system";
+import { Eyebrow } from "@/components/ui";
+import {
+  buildFiiDiiCsv,
+  fiiDiiReport,
+  formatFiiDiiCurrency,
+  type FiiDiiReportRow,
+  type FiiDiiReportSection,
+} from "@/lib/fii-dii-report";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "FII / DII Activity",
-  description: "NSE-inspired institutional activity report for FII / FPI and DII buy, sell, and net-flow tracking.",
+  description: "Institutional activity report for FII / FPI and DII buy, sell, and net values in the capital market segment.",
 };
 
 export default async function FiiDiiReportPage() {
-  const sidebar = await getGlobalSidebarRail("reports");
-  const truthCopy = getPublicTruthCopy({
-    continuitySubject: "report usage",
-    handoffLabel: "report-to-account handoff",
-    billingSubject: "premium report workflow language",
-    supportSubject: "report users who convert into assisted workflows",
-  });
   const breadcrumbs = [
-    { name: "Home", href: "/" },
-    { name: "Reports", href: "/reports" },
-    { name: "FII / DII Activity", href: "/reports/fii-dii" },
+    { label: "Home", href: "/" },
+    { label: "Reports", href: "/reports" },
+    { label: "FII / DII Activity", href: "/reports/fii-dii" },
   ];
 
   return (
-    <div className="riddra-product-page py-3 sm:py-4">
-      <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
+    <>
+      <JsonLd data={buildBreadcrumbSchema(breadcrumbs.map((item) => ({ name: item.label, href: item.href })))} />
       <JsonLd
         data={buildWebPageSchema({
           title: "FII / DII Activity",
-          description: "NSE-inspired institutional activity report for FII / FPI and DII buy, sell, and net-flow tracking.",
+          description: "Institutional activity report for FII / FPI and DII buy, sell, and net values in the capital market segment.",
           path: "/reports/fii-dii",
         })}
       />
-      <ProductPageContainer>
-        <ProductPageTwoColumnLayout
-          left={
-            <div className="riddra-legacy-light-surface space-y-6">
-              <div className="space-y-5">
-                <Breadcrumbs items={breadcrumbs} />
-                <Eyebrow>Institutional flow</Eyebrow>
-                <SectionHeading
-                  title="FII / DII activity"
-                  description="This route is modeled on the NSE institutional activity report so Riddra can carry a dedicated public page for foreign and domestic institutional flow, not just scattered references inside stock pages."
-                />
-              </div>
+      <GlobalSidebarPageShell
+        category="reports"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
+        <ProductBreadcrumbs items={breadcrumbs} />
 
-              <PublicSurfaceTruthSection
-                eyebrow="Institutional-flow truth"
-                title="This report route is useful for public market context right now, but saved continuity still depends on launch activation"
-                description="Use FII and DII activity confidently for public market context, while keeping auth continuity, premium workflow promises, and support follow-through honest until those live paths are fully verified."
-                authReady={truthCopy.authReady}
-                authPending={truthCopy.authPending}
-                billingReady={truthCopy.billingReady}
-                billingPending={truthCopy.billingPending}
-                supportReady={truthCopy.supportReady}
-                supportPending={truthCopy.supportPending}
-                href="/launch-readiness"
-                hrefLabel="Open launch readiness"
-                secondaryHref="/account/support"
-                secondaryHrefLabel="Open support continuity"
-              />
+        <ProductCard tone="primary" className="space-y-5 p-4 sm:p-5">
+          <div className="space-y-2">
+            <Eyebrow>Institutional flow report</Eyebrow>
+            <h1 className="riddra-product-body text-[28px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[36px]">
+              FII/FPI & DII trading activity in Capital Market segment
+            </h1>
+            <p className="riddra-product-body max-w-3xl text-[14px] leading-7 text-[rgba(107,114,128,0.88)] sm:text-[15px]">
+              A dedicated reports page for institutional buying and selling activity, structured in the same public format traders
+              already recognize from the NSE reports surface.
+            </p>
+          </div>
 
-              <div className="grid gap-6 lg:grid-cols-3">
-                <GlowCard>
-                  <p className="text-sm text-mist/68">Source benchmark</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.sourceLabel}</p>
-                </GlowCard>
-                <GlowCard>
-                  <p className="text-sm text-mist/68">Current mode</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.syncMode}</p>
-                </GlowCard>
-                <GlowCard>
-                  <p className="text-sm text-mist/68">Latest sync</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{fiiDiiReport.lastSyncLabel}</p>
-                </GlowCard>
-              </div>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <ReportMetaCard label="Source" value={fiiDiiReport.sourceLabel} />
+            <ReportMetaCard label="Report date" value={fiiDiiReport.reportDateLabel} />
+            <ReportMetaCard label="Last updated" value={fiiDiiReport.lastUpdatedLabel} />
+          </div>
 
-        <GlowCard>
-          <h2 className="text-2xl font-semibold text-white">Source and sync posture</h2>
-          <p className="mt-3 text-sm leading-7 text-mist/74">
-            The public structure is now in place, but the values below remain intentionally explicit until verified source ingestion is live.
-            This keeps the page useful without pretending that institutional numbers are already flowing into production.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <a
               href={fiiDiiReport.sourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:bg-white/[0.06]"
+              className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
             >
               Open NSE source
             </a>
           </div>
-          <p className="mt-4 text-sm text-mist/62">Coverage: {fiiDiiReport.reportCoverage}</p>
-        </GlowCard>
+        </ProductCard>
 
-        <div className="grid gap-6 xl:grid-cols-2">
-          <ReportTableCard title="NSE-exclusive capital-market activity" rows={fiiDiiReport.nseExclusiveRows} />
-          <ReportTableCard title="Combined exchange activity" rows={fiiDiiReport.combinedExchangeRows} />
+        <div className="space-y-5">
+          {fiiDiiReport.sections.map((section) => (
+            <ReportSectionCard key={section.id} section={section} />
+          ))}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <GlowCard>
-            <h2 className="text-2xl font-semibold text-white">NSE-inspired report notes</h2>
-            <div className="mt-5 grid gap-3">
-              {fiiDiiReport.notes.map((note) => (
-                <div key={note} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm leading-7 text-mist/76">
-                  {note}
-                </div>
-              ))}
-            </div>
-          </GlowCard>
-          <GlowCard>
-            <h2 className="text-2xl font-semibold text-white">Next activation steps</h2>
-            <div className="mt-5 grid gap-3">
-              {fiiDiiReport.workflow.map((step) => (
-                <div key={step} className="rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm leading-7 text-mist/76">
-                  {step}
-                </div>
-              ))}
-            </div>
-          </GlowCard>
-        </div>
-            </div>
-          }
-          right={sidebar}
-        />
-      </ProductPageContainer>
-    </div>
+        <ProductCard tone="secondary" className="space-y-4 p-4">
+          <ProductSectionTitle
+            eyebrow="Report notes"
+            title="How this page is set up"
+            description="This route is ready as the public report destination and already uses the same shared product shell plus global sidebar as the rest of the site."
+          />
+          <div className="grid gap-3">
+            {fiiDiiReport.notes.map((note) => (
+              <div
+                key={note}
+                className="rounded-[12px] border border-[rgba(221,215,207,0.9)] bg-[rgba(255,255,255,0.78)] px-4 py-3 text-sm leading-7 text-[rgba(75,85,99,0.84)]"
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        </ProductCard>
+      </GlobalSidebarPageShell>
+    </>
   );
 }
 
-function ReportTableCard({
-  title,
-  rows,
+function ReportMetaCard({
+  label,
+  value,
 }: {
-  title: string;
-  rows: FiiDiiParticipantRow[];
+  label: string;
+  value: string;
 }) {
   return (
-    <GlowCard>
-      <h2 className="text-2xl font-semibold text-white">{title}</h2>
-      <div className="mt-5 overflow-hidden rounded-[24px] border border-white/8 bg-black/15">
-        <table className="min-w-full divide-y divide-white/8 text-left">
-          <thead className="bg-white/[0.03]">
-            <tr className="text-xs uppercase tracking-[0.16em] text-mist/56">
-              <th className="px-4 py-3 font-medium">Participant</th>
-              <th className="px-4 py-3 font-medium">Buy</th>
-              <th className="px-4 py-3 font-medium">Sell</th>
-              <th className="px-4 py-3 font-medium">Net</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+    <ProductCard tone="secondary" className="p-4">
+      <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
+        {label}
+      </p>
+      <p className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">{value}</p>
+    </ProductCard>
+  );
+}
+
+function ReportSectionCard({
+  section,
+}: {
+  section: FiiDiiReportSection;
+}) {
+  const csvHref = `data:text/csv;charset=utf-8,${encodeURIComponent(buildFiiDiiCsv(section))}`;
+
+  return (
+    <ProductCard tone="secondary" className="overflow-hidden p-0">
+      <div className="flex flex-col gap-4 border-b border-[rgba(221,215,207,0.82)] px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.74)]">
+            Institutional activity report
+          </p>
+          <h2 className="riddra-product-body text-[22px] font-semibold tracking-tight text-[#1B3A6B]">{section.title}</h2>
+          <p className="riddra-product-body text-[14px] leading-7 text-[rgba(107,114,128,0.86)]">{section.description}</p>
+        </div>
+
+        <a
+          href={csvHref}
+          download={section.csvFileName}
+          className="inline-flex shrink-0 rounded-full border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
+        >
+          Download (.csv)
+        </a>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left">
+          <thead className="bg-[#47408C] text-white">
+            <tr className="text-[12px] uppercase tracking-[0.14em]">
+              <th className="px-4 py-4 font-semibold">Category</th>
+              <th className="px-4 py-4 font-semibold">Date</th>
+              <th className="px-4 py-4 text-right font-semibold">Buy Value (₹ Crores)</th>
+              <th className="px-4 py-4 text-right font-semibold">Sell Value (₹ Crores)</th>
+              <th className="px-4 py-4 text-right font-semibold">Net Value (₹ Crores)</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/8">
-            {rows.map((row) => (
-              <tr key={row.participant} className="align-top">
-                <td className="px-4 py-4 text-sm font-semibold text-white">{row.participant}</td>
-                <td className="px-4 py-4 text-sm text-mist/74">{row.buyValue}</td>
-                <td className="px-4 py-4 text-sm text-mist/74">{row.sellValue}</td>
-                <td className="px-4 py-4 text-sm text-mist/74">{row.netValue}</td>
-                <td className="px-4 py-4 text-sm text-amber-100/86">{row.status}</td>
-              </tr>
+          <tbody className="divide-y divide-[rgba(221,215,207,0.82)] bg-white">
+            {section.rows.map((row) => (
+              <ReportRow key={`${section.id}-${row.category}`} row={row} />
             ))}
           </tbody>
         </table>
       </div>
-    </GlowCard>
+    </ProductCard>
+  );
+}
+
+function ReportRow({
+  row,
+}: {
+  row: FiiDiiReportRow;
+}) {
+  const netPositive = row.netValue >= 0;
+
+  return (
+    <tr className="align-top">
+      <td className="px-4 py-4 text-[15px] font-semibold text-[#111827]">{row.category}</td>
+      <td className="px-4 py-4 text-[15px] text-[rgba(55,65,81,0.92)]">{row.dateLabel}</td>
+      <td className="px-4 py-4 text-right text-[15px] font-medium text-[rgba(17,24,39,0.92)]">
+        {formatFiiDiiCurrency(row.buyValue)}
+      </td>
+      <td className="px-4 py-4 text-right text-[15px] font-medium text-[rgba(17,24,39,0.92)]">
+        {formatFiiDiiCurrency(row.sellValue)}
+      </td>
+      <td className={`px-4 py-4 text-right text-[15px] font-semibold ${netPositive ? "text-[#1A7F4B]" : "text-[#C0392B]"}`}>
+        {netPositive ? "" : "−"}
+        {formatFiiDiiCurrency(Math.abs(row.netValue))}
+      </td>
+    </tr>
   );
 }

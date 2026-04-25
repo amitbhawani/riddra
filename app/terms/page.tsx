@@ -23,8 +23,11 @@ export default function TermsPage() {
   ];
 
   return (
-    <div className="py-16 sm:py-24">
-      <GlobalSidebarPageShell category="legal">
+      <GlobalSidebarPageShell
+        category="legal"
+        className="space-y-3.5 sm:space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
         <div className="space-y-5">
           <Breadcrumbs items={breadcrumbs} />
           <Eyebrow>Trust layer</Eyebrow>
@@ -76,6 +79,5 @@ export default function TermsPage() {
           <p>This is the current operating terms summary for launch. Reviewed legal terms replace it before broader commercialization.</p>
         </GlowCard>
       </GlobalSidebarPageShell>
-    </div>
   );
 }

@@ -1,4 +1,3 @@
-import { canUseDebugFallbackPaths } from "@/lib/durable-data-runtime";
 import { env } from "@/lib/env";
 import { hasSupabaseEnv } from "@/lib/env";
 
@@ -13,7 +12,7 @@ export type AuthContinuityState = {
 export const LOCAL_BYPASS_EMAIL_COOKIE = "riddra-local-bypass-email";
 
 export function isLocalAuthBypassEnabled() {
-  return canUseDebugFallbackPaths() && env.localAuthBypass === "true";
+  return env.localAuthBypass === "true";
 }
 
 export function sanitizeLocalBypassEmail(value: string | null | undefined) {

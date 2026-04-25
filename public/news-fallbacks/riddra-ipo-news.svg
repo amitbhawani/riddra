@@ -1,0 +1,22 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1072" height="502" rx="28" fill="#FFFFFF" fill-opacity="0.95"/>
+  <rect x="104" y="110" width="186" height="42" rx="21" fill="#F3ECFF"/>
+  <text x="197" y="137" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#6A4EA0">Riddra IPO</text>
+  <text x="104" y="236" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" fill="#26364F">IPO update</text>
+  <text x="104" y="290" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#70819B">Listing and subscription coverage will use this fallback when no valid issue image is available.</text>
+  <rect x="104" y="362" width="448" height="18" rx="9" fill="#EEE6FB"/>
+  <rect x="104" y="402" width="396" height="18" rx="9" fill="#EEE6FB"/>
+  <rect x="104" y="442" width="286" height="18" rx="9" fill="#EEE6FB"/>
+  <path d="M824 340L886 278L936 304L1008 206" stroke="#7552B0" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M996 206H1030V240" stroke="#7552B0" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="888" cy="278" r="10" fill="#7552B0"/>
+  <circle cx="936" cy="304" r="10" fill="#7552B0"/>
+  <circle cx="1008" cy="206" r="10" fill="#7552B0"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EEE7FC"/>
+      <stop offset="1" stop-color="#F8F5FE"/>
+    </linearGradient>
+  </defs>
+</svg>
