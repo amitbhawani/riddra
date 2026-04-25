@@ -7,7 +7,7 @@
     },
     {
       "path": "/api/admin/market-news/run",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/admin/lifecycle/ipo-cutover",
