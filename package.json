@@ -21,6 +21,7 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.49.4",
     "@trigger.dev/sdk": "^4.4.4",
+    "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
     "lightweight-charts": "^5.1.0",
     "meilisearch": "^0.57.0",
