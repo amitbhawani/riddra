@@ -88,6 +88,11 @@ function shouldRefreshSupabaseSession(pathname: string) {
   );
 }
 
+function isCronJobAuthBypassPath(pathname: string) {
+  // Cron job routes bypass session auth but remain protected by MARKET_NEWS_CRON_SECRET.
+  return pathname === "/api/jobs/market-news/run";
+}
+
 function redirectToLogin(request: NextRequest) {
   if (isOperatorApiPath(request.nextUrl.pathname)) {
     return withHeaders(request, NextResponse.json({ error: "Sign-in required." }, { status: 401 }));
@@ -117,10 +122,22 @@ function forbiddenOperatorResponse(request: NextRequest) {
 export async function updateSession(request: NextRequest) {
   const requestHeaders = buildRequestHeaders(request);
   const pathname = request.nextUrl.pathname;
+  const isCronJobAuthBypass = isCronJobAuthBypassPath(pathname);
   const localBypassEnabled =
     isLocalAuthBypassEnabled() && isTrustedLocalRequestHost(request.headers.get("host"));
   const hasAuthCookies = hasSupabaseAuthCookies(request.cookies.getAll().map((cookie) => cookie.name));
   const isOperatorSurface = isOperatorSurfacePath(pathname);
+
+  if (isCronJobAuthBypass) {
+    return withHeaders(
+      request,
+      NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      }),
+    );
+  }
 
   if (localBypassEnabled || !hasSupabaseEnv() || !shouldRefreshSupabaseSession(pathname) || !hasAuthCookies) {
     const response = NextResponse.next({

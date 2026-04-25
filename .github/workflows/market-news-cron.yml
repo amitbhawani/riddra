@@ -27,6 +27,8 @@ jobs:
             exit 1
           fi
 
+          echo "Calling ${MARKET_NEWS_RUN_URL}"
+
           response_file="$(mktemp)"
           http_code="$(
             curl -L -X POST \
