@@ -62,7 +62,7 @@ export function MarketNewsEntityChips({
   const dedupedEntities = Array.from(
     new Map(
       entities
-        .filter((entity) => entity.display_name.trim())
+        .filter((entity) => entity.display_name.trim() && entity.entity_type !== "market")
         .map((entity) => [`${entity.entity_type}:${entity.entity_slug}`, entity]),
     ).values(),
   ).slice(0, limit);

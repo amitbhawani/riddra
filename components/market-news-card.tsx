@@ -20,14 +20,6 @@ function formatDateLabel(value: string | null | undefined) {
   }).format(new Date(parsed));
 }
 
-function formatImpactLabel(value: string | null | undefined) {
-  return String(value ?? "")
-    .split("_")
-    .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
-    .join(" ")
-    .trim();
-}
-
 export function MarketNewsCard({
   article,
   compact = false,
@@ -37,7 +29,6 @@ export function MarketNewsCard({
 }) {
   const primaryEntity = article.entities[0] ?? null;
   const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
-  const impactLabel = formatImpactLabel(article.impact_label);
   const summary = article.short_summary || article.summary || "Market News is being prepared.";
   const fallbackSrc =
     article.image?.fallback_image_url || article.fallback_image_url || article.display_image_url;
@@ -65,23 +56,11 @@ export function MarketNewsCard({
         </div>
 
         <div className="space-y-4.5">
-          <div className="flex flex-wrap items-center gap-2">
-            {impactLabel ? (
-              <span className="rounded-full border border-[rgba(212,133,59,0.24)] bg-[rgba(212,133,59,0.1)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#8E5723]">
-                {impactLabel}
-              </span>
-            ) : null}
-            {article.category ? (
-              <span className="rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.03)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#1B3A6B]">
-                {article.category}
-              </span>
-            ) : null}
-            {publishedLabel ? (
-              <span className="rounded-full border border-[rgba(221,215,207,0.92)] bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.86)]">
-                {publishedLabel}
-              </span>
-            ) : null}
-          </div>
+          {publishedLabel ? (
+            <p className="riddra-product-body text-[12px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.8)]">
+              {publishedLabel}
+            </p>
+          ) : null}
 
           <div className="space-y-2.5">
             <MarketNewsTrackedLink
@@ -108,10 +87,6 @@ export function MarketNewsCard({
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[rgba(107,114,128,0.86)]">
-            <span className="font-medium text-[#1B3A6B]">{article.source_name}</span>
-          </div>
-
           <MarketNewsEntityChips entities={article.entities} compact={compact} limit={compact ? 4 : 5} />
 
           <div className="flex flex-wrap gap-3">
@@ -124,14 +99,6 @@ export function MarketNewsCard({
             >
               Read More
             </MarketNewsTrackedLink>
-            <a
-              href={article.source_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
-            >
-              Source
-            </a>
           </div>
         </div>
       </MarketNewsClickSurface>

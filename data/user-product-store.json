@@ -29,12 +29,20 @@
         ],
         "createdAt": "2026-04-24T16:29:25.240Z",
         "updatedAt": "2026-04-25T09:40:01.276Z",
-        "lastActiveAt": "2026-04-25T17:14:11.841Z"
+        "lastActiveAt": "2026-04-25T17:57:45.986Z"
       },
       "watchlist": [],
       "portfolio": [],
       "bookmarks": [],
       "recentlyViewed": [
+        {
+          "id": "recent_b3db9394-5ccb-4dbe-9ec9-05757206a846",
+          "pageType": "stock",
+          "slug": "reliance-industries",
+          "title": "Reliance Industries Share Price",
+          "href": "/stocks/reliance-industries",
+          "viewedAt": "2026-04-25T17:57:45.986Z"
+        },
         {
           "id": "recent_1864ddb6-4455-4a16-bf6a-cdb3c3a06813",
           "pageType": "stock",
@@ -76,5 +84,5 @@
   "previews": [],
   "versions": [],
   "refreshJobRuns": [],
-  "updatedAt": "2026-04-25T17:28:51.499Z"
+  "updatedAt": "2026-04-25T18:03:04.664Z"
 }

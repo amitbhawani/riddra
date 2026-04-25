@@ -22,11 +22,58 @@ type PageProps = {
     sector?: string;
     category?: string;
     impact_label?: string;
+    news_count?: string;
   }>;
 };
 
+const INITIAL_NEWS_COUNT = 7;
+const LOAD_MORE_NEWS_COUNT = 5;
+
 function normalizeQueryValue(value: string | undefined) {
   return String(value ?? "").trim();
+}
+
+function parseVisibleNewsCount(value: string | undefined) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return INITIAL_NEWS_COUNT;
+  }
+
+  return Math.min(Math.max(Math.trunc(parsed), INITIAL_NEWS_COUNT), 60);
+}
+
+function buildMarketNewsPageHref(input: {
+  company: string;
+  sector: string;
+  category: string;
+  impactLabel: string;
+  newsCount?: number;
+}) {
+  const searchParams = new URLSearchParams();
+
+  if (input.company) {
+    searchParams.set("company", input.company);
+  }
+
+  if (input.sector) {
+    searchParams.set("sector", input.sector);
+  }
+
+  if (input.category) {
+    searchParams.set("category", input.category);
+  }
+
+  if (input.impactLabel) {
+    searchParams.set("impact_label", input.impactLabel);
+  }
+
+  if (input.newsCount && input.newsCount > INITIAL_NEWS_COUNT) {
+    searchParams.set("news_count", String(input.newsCount));
+  }
+
+  const query = searchParams.toString();
+  return query ? `/markets/news?${query}` : "/markets/news";
 }
 
 function hasActiveFilters(filters: {
@@ -46,6 +93,7 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
     category: normalizeQueryValue(resolvedSearchParams.category),
     impactLabel: normalizeQueryValue(resolvedSearchParams.impact_label),
   };
+  const visibleNewsCount = parseVisibleNewsCount(resolvedSearchParams.news_count);
   const activeFilters = hasActiveFilters(filters);
 
   const [filterOptions, topStories, articles] = await Promise.all([
@@ -61,9 +109,17 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
     }).catch(() => []),
     getMarketNewsArticles({
       ...filters,
-      limit: 24,
+      limit: Math.min(visibleNewsCount + 1, 60),
     }).catch(() => []),
   ]);
+  const visibleArticles = articles.slice(0, visibleNewsCount);
+  const hasMoreArticles = articles.length > visibleNewsCount;
+  const loadMoreHref = hasMoreArticles
+    ? buildMarketNewsPageHref({
+        ...filters,
+        newsCount: visibleNewsCount + LOAD_MORE_NEWS_COUNT,
+      })
+    : null;
 
   return (
     <GlobalSidebarPageShell
@@ -77,11 +133,8 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
             <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.72)]">
               Filter stories
             </p>
-            <h2 className="riddra-product-body text-[24px] font-semibold tracking-tight text-[#1B3A6B]">
-              Market News filters
-            </h2>
             <p className="riddra-product-body text-[14px] leading-7 text-[rgba(107,114,128,0.86)]">
-              Filter by company, sector, category, or story impact using URL-backed query params.
+              Filter stories by company, sector, category, or story impact.
             </p>
           </div>
           {activeFilters ? (
@@ -149,28 +202,10 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
             </select>
           </label>
 
-          <label className="grid gap-1.5">
-            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
-              Impact
-            </span>
-            <select
-              name="impact_label"
-              defaultValue={filters.impactLabel}
-              className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
-            >
-              <option value="">All impact labels</option>
-              {filterOptions.impactLabels.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="md:col-span-2 xl:col-span-4 flex flex-wrap gap-3 pt-1">
+          <div className="flex flex-wrap items-end gap-3 pt-6 xl:pt-0">
             <button
               type="submit"
-              className="inline-flex rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#244b85]"
+              className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium transition hover:bg-[#244b85]"
             >
               Apply filters
             </button>
@@ -189,12 +224,12 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
       <MarketNewsTopStories articles={topStories} />
 
       <MarketNewsList
-        articles={articles}
+        articles={visibleArticles}
         title="Latest stories"
         description={
           activeFilters
             ? "Filtered stories matching the current market news selections."
-            : "Each story keeps the rewritten title, concise summary, external source link, and related entities in one card."
+            : "Each story keeps the rewritten title, concise summary, time, and related entities in one card."
         }
         emptyTitle={activeFilters ? "No stories match these filters yet" : "Market News is being prepared"}
         emptyDescription={
@@ -203,6 +238,16 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
             : "Fresh stories will appear here once the latest market news articles are ready for the public surface."
         }
       />
+      {loadMoreHref ? (
+        <div className="flex justify-center pt-1">
+          <Link
+            href={loadMoreHref}
+            className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-5 py-2.5 text-sm font-medium transition hover:bg-[#244b85]"
+          >
+            Load 5 more news
+          </Link>
+        </div>
+      ) : null}
     </GlobalSidebarPageShell>
   );
 }
