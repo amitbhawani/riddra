@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { DM_Sans, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -98,6 +99,7 @@ export default async function RootLayout({
             <SiteFooter />
           </div>
         )}
+        <SpeedInsights />
       </body>
     </html>
   );
