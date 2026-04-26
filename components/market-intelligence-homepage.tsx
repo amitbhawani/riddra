@@ -7,6 +7,11 @@ import {
   ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
+import {
+  getRiddraDailyMarketBriefPreview,
+  type RiddraDailyMarketBrief,
+} from "@/lib/market-news/brief";
+import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
 import { MarketSnapshotOverview } from "@/components/market-snapshot-system";
 import type { DiscoveryCard, MarketStat } from "@/lib/market-overview";
 import type { MarketSnapshotGroup } from "@/lib/market-snapshot-system";
@@ -27,6 +32,7 @@ function topMoveColor(value: string) {
 }
 
 export function MarketIntelligenceHomepage({
+  dailyBrief,
   indexSnapshots,
   marketSnapshotGroups,
   stats,
@@ -34,8 +40,10 @@ export function MarketIntelligenceHomepage({
   topStocks,
   topFunds,
   topIpos,
+  topMarketNewsStories,
   sidebar,
 }: {
+  dailyBrief: RiddraDailyMarketBrief | null;
   indexSnapshots: IndexSnapshot[];
   marketSnapshotGroups: MarketSnapshotGroup[];
   stats: MarketStat[];
@@ -43,9 +51,12 @@ export function MarketIntelligenceHomepage({
   topStocks: StockSnapshot[];
   topFunds: FundSnapshot[];
   topIpos: IpoSnapshot[];
+  topMarketNewsStories: MarketNewsArticleWithRelations[];
   sidebar?: ReactNode;
 }) {
   const primaryIndex = indexSnapshots[0] ?? null;
+  const shouldShowTodayOnRiddra =
+    Boolean(dailyBrief && dailyBrief.articles.length >= 3) && topMarketNewsStories.length >= 3;
 
   return (
     <div className="pb-14 pt-10 sm:pb-20 sm:pt-14">
@@ -138,6 +149,78 @@ export function MarketIntelligenceHomepage({
               </ProductCard>
             )}
                 </section>
+
+                {shouldShowTodayOnRiddra && dailyBrief ? (
+                  <section className="space-y-5 border-t border-[rgba(226,222,217,0.82)] pt-8">
+                    <ProductSectionTitle
+                      title="Today on Riddra"
+                      description="A compact read of the daily brief and the strongest market-news stories on the platform right now."
+                    />
+
+                    <div className="grid gap-4 xl:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]">
+                      <ProductCard tone="secondary" className="space-y-4">
+                        <div className="space-y-2">
+                          <p className="riddra-product-body text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.82)]">
+                            Daily Market Brief
+                          </p>
+                          <h3 className="riddra-product-body text-[24px] font-semibold leading-tight text-[#1B3A6B] sm:text-[28px]">
+                            {dailyBrief.headline}
+                          </h3>
+                          <p className="riddra-product-body text-sm leading-7 text-[rgba(107,114,128,0.9)]">
+                            {getRiddraDailyMarketBriefPreview(dailyBrief)}
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          {dailyBrief.highlights.slice(0, 3).map((highlight, index) => (
+                            <div
+                              key={`${dailyBrief.articles[index]?.id ?? index}-${highlight}`}
+                              className="rounded-[10px] border border-[rgba(226,222,217,0.84)] bg-white px-3.5 py-3 text-sm leading-6 text-[rgba(55,65,81,0.92)]"
+                            >
+                              {highlight}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          <Link
+                            href="/markets/brief"
+                            className="riddra-product-body inline-flex min-h-[42px] items-center justify-center rounded-[6px] bg-[#1B3A6B] px-4 text-sm font-medium text-white transition hover:bg-[#D4853B]"
+                          >
+                            Read full brief
+                          </Link>
+                          <Link
+                            href="/markets/news"
+                            className="riddra-product-body inline-flex min-h-[42px] items-center justify-center rounded-[6px] border border-[#1B3A6B] bg-white px-4 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
+                          >
+                            View all market news
+                          </Link>
+                        </div>
+                      </ProductCard>
+
+                      <ProductCard tone="secondary" className="space-y-4">
+                        <ProductSectionTitle
+                          title="Popular Market Stories"
+                          description="Three market-news stories with the strongest combined importance, momentum, and freshness."
+                        />
+                        <div className="space-y-3">
+                          {topMarketNewsStories.slice(0, 3).map((article) => (
+                            <Link
+                              key={article.id}
+                              href={`/markets/news/${article.slug}`}
+                              className="block rounded-[10px] border border-[rgba(226,222,217,0.88)] bg-white px-4 py-4 transition hover:border-[#1B3A6B] hover:shadow-[0_12px_24px_rgba(27,58,107,0.05)]"
+                            >
+                              <p className="riddra-product-body text-base font-medium leading-7 text-[#1B3A6B]">
+                                {article.rewritten_title || article.original_title}
+                              </p>
+                              <p className="riddra-product-body mt-2 text-sm leading-6 text-[rgba(107,114,128,0.88)]">
+                                {article.short_summary || article.impact_note || article.summary || "Open the full story on Riddra Market News."}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      </ProductCard>
+                    </div>
+                  </section>
+                ) : null}
 
                 <section className="grid gap-6 border-t border-[rgba(226,222,217,0.82)] pt-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="space-y-3">
