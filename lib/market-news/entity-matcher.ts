@@ -51,6 +51,24 @@ type MatchAccumulator = {
   relevanceScore: number;
 };
 
+const ENTITY_MATCH_STOP_WORDS = new Set([
+  "and",
+  "bank",
+  "company",
+  "corp",
+  "fund",
+  "group",
+  "inc",
+  "india",
+  "indian",
+  "limited",
+  "ltd",
+  "market",
+  "markets",
+  "of",
+  "the",
+]);
+
 function slugify(value: string) {
   return normalizeWhitespace(value)
     .toLowerCase()
@@ -93,6 +111,12 @@ function normalizeValueSet(values: string[]) {
   );
 }
 
+function buildMeaningfulTokens(value: string) {
+  return normalizeLookupText(value)
+    .split(/\s+/)
+    .filter((token) => token.length >= 4 && !ENTITY_MATCH_STOP_WORDS.has(token));
+}
+
 function maybeAddMatch(
   map: Map<string, MatchAccumulator>,
   entry: MatchAccumulator,
@@ -113,6 +137,10 @@ function aliasMatchedInText(normalizedText: string, aliases: string[], minLength
   return (
     aliases.find((alias) => alias.length >= minLength && normalizedText.includes(alias)) ?? null
   );
+}
+
+function keywordMatchedInText(normalizedText: string, keywords: string[]) {
+  return keywords.find((keyword) => normalizedText.includes(keyword)) ?? null;
 }
 
 function buildStockAliases(stock: StockCatalogEntry) {
@@ -151,6 +179,118 @@ function buildIndexAliases(index: IndexCatalogEntry) {
       ].filter(Boolean),
     ),
   );
+}
+
+function getStockMatchScore(input: {
+  stock: StockCatalogEntry;
+  exactCandidates: Set<string>;
+  normalizedText: string;
+}) {
+  const aliases = buildStockAliases(input.stock);
+  const normalizedSymbol = normalizeLookupText(input.stock.symbol);
+  const exactAlias = aliasMatchedExactly(input.exactCandidates, aliases);
+  const aliasInText = aliasMatchedInText(input.normalizedText, aliases, 5);
+  const fuzzyKeyword = keywordMatchedInText(
+    input.normalizedText,
+    buildMeaningfulTokens(input.stock.name),
+  );
+
+  if (exactAlias === normalizeLookupText(input.stock.name)) {
+    return 1.0;
+  }
+
+  if (
+    exactAlias === normalizeLookupText(input.stock.slug.replace(/-/g, " ")) ||
+    exactAlias === normalizeLookupText(input.stock.slug)
+  ) {
+    return 1.0;
+  }
+
+  if (exactAlias === normalizedSymbol) {
+    return 0.95;
+  }
+
+  if (aliasInText) {
+    return 0.8;
+  }
+
+  if (fuzzyKeyword) {
+    return 0.5;
+  }
+
+  return 0;
+}
+
+function getSimpleEntityMatchScore(input: {
+  name: string;
+  slug: string;
+  exactCandidates: Set<string>;
+  normalizedText: string;
+  minTextAliasLength?: number;
+}) {
+  const aliases = buildSimpleAliases(input.name, input.slug);
+  const exactAlias = aliasMatchedExactly(input.exactCandidates, aliases);
+  const aliasInText = aliasMatchedInText(
+    input.normalizedText,
+    aliases,
+    input.minTextAliasLength ?? 5,
+  );
+  const fuzzyKeyword = keywordMatchedInText(
+    input.normalizedText,
+    buildMeaningfulTokens(input.name),
+  );
+
+  if (exactAlias === normalizeLookupText(input.name)) {
+    return 1.0;
+  }
+
+  if (
+    exactAlias === normalizeLookupText(input.slug.replace(/-/g, " ")) ||
+    exactAlias === normalizeLookupText(input.slug)
+  ) {
+    return 0.8;
+  }
+
+  if (aliasInText) {
+    return 0.8;
+  }
+
+  if (fuzzyKeyword) {
+    return 0.5;
+  }
+
+  return 0;
+}
+
+function getIndexMatchScore(input: {
+  index: IndexCatalogEntry;
+  exactCandidates: Set<string>;
+  normalizedText: string;
+}) {
+  const aliases = buildIndexAliases(input.index);
+  const exactAlias = aliasMatchedExactly(input.exactCandidates, aliases);
+  const aliasInText = aliasMatchedInText(input.normalizedText, aliases, 4);
+  const fuzzyKeyword = keywordMatchedInText(
+    input.normalizedText,
+    buildMeaningfulTokens(input.index.title),
+  );
+
+  if (
+    exactAlias === normalizeLookupText(input.index.title) ||
+    exactAlias === normalizeLookupText(input.index.shortName)
+  ) {
+    return 1.0;
+  }
+
+  if (aliasInText) {
+    return 0.8;
+  }
+
+  if (fuzzyKeyword) {
+    return 0.5;
+  }
+
+  return 0;
 }
 
 async function loadEntityCatalog() {
@@ -201,11 +341,13 @@ function matchStocks(
   normalizedText: string,
 ) {
   for (const stock of catalog) {
-    const aliases = buildStockAliases(stock);
-    const exactAlias = aliasMatchedExactly(exactCandidates, aliases);
-    const textAlias = aliasMatchedInText(normalizedText, aliases, 5);
+    const relevanceScore = getStockMatchScore({
+      stock,
+      exactCandidates,
+      normalizedText,
+    });
 
-    if (!exactAlias && !textAlias) {
+    if (relevanceScore < 0.5) {
       continue;
     }
 
@@ -215,7 +357,7 @@ function matchStocks(
       symbol: stock.symbol,
       displayName: stock.name,
       sectorSlug: stock.sectorSlug,
-      relevanceScore: exactAlias === normalizeLookupText(stock.symbol) ? 99 : exactAlias ? 94 : 82,
+      relevanceScore,
     });
   }
 }
@@ -231,15 +373,15 @@ function matchSimpleEntities(
   },
 ) {
   for (const item of input.items) {
-    const aliases = buildSimpleAliases(item.name, item.slug);
-    const exactAlias = aliasMatchedExactly(input.exactCandidates, aliases);
-    const textAlias = aliasMatchedInText(
-      input.normalizedText,
-      aliases,
-      input.minTextAliasLength ?? 5,
-    );
+    const relevanceScore = getSimpleEntityMatchScore({
+      name: item.name,
+      slug: item.slug,
+      exactCandidates: input.exactCandidates,
+      normalizedText: input.normalizedText,
+      minTextAliasLength: input.minTextAliasLength,
+    });
 
-    if (!exactAlias && !textAlias) {
+    if (relevanceScore < 0.5) {
       continue;
     }
 
@@ -249,7 +391,7 @@ function matchSimpleEntities(
       symbol: null,
       displayName: item.name,
       sectorSlug: input.entityType === "sector" ? item.slug : null,
-      relevanceScore: exactAlias ? 92 : 78,
+      relevanceScore,
     });
   }
 }
@@ -261,11 +403,13 @@ function matchIndexes(
   normalizedText: string,
 ) {
   for (const index of catalog) {
-    const aliases = buildIndexAliases(index);
-    const exactAlias = aliasMatchedExactly(exactCandidates, aliases);
-    const textAlias = aliasMatchedInText(normalizedText, aliases, 4);
+    const relevanceScore = getIndexMatchScore({
+      index,
+      exactCandidates,
+      normalizedText,
+    });
 
-    if (!exactAlias && !textAlias) {
+    if (relevanceScore < 0.5) {
       continue;
     }
 
@@ -275,7 +419,7 @@ function matchIndexes(
       symbol: null,
       displayName: index.title,
       sectorSlug: null,
-      relevanceScore: exactAlias ? 93 : 80,
+      relevanceScore,
     });
   }
 }
@@ -306,7 +450,7 @@ function maybeMatchMarket(
       symbol: null,
       displayName: "Markets",
       sectorSlug: null,
-      relevanceScore: 65,
+      relevanceScore: 0.6,
     });
   }
 }
@@ -350,6 +494,7 @@ export async function matchMarketNewsEntities(input: {
   maybeMatchMarket(matches, normalizedText, normalizeLookupText(input.payload.category));
 
   return [...matches.values()]
+    .filter((match) => match.relevanceScore >= 0.6)
     .sort((left, right) => right.relevanceScore - left.relevanceScore)
     .slice(0, 10)
     .map<MarketNewsMatchedEntity>((match) => ({

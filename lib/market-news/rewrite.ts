@@ -14,6 +14,7 @@ import {
 import type {
   MarketNewsAiRewritePayload,
   MarketNewsImpactLabel,
+  MarketNewsNormalizedCategory,
   MarketNewsRawItemRecord,
 } from "@/lib/market-news/types";
 import { isMarketNewsImpactLabel } from "@/lib/market-news/types";
@@ -21,14 +22,20 @@ import { isMarketNewsImpactLabel } from "@/lib/market-news/types";
 const DEFAULT_MARKET_NEWS_MODEL = "gpt-4.1-mini";
 const DEFAULT_REWRITE_LIMIT = 10;
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-const TARGET_SHORT_SUMMARY_MIN_WORDS = 30;
-const TARGET_SHORT_SUMMARY_MAX_WORDS = 50;
+const TARGET_SHORT_SUMMARY_MIN_WORDS = 35;
+const TARGET_SHORT_SUMMARY_MAX_WORDS = 55;
 const ACCEPTABLE_SHORT_SUMMARY_MIN_WORDS = 20;
 const ACCEPTABLE_SHORT_SUMMARY_MAX_WORDS = 60;
 const TARGET_SUMMARY_MIN_WORDS = 100;
-const TARGET_SUMMARY_MAX_WORDS = 150;
+const TARGET_SUMMARY_MAX_WORDS = 140;
 const ACCEPTABLE_SUMMARY_MIN_WORDS = 80;
 const ACCEPTABLE_SUMMARY_MAX_WORDS = 170;
+
+const MARKET_NEWS_AUTHORS = [
+  { name: "Author Amit", slug: "author-amit" },
+  { name: "Author Ramit", slug: "author-ramit" },
+  { name: "Author Tamit", slug: "author-tamit" },
+] as const;
 
 type OpenAiChatCompletionResponse = {
   choices?: Array<{
@@ -91,6 +98,21 @@ function truncateText(value: string, maxLength: number) {
   return normalized.slice(0, maxLength).trim();
 }
 
+function hashString(value: string) {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return hash;
+}
+
+function assignDeterministicAuthor(seed: string) {
+  const safeSeed = normalizeWhitespace(seed) || "market-news";
+  return MARKET_NEWS_AUTHORS[hashString(safeSeed) % MARKET_NEWS_AUTHORS.length]!;
+}
+
 function sanitizeStringArray(values: unknown) {
   if (!Array.isArray(values)) {
     return [];
@@ -109,6 +131,197 @@ function countWords(value: string) {
   return normalizeWhitespace(value)
     .split(/\s+/)
     .filter(Boolean).length;
+}
+
+function toTitleCaseLabel(value: string) {
+  return value
+    .split(/[_\s-]+/)
+    .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
+    .join(" ")
+    .trim();
+}
+
+function buildProtectedTitleTerms(
+  rawItem: MarketNewsRawItemRecord,
+  payload: Pick<MarketNewsAiRewritePayload, "companies" | "symbols" | "sectors">,
+) {
+  const protectedTerms = new Set<string>([
+    "India",
+    "Indian",
+    "IPO",
+    "FY26",
+    "FY25",
+    "Q1",
+    "Q2",
+    "Q3",
+    "Q4",
+    "RBI",
+    "SEBI",
+    "NSE",
+    "BSE",
+    "Nifty",
+    "Sensex",
+    "Bank Nifty",
+    "Bitcoin",
+    "Ethereum",
+  ]);
+  const sourceTerms = [
+    rawItem.original_title,
+    ...payload.companies,
+    ...payload.symbols,
+    ...payload.sectors,
+  ];
+
+  for (const value of sourceTerms) {
+    const normalized = normalizeWhitespace(value);
+
+    if (!normalized) {
+      continue;
+    }
+
+    protectedTerms.add(normalized);
+
+    for (const token of normalized.split(/\s+/)) {
+      if (token.length >= 3 && /[A-Z]/.test(token)) {
+        protectedTerms.add(token);
+      }
+    }
+  }
+
+  return Array.from(protectedTerms);
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function toEditorialSentenceCase(value: string, protectedTerms: string[]) {
+  const normalized = normalizeWhitespace(value);
+
+  if (!normalized) {
+    return "";
+  }
+
+  let nextValue = normalized.toLowerCase();
+  nextValue = nextValue.replace(/(^|[.!?]\s+)([a-z])/g, (_, prefix: string, char: string) => {
+    return `${prefix}${char.toUpperCase()}`;
+  });
+  nextValue = nextValue.replace(/(^|:\s+)([a-z])/g, (_, prefix: string, char: string) => {
+    return `${prefix}${char.toUpperCase()}`;
+  });
+  nextValue = nextValue.replace(/\bq([1-4])\b/gi, "Q$1");
+  nextValue = nextValue.replace(/\bfy(\d{2})\b/gi, "FY$1");
+  nextValue = nextValue.replace(/\bipo\b/gi, "IPO");
+  nextValue = nextValue.replace(/\brbi\b/gi, "RBI");
+  nextValue = nextValue.replace(/\bsebi\b/gi, "SEBI");
+  nextValue = nextValue.replace(/\bnse\b/gi, "NSE");
+  nextValue = nextValue.replace(/\bbse\b/gi, "BSE");
+
+  for (const term of protectedTerms.sort((left, right) => right.length - left.length)) {
+    const normalizedTerm = normalizeWhitespace(term);
+
+    if (!normalizedTerm) {
+      continue;
+    }
+
+    nextValue = nextValue.replace(
+      new RegExp(`\\b${escapeRegExp(normalizedTerm)}\\b`, "gi"),
+      normalizedTerm,
+    );
+  }
+
+  return normalizeWhitespace(nextValue);
+}
+
+function normalizeMarketNewsCategory(
+  value: string | null | undefined,
+  rawItem: MarketNewsRawItemRecord,
+): MarketNewsNormalizedCategory {
+  const normalized = normalizeWhitespace(value ?? "").toLowerCase();
+  const contextText = normalizeWhitespace(
+    [
+      normalized,
+      rawItem.source_name,
+      rawItem.original_title,
+      rawItem.original_excerpt,
+      typeof rawItem.raw_payload === "object" && rawItem.raw_payload && "sourceCategory" in rawItem.raw_payload
+        ? String((rawItem.raw_payload as Record<string, unknown>).sourceCategory ?? "")
+        : "",
+    ].join(" "),
+  ).toLowerCase();
+
+  if (
+    /\b(results|quarterly results|earnings|q1|q2|q3|q4|fy\d{2})\b/.test(contextText)
+  ) {
+    return "earnings";
+  }
+
+  if (/\b(merger|acquisition|acquire|deal|buyout)\b/.test(contextText)) {
+    return "acquisition";
+  }
+
+  if (/\b(fundraise|funding|investment round|raises|raised capital)\b/.test(contextText)) {
+    return "funding";
+  }
+
+  if (/\b(sebi|regulatory|order|circular|compliance|tribunal|appeal|court)\b/.test(contextText)) {
+    return "regulatory";
+  }
+
+  if (/\b(economy|inflation|gdp|rbi|policy|macro)\b/.test(contextText)) {
+    return "macro";
+  }
+
+  if (/\b(ipo|listing|public issue)\b/.test(contextText)) {
+    return "ipo";
+  }
+
+  if (/\b(mutual fund|amc|fund house|scheme)\b/.test(contextText)) {
+    return "mutual_fund";
+  }
+
+  if (/\b(bitcoin|crypto|cryptocurrency|ethereum)\b/.test(contextText)) {
+    return "crypto";
+  }
+
+  if (/\b(markets|market update|market_news|nifty|sensex|bank nifty|fii|dii|stocks)\b/.test(contextText)) {
+    return "markets";
+  }
+
+  if (/\b(company news|company_news|companies|corporate update|corporate_update|corporate action|business|company|board|dividend)\b/.test(contextText)) {
+    return "corporate_action";
+  }
+
+  return "general_business";
+}
+
+function buildFallbackImpactNote(
+  category: MarketNewsNormalizedCategory,
+  title: string,
+  summary: string,
+) {
+  const firstSentence = splitIntoSentences(summary)[0] ?? title;
+  const trimmedSentence = trimToWordLimit(firstSentence, 22);
+
+  if (countWords(trimmedSentence) >= 6) {
+    return ensureSentence(trimmedSentence);
+  }
+
+  const categoryFallbacks: Record<MarketNewsNormalizedCategory, string> = {
+    earnings: "Why it matters: earnings can reshape expectations for the company and its sector peers.",
+    corporate_action: "Why it matters: corporate updates can change how investors read the company’s near-term direction.",
+    acquisition: "Why it matters: deal activity can change business scale, strategy, and competitive positioning.",
+    funding: "Why it matters: funding updates can influence expansion plans and future execution capacity.",
+    regulatory: "Why it matters: regulatory actions can alter compliance costs, timelines, and business flexibility.",
+    macro: "Why it matters: macro signals often shape risk appetite and market positioning across sectors.",
+    markets: "Why it matters: broad market moves can affect sentiment, positioning, and short-term price action.",
+    ipo: "Why it matters: IPO updates can influence primary-market sentiment and listing expectations.",
+    mutual_fund: "Why it matters: fund updates can affect allocation decisions and category-level flows.",
+    crypto: "Why it matters: crypto moves can influence risk appetite and cross-asset sentiment.",
+    general_business: "Why it matters: the update adds business context that may matter to market participants.",
+  };
+
+  return ensureSentence(trimToWordLimit(categoryFallbacks[category], 22));
 }
 
 function formatPublishedAt(value: string | null | undefined) {
@@ -279,18 +492,28 @@ function normalizeRewritePayload(
   rawItem: MarketNewsRawItemRecord,
   payload: MarketNewsAiRewritePayload,
 ) {
+  const protectedTerms = buildProtectedTitleTerms(rawItem, payload);
+  const normalizedCategory = normalizeMarketNewsCategory(payload.category, rawItem);
+  const rewrittenTitle = toEditorialSentenceCase(
+    trimToWordLimit(payload.rewritten_title || rawItem.original_title, 14),
+    protectedTerms,
+  );
   const normalized = {
     ...payload,
-    rewritten_title: normalizeWhitespace(payload.rewritten_title),
-    seo_title: normalizeWhitespace(payload.seo_title),
+    rewritten_title: rewrittenTitle || toEditorialSentenceCase(rawItem.original_title, protectedTerms),
+    seo_title: toEditorialSentenceCase(
+      trimToWordLimit(payload.seo_title || rewrittenTitle || rawItem.original_title, 14),
+      protectedTerms,
+    ),
     seo_description: normalizeWhitespace(payload.seo_description),
-    category: normalizeWhitespace(payload.category),
-    slug: slugify(payload.slug || payload.rewritten_title || rawItem.original_title),
+    category: normalizedCategory,
+    impact_note: ensureSentence(trimToWordLimit(payload.impact_note, 22)),
+    slug: slugify(payload.slug || rewrittenTitle || rawItem.original_title),
     summary: expandSummaryWithFacts(payload.summary, rawItem, payload),
     short_summary: normalizeWhitespace(payload.short_summary),
   };
 
-  if (countWords(normalized.summary) > ACCEPTABLE_SUMMARY_MAX_WORDS) {
+  if (countWords(normalized.summary) > TARGET_SUMMARY_MAX_WORDS) {
     normalized.summary = trimToWordLimit(normalized.summary, TARGET_SUMMARY_MAX_WORDS);
   }
 
@@ -310,7 +533,22 @@ function normalizeRewritePayload(
   }
 
   if (!normalized.seo_description) {
-    normalized.seo_description = normalized.short_summary || trimToWordLimit(normalized.summary, 45);
+    normalized.seo_description = normalized.short_summary || trimToWordLimit(normalized.summary, 150);
+  }
+
+  if (countWords(normalized.short_summary) > TARGET_SHORT_SUMMARY_MAX_WORDS) {
+    normalized.short_summary = trimToWordLimit(
+      normalized.short_summary,
+      TARGET_SHORT_SUMMARY_MAX_WORDS,
+    );
+  }
+
+  if (!normalized.impact_note) {
+    normalized.impact_note = buildFallbackImpactNote(
+      normalizedCategory,
+      normalized.rewritten_title,
+      normalized.summary,
+    );
   }
 
   if (!normalized.image_alt_text) {
@@ -367,21 +605,11 @@ function normalizeCategoryForAutoPublish(value: string | null | undefined) {
     return null;
   }
 
-  if (
-    normalized === "company_news" ||
-    normalized === "company news" ||
-    normalized === "companies" ||
-    normalized === "company"
-  ) {
-    return "company_news" as const;
+  if (normalized === "corporate_action") {
+    return "corporate_action" as const;
   }
 
-  if (
-    normalized === "earnings" ||
-    normalized === "results" ||
-    normalized === "quarterly results" ||
-    normalized === "earnings news"
-  ) {
+  if (normalized === "earnings") {
     return "earnings" as const;
   }
 
@@ -395,7 +623,7 @@ function shouldAutoPublishMarketNewsArticle(input: {
 }) {
   const normalizedCategory = normalizeCategoryForAutoPublish(input.category);
 
-  if (normalizedCategory !== "company_news" && normalizedCategory !== "earnings") {
+  if (normalizedCategory !== "corporate_action" && normalizedCategory !== "earnings") {
     return false;
   }
 
@@ -408,17 +636,25 @@ function createRewritePrompt(rawItem: MarketNewsRawItemRecord) {
   const rawPayloadText = JSON.stringify(rawItem.raw_payload).slice(0, 12_000);
 
   return [
-    "Rewrite this Indian market news item into a factual publishable article draft for Riddra.",
+    "Rewrite this Indian market news item into a factual, editorial-quality publishable article draft for Riddra.",
     "Return only JSON matching the required schema.",
     "Rules:",
-    "- rewritten_title must be interesting but factual",
-    "- IMPORTANT: short_summary MUST be 30 to 50 words, ideally 35 to 45 words",
-    "- IMPORTANT: summary MUST be 100 to 150 words, ideally 115 to 135 words",
-    "- If the source facts are thin, expand carefully by restating only confirmed source facts",
-    "- do not invent numbers",
-    "- do not give buy or sell advice",
-    "- do not overstate market impact",
-    "- keep Indian market context",
+    "- no clickbait",
+    "- no exaggerated claims",
+    "- no buy or sell recommendations",
+    "- no invented numbers",
+    "- no invented market impact",
+    "- use clear Indian market context",
+    "- mention company names clearly when relevant",
+    "- rewritten_title should be SEO-friendly but natural",
+    "- rewritten_title should be 8 to 14 words if possible",
+    "- avoid awkward long legal or filing-style titles unless unavoidable",
+    "- normalize the title to sentence case unless proper nouns require capitalization",
+    "- IMPORTANT: short_summary MUST be 35 to 55 words",
+    "- IMPORTANT: summary MUST be 100 to 140 words",
+    "- impact_note MUST be a crisp Why it matters line with a maximum of 22 words",
+    "- improve grammar, punctuation, spacing, and readability",
+    "- if the source facts are thin, expand carefully by restating only confirmed source facts",
     "- reject irrelevant items",
     "",
     `Original title: ${rawItem.original_title}`,
@@ -445,6 +681,7 @@ function getRewriteJsonSchema() {
         seo_description: { type: "string" },
         short_summary: { type: "string" },
         summary: { type: "string" },
+        impact_note: { type: "string" },
         slug: { type: "string" },
         category: { type: "string" },
         impact_label: { type: "string" },
@@ -477,6 +714,7 @@ function getRewriteJsonSchema() {
         "seo_description",
         "short_summary",
         "summary",
+        "impact_note",
         "slug",
         "category",
         "impact_label",
@@ -518,7 +756,7 @@ async function requestRewriteFromOpenAi(rawItem: MarketNewsRawItemRecord) {
         {
           role: "system",
           content:
-            "You rewrite market news into factual Riddra article drafts. Output only JSON. Never add markdown.",
+            "You rewrite market news into factual, readable, SEO-friendly Riddra article drafts. Output only JSON. Never add markdown.",
         },
         {
           role: "user",
@@ -571,6 +809,7 @@ function validateRewritePayload(value: unknown) {
       typeof record.short_summary === "string" ? record.short_summary : "",
     ),
     summary: normalizeWhitespace(typeof record.summary === "string" ? record.summary : ""),
+    impact_note: normalizeWhitespace(typeof record.impact_note === "string" ? record.impact_note : ""),
     slug: normalizeWhitespace(typeof record.slug === "string" ? record.slug : ""),
     category: normalizeWhitespace(typeof record.category === "string" ? record.category : ""),
     impact_label: normalizeWhitespace(typeof record.impact_label === "string" ? record.impact_label : ""),
@@ -680,6 +919,10 @@ async function createArticleFromRawItem(rawItem: MarketNewsRawItemRecord) {
     throw new Error("Summary is empty.");
   }
 
+  if (!payload.rewritten_title) {
+    throw new Error("Rewrite payload is missing rewritten_title.");
+  }
+
   const uniqueSlug = await ensureUniqueArticleSlug(payload.slug || payload.rewritten_title, rawItem.id);
   const resolvedImage = getNewsImageForRawItem(rawItem);
   const matchedEntities = await matchMarketNewsEntities({
@@ -694,6 +937,7 @@ async function createArticleFromRawItem(rawItem: MarketNewsRawItemRecord) {
   const publishedAt = shouldAutoPublish ? new Date().toISOString() : null;
   const imageAltText =
     payload.image_alt_text || `${payload.rewritten_title} | Riddra Market News`;
+  const assignedAuthor = assignDeterministicAuthor(uniqueSlug || rawItem.id);
 
   const article = await insertMarketNewsArticle({
     raw_item_id: rawItem.id,
@@ -702,13 +946,14 @@ async function createArticleFromRawItem(rawItem: MarketNewsRawItemRecord) {
     rewritten_title: payload.rewritten_title,
     short_summary: payload.short_summary,
     summary: payload.summary,
+    impact_note: payload.impact_note,
     source_name: rawItem.source_name,
     source_url: rawItem.source_url,
     source_published_at: rawItem.source_published_at,
     fetched_at: rawItem.fetched_at,
     published_at: publishedAt,
     status: articleStatus,
-    category: truncateText(payload.category, 120) || null,
+    category: payload.category || null,
     impact_label: normalizeImpactLabel(payload.impact_label),
     sentiment: normalizeSentiment(payload.sentiment),
     language: "en",
@@ -721,6 +966,8 @@ async function createArticleFromRawItem(rawItem: MarketNewsRawItemRecord) {
     seo_description:
       truncateText(payload.seo_description || payload.short_summary, 320) || null,
     keywords: sanitizeStringArray(payload.keywords).slice(0, 12),
+    author_name: assignedAuthor.name,
+    author_slug: assignedAuthor.slug,
   });
 
   await insertMarketNewsArticleEntities(

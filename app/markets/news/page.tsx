@@ -6,15 +6,36 @@ import { MarketNewsList } from "@/components/market-news-list";
 import { MarketNewsTopStories } from "@/components/market-news-top-stories";
 import { ProductCard } from "@/components/product-page-system";
 import {
+  getRiddraDailyMarketBrief,
+  getRiddraDailyMarketBriefPreview,
+} from "@/lib/market-news/brief";
+import {
   getMarketNewsArticles,
   getMarketNewsFilterOptions,
   getTopMarketNewsArticles,
 } from "@/lib/market-news/queries";
+import { getPublicSiteUrl } from "@/lib/public-site-url";
 
-export const metadata: Metadata = {
-  title: "Market News",
-  description: "Latest Riddra market news with rewritten summaries, source attribution, and related company context.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const canonicalUrl = `${getPublicSiteUrl()}/markets/news`;
+  const title = "Market News | Riddra";
+  const description =
+    "Latest Riddra market news with rewritten summaries, source attribution, and related company context.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+    },
+  };
+}
 
 type PageProps = {
   searchParams?: Promise<{
@@ -96,13 +117,14 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
   const visibleNewsCount = parseVisibleNewsCount(resolvedSearchParams.news_count);
   const activeFilters = hasActiveFilters(filters);
 
-  const [filterOptions, topStories, articles] = await Promise.all([
+  const [filterOptions, dailyBrief, topStories, articles] = await Promise.all([
     getMarketNewsFilterOptions().catch(() => ({
       companies: [],
       sectors: [],
       categories: [],
       impactLabels: [],
     })),
+    getRiddraDailyMarketBrief().catch(() => null),
     getTopMarketNewsArticles({
       ...filters,
       limit: 3,
@@ -114,6 +136,7 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
   ]);
   const visibleArticles = articles.slice(0, visibleNewsCount);
   const hasMoreArticles = articles.length > visibleNewsCount;
+  const shouldShowDailyBrief = Boolean(dailyBrief && dailyBrief.articles.length >= 3);
   const loadMoreHref = hasMoreArticles
     ? buildMarketNewsPageHref({
         ...filters,
@@ -220,6 +243,49 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
           </div>
         </form>
       </ProductCard>
+
+      {shouldShowDailyBrief && dailyBrief ? (
+        <ProductCard tone="secondary" className="space-y-4 p-4 sm:p-5">
+          <div className="space-y-1.5">
+            <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.72)]">
+              Today&apos;s Market Brief
+            </p>
+            <h2 className="text-[28px] font-semibold tracking-[-0.03em] text-[#1B3A6B] sm:text-[32px]">
+              {dailyBrief.headline}
+            </h2>
+            <p className="riddra-product-body max-w-[920px] text-[14px] leading-7 text-[rgba(107,114,128,0.88)]">
+              {getRiddraDailyMarketBriefPreview(dailyBrief)}
+            </p>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+            <div className="space-y-2">
+              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.72)]">
+                Key highlights
+              </p>
+              <ul className="space-y-2">
+                {dailyBrief.highlights.slice(0, 3).map((highlight, index) => (
+                  <li
+                    key={`${dailyBrief.articles[index]?.id ?? index}-${highlight}`}
+                    className="rounded-[12px] border border-[rgba(226,222,217,0.82)] bg-white/88 px-4 py-3 text-[14px] leading-7 text-[rgba(55,65,81,0.92)]"
+                  >
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex lg:justify-end">
+              <Link
+                href="/markets/brief"
+                className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium transition hover:bg-[#244b85]"
+              >
+                Read full brief
+              </Link>
+            </div>
+          </div>
+        </ProductCard>
+      ) : null}
 
       <MarketNewsTopStories articles={topStories} />
 

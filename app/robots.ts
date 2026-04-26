@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         "/source-readiness",
       ],
     },
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/sitemap-news.xml`],
   };
 }

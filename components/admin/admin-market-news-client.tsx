@@ -17,22 +17,107 @@ import type {
   MarketNewsAdminDashboardState,
   MarketNewsAdminFailedRewriteItem,
   MarketNewsAdminIngestionRun,
+  MarketNewsAdminSourceRecord,
+  MarketNewsSourceDraftInput,
+  MarketNewsSourceTestResult,
 } from "@/lib/market-news/types";
 
+type SourceFormState = {
+  id: string | null;
+  name: string;
+  homepage_url: string;
+  feed_url: string;
+  api_url: string;
+  category: string;
+  region: string;
+  reliability_score: string;
+  is_enabled: boolean;
+  notes: string;
+};
+
 function getStatusTone(status: string) {
-  if (status === "published" || status === "processed" || status === "success") {
+  if (status === "published" || status === "processed" || status === "success" || status === "working") {
     return "success" as const;
   }
 
-  if (status === "ready" || status === "running") {
+  if (status === "ready" || status === "running" || status === "candidate" || status === "enabled") {
     return "warning" as const;
   }
 
-  if (status === "rejected" || status === "failed") {
+  if (status === "rejected" || status === "failed" || status === "blocked" || status === "disabled") {
     return "danger" as const;
   }
 
   return "default" as const;
+}
+
+function getSourceStatusLabel(source: MarketNewsAdminSourceRecord) {
+  if (source.source_type === "blocked") {
+    return "Blocked";
+  }
+
+  if (source.last_status === "success" || source.last_status === "working") {
+    return source.is_enabled ? "Working" : "Working";
+  }
+
+  if (source.source_type === "candidate") {
+    return "Candidate";
+  }
+
+  if (source.last_status === "failed") {
+    return "Failed";
+  }
+
+  if (source.is_enabled) {
+    return "Enabled";
+  }
+
+  return "Disabled";
+}
+
+function createEmptySourceDraft(): SourceFormState {
+  return {
+    id: null,
+    name: "",
+    homepage_url: "",
+    feed_url: "",
+    api_url: "",
+    category: "market_news",
+    region: "India",
+    reliability_score: "75",
+    is_enabled: false,
+    notes: "",
+  };
+}
+
+function sourceRecordToDraft(source: MarketNewsAdminSourceRecord): SourceFormState {
+  return {
+    id: source.id,
+    name: source.name,
+    homepage_url: source.homepage_url ?? "",
+    feed_url: source.feed_url ?? "",
+    api_url: source.api_url ?? "",
+    category: source.category ?? "market_news",
+    region: source.region ?? "India",
+    reliability_score: String(source.reliability_score ?? 75),
+    is_enabled: source.is_enabled,
+    notes: source.notes ?? "",
+  };
+}
+
+function buildSourcePayload(draft: SourceFormState) {
+  return {
+    id: draft.id,
+    name: draft.name.trim(),
+    homepage_url: draft.homepage_url.trim() || null,
+    feed_url: draft.feed_url.trim() || null,
+    api_url: draft.api_url.trim() || null,
+    category: draft.category.trim() || null,
+    region: draft.region.trim() || null,
+    reliability_score: Number(draft.reliability_score || 0),
+    is_enabled: draft.is_enabled,
+    notes: draft.notes.trim() || null,
+  } satisfies Partial<MarketNewsSourceDraftInput> & { id?: string | null };
 }
 
 function ActionButton({
@@ -65,11 +150,7 @@ function ActionButton({
   );
 }
 
-function EntityPills({
-  article,
-}: {
-  article: MarketNewsAdminArticleRecord;
-}) {
+function EntityPills({ article }: { article: MarketNewsAdminArticleRecord }) {
   if (!article.entities.length) {
     return <span className="text-[12px] text-[#6b7280]">No linked entities yet.</span>;
   }
@@ -127,9 +208,7 @@ function ArticleTable({
           ]}
           rows={articles.map((article) => [
             <div key={article.id} className="space-y-1">
-              <p className="font-medium text-[#111827]">
-                {article.rewritten_title || article.original_title}
-              </p>
+              <p className="font-medium text-[#111827]">{article.rewritten_title || article.original_title}</p>
               <p className="text-[12px] text-[#6b7280]">{article.original_title}</p>
             </div>,
             <div key={`${article.id}-source`} className="space-y-1">
@@ -148,10 +227,7 @@ function ArticleTable({
             formatAdminDateTime(article.created_at),
             <EntityPills key={`${article.id}-entities`} article={article} />,
             <div key={`${article.id}-links`} className="flex flex-col gap-2">
-              <Link
-                href={article.internal_url}
-                className="text-[12px] font-medium text-[#1d4ed8] hover:underline"
-              >
+              <Link href={article.internal_url} className="text-[12px] font-medium text-[#1d4ed8] hover:underline">
                 {article.internal_url}
               </Link>
               <a
@@ -264,11 +340,7 @@ function FailedRewriteTable({
   );
 }
 
-function IngestionRunsTable({
-  runs,
-}: {
-  runs: MarketNewsAdminIngestionRun[];
-}) {
+function IngestionRunsTable({ runs }: { runs: MarketNewsAdminIngestionRun[] }) {
   return (
     <AdminSectionCard
       title="Recent ingestion runs"
@@ -308,6 +380,260 @@ function IngestionRunsTable({
   );
 }
 
+function SourceTestResultCard({
+  result,
+}: {
+  result: MarketNewsSourceTestResult | null;
+}) {
+  if (!result) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-lg border border-[#d1d5db] bg-white px-4 py-4 shadow-sm">
+      <div className="flex flex-wrap items-center gap-2">
+        <AdminBadge label={result.classification} tone={getStatusTone(result.classification)} />
+        <p className="text-sm font-medium text-[#111827]">{result.sourceName}</p>
+      </div>
+      <div className="mt-3 grid gap-2 text-[13px] text-[#4b5563] md:grid-cols-2 xl:grid-cols-5">
+        <p>Reachable: {result.reachable ? "true" : "false"}</p>
+        <p>Status: {result.statusCode ?? "n/a"}</p>
+        <p>Sample items: {result.sampleItemCount}</p>
+        <p>Detected feed: {result.detectedFeedUrl || "—"}</p>
+        <p>Error: {result.errorMessage || "—"}</p>
+      </div>
+    </div>
+  );
+}
+
+function SourceManagementSection({
+  sources,
+  draft,
+  setDraft,
+  onSave,
+  onTestDraft,
+  onImportCandidates,
+  onEdit,
+  onTestExisting,
+  onEnable,
+  onDisable,
+  onSoftDisable,
+  lastTestResult,
+  isPending,
+}: {
+  sources: MarketNewsAdminSourceRecord[];
+  draft: SourceFormState;
+  setDraft: (value: SourceFormState) => void;
+  onSave: () => void;
+  onTestDraft: () => void;
+  onImportCandidates: () => void;
+  onEdit: (source: MarketNewsAdminSourceRecord) => void;
+  onTestExisting: (sourceId: string) => void;
+  onEnable: (sourceId: string) => void;
+  onDisable: (sourceId: string) => void;
+  onSoftDisable: (sourceId: string) => void;
+  lastTestResult: MarketNewsSourceTestResult | null;
+  isPending: boolean;
+}) {
+  return (
+    <AdminSectionCard
+      title="Sources"
+      description="Add, edit, test, enable, disable, and review candidate publisher sources without changing the ingestion code path."
+    >
+      <div className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Name</span>
+            <input
+              value={draft.name}
+              onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+              placeholder="CNBC Markets"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Homepage URL</span>
+            <input
+              value={draft.homepage_url}
+              onChange={(event) => setDraft({ ...draft, homepage_url: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+              placeholder="https://www.cnbc.com/markets/"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Feed URL</span>
+            <input
+              value={draft.feed_url}
+              onChange={(event) => setDraft({ ...draft, feed_url: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+              placeholder="Optional RSS feed URL"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">API URL</span>
+            <input
+              value={draft.api_url}
+              onChange={(event) => setDraft({ ...draft, api_url: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+              placeholder="Optional API URL"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Category</span>
+            <select
+              value={draft.category}
+              onChange={(event) => setDraft({ ...draft, category: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+            >
+              {["company_news", "market_news", "regulatory", "macro", "ipo"].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Region</span>
+            <select
+              value={draft.region}
+              onChange={(event) => setDraft({ ...draft, region: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+            >
+              {["India", "Global"].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">
+              Reliability score
+            </span>
+            <input
+              type="number"
+              min={0}
+              max={100}
+              value={draft.reliability_score}
+              onChange={(event) => setDraft({ ...draft, reliability_score: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[#6b7280]">Notes</span>
+            <input
+              value={draft.notes}
+              onChange={(event) => setDraft({ ...draft, notes: event.target.value })}
+              className="rounded-lg border border-[#d1d5db] px-3 py-2 text-sm text-[#111827]"
+              placeholder="Optional notes or operator context"
+            />
+          </label>
+        </div>
+
+        <label className="inline-flex items-center gap-2 text-sm text-[#111827]">
+          <input
+            type="checkbox"
+            checked={draft.is_enabled}
+            onChange={(event) => setDraft({ ...draft, is_enabled: event.target.checked })}
+            className="h-4 w-4 rounded border border-[#d1d5db]"
+          />
+          Enabled
+        </label>
+
+        <div className="flex flex-wrap gap-2">
+          <ActionButton
+            label={draft.id ? "Save source" : "Add source"}
+            tone="primary"
+            disabled={isPending}
+            onClick={onSave}
+          />
+          <ActionButton label="Test source fetch" disabled={isPending} onClick={onTestDraft} />
+          <ActionButton label="Import candidate publishers" disabled={isPending} onClick={onImportCandidates} />
+          {draft.id ? (
+            <ActionButton label="Clear form" disabled={isPending} onClick={() => setDraft(createEmptySourceDraft())} />
+          ) : null}
+        </div>
+
+        <SourceTestResultCard result={lastTestResult} />
+
+        {sources.length ? (
+          <AdminSimpleTable
+            columns={[
+              "Name",
+              "Type",
+              "URLs",
+              "Category / region",
+              "Reliability",
+              "Status",
+              "Last run",
+              "Last error",
+              "Actions",
+            ]}
+            rows={sources.map((source) => [
+              <div key={source.id} className="space-y-1">
+                <p className="font-medium text-[#111827]">{source.name}</p>
+                <p className="text-[12px] text-[#6b7280]">{source.slug}</p>
+              </div>,
+              <div key={`${source.id}-type`} className="space-y-1">
+                <p className="text-sm text-[#111827]">{source.source_type}</p>
+                <p className="text-[12px] text-[#6b7280]">{source.is_enabled ? "Enabled" : "Disabled"}</p>
+              </div>,
+              <div key={`${source.id}-urls`} className="space-y-1 text-[12px] text-[#1d4ed8]">
+                {source.feed_url ? <p>{source.feed_url}</p> : null}
+                {source.detected_feed_url && source.detected_feed_url !== source.feed_url ? (
+                  <p>{source.detected_feed_url}</p>
+                ) : null}
+                {source.homepage_url ? <p className="text-[#6b7280]">{source.homepage_url}</p> : null}
+              </div>,
+              <div key={`${source.id}-meta`} className="space-y-1">
+                <p>{source.category || "Market news"}</p>
+                <p className="text-[12px] text-[#6b7280]">{source.region || "—"}</p>
+              </div>,
+              source.reliability_score,
+              <div key={`${source.id}-status`} className="space-y-2">
+                <AdminBadge label={getSourceStatusLabel(source)} tone={getStatusTone(source.last_status || source.source_type)} />
+                <p className="text-[12px] text-[#6b7280]">{source.last_status || "No checks yet"}</p>
+              </div>,
+              <div key={`${source.id}-run`} className="space-y-1 text-[12px] text-[#4b5563]">
+                <p>{formatAdminDateTime(source.last_checked_at || source.last_run_started_at)}</p>
+                <p>{source.last_run_status || "No ingestion run yet"}</p>
+              </div>,
+              <div key={`${source.id}-error`} className="max-w-[240px] text-[12px] text-[#6b7280]">
+                {source.last_error || source.last_run_error || "—"}
+              </div>,
+              <div key={`${source.id}-actions`} className="flex flex-wrap gap-2">
+                <ActionButton label="Edit" disabled={isPending} onClick={() => onEdit(source)} />
+                <ActionButton label="Test" disabled={isPending} onClick={() => onTestExisting(source.id)} />
+                {source.is_enabled ? (
+                  <ActionButton label="Disable" disabled={isPending} onClick={() => onDisable(source.id)} />
+                ) : (
+                  <ActionButton
+                    label="Enable"
+                    tone="primary"
+                    disabled={isPending}
+                    onClick={() => onEnable(source.id)}
+                  />
+                )}
+                <ActionButton
+                  label="Soft-disable"
+                  tone="danger"
+                  disabled={isPending}
+                  onClick={() => onSoftDisable(source.id)}
+                />
+              </div>,
+            ])}
+          />
+        ) : (
+          <AdminEmptyState
+            title="No sources yet"
+            description="Add a source above or import the candidate publisher list to start managing feeds from this dashboard."
+          />
+        )}
+      </div>
+    </AdminSectionCard>
+  );
+}
+
 export function AdminMarketNewsClient({
   initialState,
 }: {
@@ -319,6 +645,8 @@ export function AdminMarketNewsClient({
     tone: "success" | "danger";
     text: string;
   } | null>(null);
+  const [draft, setDraft] = useState<SourceFormState>(createEmptySourceDraft());
+  const [lastTestResult, setLastTestResult] = useState<MarketNewsSourceTestResult | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const stats = useMemo(
@@ -334,9 +662,9 @@ export function AdminMarketNewsClient({
         note: "Articles already live on the public market-news surface.",
       },
       {
-        label: "Rejected",
-        value: String(state.rejected_articles.length),
-        note: "Articles held back from the public surface.",
+        label: "Sources",
+        value: String(state.sources.length),
+        note: "Configured sources across working, candidate, blocked, and disabled states.",
       },
       {
         label: "Failed rewrites",
@@ -349,8 +677,11 @@ export function AdminMarketNewsClient({
 
   function runAction(
     action: string,
-    payload: { articleId?: string; rawItemId?: string },
+    payload: Record<string, unknown>,
     successText: string,
+    options?: {
+      resetDraft?: boolean;
+    },
   ) {
     startTransition(async () => {
       setBanner(null);
@@ -369,6 +700,8 @@ export function AdminMarketNewsClient({
         | {
             error?: string;
             state?: MarketNewsAdminDashboardState;
+            testResult?: MarketNewsSourceTestResult;
+            importSummary?: { inserted: number; skipped: number };
           }
         | null;
 
@@ -381,10 +714,19 @@ export function AdminMarketNewsClient({
       }
 
       setState(data.state);
+      setLastTestResult(data.testResult ?? null);
+      if (options?.resetDraft) {
+        setDraft(createEmptySourceDraft());
+      }
       router.refresh();
+
+      const importText = data.importSummary
+        ? ` Imported ${data.importSummary.inserted} new candidate sources and skipped ${data.importSummary.skipped} existing ones.`
+        : "";
+
       setBanner({
         tone: "success",
-        text: successText,
+        text: `${successText}${importText}`,
       });
     });
   }
@@ -404,6 +746,41 @@ export function AdminMarketNewsClient({
       ) : null}
 
       <AdminStatGrid stats={stats} />
+
+      <SourceManagementSection
+        sources={state.sources}
+        draft={draft}
+        setDraft={setDraft}
+        lastTestResult={lastTestResult}
+        isPending={isPending}
+        onSave={() =>
+          runAction("save_source", { sourceId: draft.id, source: buildSourcePayload(draft) }, "Market news source saved.", {
+            resetDraft: true,
+          })
+        }
+        onTestDraft={() =>
+          runAction("test_source", { sourceId: draft.id, source: buildSourcePayload(draft) }, "Market news source test completed.")
+        }
+        onImportCandidates={() =>
+          runAction("import_candidate_sources", {}, "Candidate publisher import completed.")
+        }
+        onEdit={(source) => {
+          setDraft(sourceRecordToDraft(source));
+          setLastTestResult(null);
+        }}
+        onTestExisting={(sourceId) =>
+          runAction("test_source", { sourceId }, "Market news source test completed.")
+        }
+        onEnable={(sourceId) =>
+          runAction("enable_source", { sourceId }, "Market news source enabled.")
+        }
+        onDisable={(sourceId) =>
+          runAction("disable_source", { sourceId }, "Market news source disabled.")
+        }
+        onSoftDisable={(sourceId) =>
+          runAction("soft_disable_source", { sourceId }, "Market news source soft-disabled.")
+        }
+      />
 
       <ArticleTable
         title="Ready articles"

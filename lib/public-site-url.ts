@@ -5,7 +5,19 @@ import { getHostedRuntimeRequirements, getRuntimeLaunchConfig } from "@/lib/runt
 const LOCAL_FALLBACK_URL = "http://localhost:3000";
 
 function normalizeSiteUrl(url: string) {
-  return url.replace(/\/$/, "");
+  const trimmed = url.replace(/\/$/, "");
+
+  try {
+    const parsed = new URL(trimmed);
+
+    if (parsed.hostname === "riddra.com") {
+      parsed.hostname = "www.riddra.com";
+    }
+
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return trimmed;
+  }
 }
 
 export function getConfiguredPublicSiteUrl() {

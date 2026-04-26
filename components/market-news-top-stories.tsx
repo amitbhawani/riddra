@@ -5,20 +5,8 @@ import {
 import { MarketNewsEntityChips } from "@/components/market-news-entity-chips";
 import { MarketNewsImage } from "@/components/market-news-image";
 import { ProductCard } from "@/components/product-page-system";
+import { formatMarketNewsDateTime } from "@/lib/market-news/formatting";
 import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
-
-function formatDateLabel(value: string | null | undefined) {
-  const parsed = Date.parse(value ?? "");
-
-  if (!Number.isFinite(parsed)) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(parsed));
-}
 
 function formatImpactLabel(value: string | null | undefined) {
   return String(value ?? "")
@@ -46,7 +34,9 @@ function StoryMeta({
   chipLimit?: number;
 }) {
   const primaryEntity = article.entities[0] ?? null;
-  const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
+  const publishedLabel = formatMarketNewsDateTime(
+    article.published_at || article.source_published_at || article.created_at,
+  );
   const impactLabel = formatImpactLabel(article.impact_label);
   const resolvedChipLimit = chipLimit ?? (compact ? 4 : 5);
 
@@ -96,14 +86,20 @@ function StoryMeta({
 
       {showSourceMeta ? (
         <div className="flex flex-wrap items-center gap-2 text-sm text-[rgba(107,114,128,0.86)]">
+          {publishedLabel ? <span>{publishedLabel}</span> : null}
+          {publishedLabel ? <span className="text-[rgba(148,163,184,0.92)]">•</span> : null}
           <span className="font-medium text-[#1B3A6B]">{article.source_name}</span>
-          {publishedLabel ? (
-            <>
-              <span className="text-[rgba(148,163,184,0.92)]">•</span>
-              <span>{publishedLabel}</span>
-            </>
-          ) : null}
         </div>
+      ) : null}
+
+      {article.impact_note?.trim() ? (
+        <p
+          className={`riddra-product-body text-[13px] leading-6 text-[rgba(107,114,128,0.88)] ${
+            compact ? "line-clamp-2" : "line-clamp-2"
+          }`}
+        >
+          {article.impact_note}
+        </p>
       ) : null}
 
       <MarketNewsEntityChips
@@ -124,6 +120,16 @@ function StoryMeta({
         >
           Read more
         </MarketNewsTrackedLink>
+        <a
+          href={article.source_url}
+          target="_blank"
+          rel="noreferrer"
+          className={`inline-flex rounded-full border border-[rgba(212,133,59,0.18)] bg-[rgba(212,133,59,0.08)] font-medium text-[#8E5723] transition hover:bg-[rgba(212,133,59,0.14)] ${
+            compact ? "px-3 py-1.5 text-[12px]" : "px-4 py-2 text-sm"
+          }`}
+        >
+          Source
+        </a>
       </div>
     </div>
   );
@@ -155,7 +161,7 @@ function TopStoryCard({ article }: { article: MarketNewsArticleWithRelations }) 
             article={article}
             compact
             showBadges={false}
-            showSourceMeta={false}
+            showSourceMeta
             chipLimit={2}
           />
         </div>

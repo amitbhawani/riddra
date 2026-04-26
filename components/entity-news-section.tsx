@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   MarketNewsClickSurface,
   MarketNewsTrackedLink,
@@ -28,9 +30,18 @@ function formatImpactLabel(value: string | null | undefined) {
     .trim();
 }
 
+function formatStockHeadingName(value: string) {
+  const cleaned = value
+    .replace(/\b(limited|ltd\.?|industries|industry|corporation|corp\.?|inc\.?|plc|holdings?)\b$/i, "")
+    .trim();
+
+  return cleaned || value.trim() || "Stock";
+}
+
 type EntityNewsSectionProps = {
   entityType: "stock" | "sector" | "mutual_fund" | "etf" | "ipo";
   entitySlug: string;
+  entityDisplayName?: string | null;
   symbol?: string | null;
   articles: MarketNewsArticleWithRelations[];
   usedSectorFallback?: boolean;
@@ -45,6 +56,7 @@ type EntityNewsSectionProps = {
 export function EntityNewsSection({
   entityType,
   entitySlug,
+  entityDisplayName,
   symbol,
   articles,
   usedSectorFallback = false,
@@ -55,13 +67,19 @@ export function EntityNewsSection({
   emptyTitleOverride,
   emptyDescriptionOverride,
 }: EntityNewsSectionProps) {
+  const isStockLayout = entityType === "stock";
+  const visibleArticles = isStockLayout ? articles.slice(0, 3) : articles;
+  const showMoreHref = `/markets/news?company=${encodeURIComponent(entitySlug)}`;
+  const stockHeadingName = formatStockHeadingName(entityDisplayName || symbol || "Stock");
   const title =
     titleOverride ??
     (entityType === "sector"
       ? "Latest sector news"
       : entityType === "stock" && usedSectorFallback
         ? `${fallbackSectorLabel || "Sector"} news`
-        : "Latest stock news");
+        : isStockLayout
+          ? `Latest ${stockHeadingName} News`
+          : "Latest stock news");
   const description =
     descriptionOverride ??
     (entityType === "sector"
@@ -76,11 +94,15 @@ export function EntityNewsSection({
 
   return (
     <ProductCard tone="secondary" className="space-y-4">
-      <ProductSectionTitle eyebrow="News" title={title} description={description} />
+      <ProductSectionTitle
+        eyebrow={isStockLayout ? undefined : "News"}
+        title={title}
+        description={isStockLayout ? undefined : description}
+      />
 
-      {articles.length ? (
+      {visibleArticles.length ? (
         <div className="grid gap-3">
-          {articles.map((article) => {
+          {visibleArticles.map((article) => {
             const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
             const fallbackSrc =
               article.image?.fallback_image_url || article.fallback_image_url || article.display_image_url;
@@ -89,6 +111,48 @@ export function EntityNewsSection({
               ? entityType
               : primaryEntity?.entity_type ?? null;
             const trackingEntitySlug = entitySlug || primaryEntity?.entity_slug || null;
+
+            if (isStockLayout) {
+              return (
+                <MarketNewsClickSurface
+                  key={article.id}
+                  href={`/markets/news/${article.slug}`}
+                  articleId={article.id}
+                  entityType={trackingEntityType}
+                  entitySlug={trackingEntitySlug}
+                  className="grid items-start gap-3 rounded-[14px] border border-[rgba(221,215,207,0.92)] bg-white p-3 sm:grid-cols-[56px_minmax(0,1fr)]"
+                >
+                  <div className="self-start overflow-hidden rounded-[10px] border border-[rgba(221,215,207,0.92)] bg-[rgba(248,246,243,0.92)]">
+                    <MarketNewsImage
+                      primarySrc={article.display_image_url}
+                      fallbackSrc={fallbackSrc}
+                      alt={article.image_display_alt_text}
+                      className="h-14 w-14 object-cover sm:h-14 sm:w-14"
+                    />
+                  </div>
+
+                  <div className="min-w-0 space-y-1.5">
+                    {publishedLabel ? (
+                      <p className="text-[11px] text-[rgba(107,114,128,0.82)]">{publishedLabel}</p>
+                    ) : null}
+
+                    <MarketNewsTrackedLink
+                      href={`/markets/news/${article.slug}`}
+                      articleId={article.id}
+                      entityType={trackingEntityType}
+                      entitySlug={trackingEntitySlug}
+                      className="block text-[14px] font-semibold leading-5 text-[#1B3A6B] transition hover:text-[#D4853B]"
+                    >
+                      {article.rewritten_title || article.original_title}
+                    </MarketNewsTrackedLink>
+
+                    <p className="line-clamp-2 text-[12px] leading-5 text-[rgba(75,85,99,0.84)]">
+                      {article.short_summary || article.summary || "Market news is being prepared."}
+                    </p>
+                  </div>
+                </MarketNewsClickSurface>
+              );
+            }
 
             return (
               <MarketNewsClickSurface
@@ -199,6 +263,17 @@ export function EntityNewsSection({
           </p>
         </div>
       )}
+
+      {isStockLayout && articles.length ? (
+        <div className="flex justify-end pt-1">
+          <Link
+            href={showMoreHref}
+            className="text-[12px] font-semibold text-[#1B3A6B] underline underline-offset-4"
+          >
+            Show more news
+          </Link>
+        </div>
+      ) : null}
     </ProductCard>
   );
 }

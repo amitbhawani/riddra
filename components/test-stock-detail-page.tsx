@@ -2438,6 +2438,7 @@ export function TestStockDetailPage({
                 <EntityNewsSection
                   entityType="stock"
                   entitySlug={stock.slug}
+                  entityDisplayName={stock.name}
                   symbol={stock.symbol}
                   articles={marketNews}
                   usedSectorFallback={marketNewsUsedSectorFallback}

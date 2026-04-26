@@ -1,6 +1,196 @@
 {
   "entries": [
     {
+      "id": "admin_activity_1_5cd19901-c323-4d6a-a415-f7fafcf85643",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"Reuters Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 401,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:24:58.469+00:00"
+    },
+    {
+      "id": "admin_activity_1_800696b8-f998-4c86-a4be-635e086338a8",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"Moneycontrol Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 403,
+        "classification": "blocked",
+        "detectedFeedUrl": "https://www.moneycontrol.com/rss/marketreports.xml",
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:24:57.091+00:00"
+    },
+    {
+      "id": "admin_activity_1_d0512e4f-d167-4cfb-9b21-1fd2f8ae9a75",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"BusinessLine Markets\".",
+      "metadata": {
+        "blocked": false,
+        "statusCode": 200,
+        "classification": "working",
+        "detectedFeedUrl": "https://www.thehindubusinessline.com/markets/feeder/default.rss",
+        "sampleItemCount": 60
+      },
+      "createdAt": "2026-04-26T11:24:55.787+00:00"
+    },
+    {
+      "id": "admin_activity_1_df506d57-c372-480c-9782-22ede341043b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"LiveMint Market\".",
+      "metadata": {
+        "blocked": false,
+        "statusCode": 200,
+        "classification": "working",
+        "detectedFeedUrl": "https://www.livemint.com/rss/markets",
+        "sampleItemCount": 35
+      },
+      "createdAt": "2026-04-26T11:24:54.419+00:00"
+    },
+    {
+      "id": "admin_activity_1_154d78c4-1136-483f-a72d-c00635dffe9f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"CNBC Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 200,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:24:51.93+00:00"
+    },
+    {
+      "id": "admin_activity_1_e26185fb-5161-4f95-a1ed-8400ba372e1b",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"Reuters Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 401,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:23:12.474+00:00"
+    },
+    {
+      "id": "admin_activity_1_98ac678a-f8a1-4878-b2eb-2dda698cd74f",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"Moneycontrol Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 403,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:23:11.168+00:00"
+    },
+    {
+      "id": "admin_activity_1_02b43b32-b973-424b-912e-288c8201c49a",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"BusinessLine Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 200,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:23:09.886+00:00"
+    },
+    {
+      "id": "admin_activity_1_647584e1-cee3-490c-b66e-fb185bf779aa",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"LiveMint Market\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 200,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:23:07.669+00:00"
+    },
+    {
+      "id": "admin_activity_1_a2ae1413-4b16-40f1-9d82-0047c61ea6c3",
+      "actorUserId": null,
+      "actorEmail": "System",
+      "actionType": "market_news.source_tested",
+      "targetType": "market_news_source",
+      "targetId": "draft",
+      "targetFamily": null,
+      "targetSlug": null,
+      "summary": "Tested market news source \"CNBC Markets\".",
+      "metadata": {
+        "blocked": true,
+        "statusCode": 200,
+        "classification": "blocked",
+        "detectedFeedUrl": null,
+        "sampleItemCount": 0
+      },
+      "createdAt": "2026-04-26T11:23:06.031+00:00"
+    },
+    {
       "id": "admin_activity_1_aaeeb9ee-d040-4701-9f3d-3267ad61498e",
       "actorUserId": null,
       "actorEmail": "System",

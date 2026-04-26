@@ -10,10 +10,10 @@
         "email": "amitbhawani@gmail.com",
         "username": "amitbhawani",
         "websiteUrl": null,
-        "xHandle": "amitbhawani",
-        "linkedinUrl": "https://www.linkedin.com/in/amitbhawani",
-        "instagramHandle": "amitbhawani",
-        "youtubeUrl": "https://www.youtube.com/@AmitBhawani",
+        "xHandle": null,
+        "linkedinUrl": null,
+        "instagramHandle": null,
+        "youtubeUrl": null,
         "profileVisible": true,
         "membershipTier": "free",
         "role": "admin",
@@ -27,37 +27,21 @@
           "can_edit_finance_content",
           "can_edit_editorial_content"
         ],
-        "createdAt": "2026-04-24T16:29:25.240Z",
-        "updatedAt": "2026-04-25T09:40:01.276Z",
-        "lastActiveAt": "2026-04-25T18:22:25.993Z"
+        "createdAt": "2026-04-26T11:08:10.844Z",
+        "updatedAt": "2026-04-26T11:08:10.844Z",
+        "lastActiveAt": "2026-04-26T12:31:48.572Z"
       },
       "watchlist": [],
       "portfolio": [],
       "bookmarks": [],
       "recentlyViewed": [
         {
-          "id": "recent_b3db9394-5ccb-4dbe-9ec9-05757206a846",
-          "pageType": "stock",
-          "slug": "reliance-industries",
-          "title": "Reliance Industries Share Price",
-          "href": "/stocks/reliance-industries",
-          "viewedAt": "2026-04-25T17:57:45.986Z"
-        },
-        {
-          "id": "recent_1864ddb6-4455-4a16-bf6a-cdb3c3a06813",
-          "pageType": "stock",
-          "slug": "tata-motors",
-          "title": "Tata Motors Share Price",
-          "href": "/stocks/tata-motors",
-          "viewedAt": "2026-04-24T17:33:31.263Z"
-        },
-        {
-          "id": "recent_eaae1804-3c61-4580-ac13-50a46106e865",
+          "id": "recent_272f987e-74d5-4b00-ba0b-68623bd57c4b",
           "pageType": "stock",
           "slug": "test-motors",
           "title": "Tata Motors Test Page",
           "href": "/stocks/test-motors",
-          "viewedAt": "2026-04-24T17:29:27.615Z"
+          "viewedAt": "2026-04-26T11:33:44.176Z"
         }
       ]
     }
@@ -79,10 +63,10 @@
     "mediaUploadsEnabled": true,
     "watchlistEnabled": true,
     "portfolioEnabled": true,
-    "updatedAt": "2026-04-24T16:29:25.240Z"
+    "updatedAt": "2026-04-26T11:08:10.843Z"
   },
   "previews": [],
   "versions": [],
   "refreshJobRuns": [],
-  "updatedAt": "2026-04-25T18:22:26.075Z"
+  "updatedAt": "2026-04-26T12:34:42.759Z"
 }

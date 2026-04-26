@@ -6,17 +6,21 @@ import type {
   MarketNewsAdminDashboardState,
   MarketNewsAdminFailedRewriteItem,
   MarketNewsAdminIngestionRun,
+  MarketNewsAdminSourceRecord,
   MarketNewsArticleFilters,
   MarketNewsArticleEntityRecord,
   MarketNewsArticleImageRecord,
   MarketNewsArticleRecord,
   MarketNewsArticleStatus,
   MarketNewsFilterOptions,
+  MarketNewsSourceDraftInput,
+  MarketNewsNormalizedCategory,
   MarketNewsArticleWithRelations,
   MarketNewsIngestionRunRecord,
   MarketNewsRewriteLogRecord,
   MarketNewsRawItemRecord,
   MarketNewsSourceRecord,
+  MarketNewsSourceTestResult,
   MarketNewsSourceType,
   MarketNewsJsonValue,
 } from "@/lib/market-news/types";
@@ -28,9 +32,16 @@ export type MarketNewsSourceSeed = {
   feed_url: string | null;
   api_url: string | null;
   homepage_url: string | null;
+  category?: string | null;
+  region?: string | null;
   reliability_score: number;
   is_enabled: boolean;
   fetch_interval_minutes: number;
+  last_checked_at?: string | null;
+  last_status?: string | null;
+  last_error?: string | null;
+  detected_feed_url?: string | null;
+  notes?: string | null;
   disabledReason?: string | null;
 };
 
@@ -67,13 +78,14 @@ export type InsertMarketNewsArticleInput = {
   rewritten_title: string | null;
   short_summary: string | null;
   summary: string | null;
+  impact_note: string | null;
   source_name: string;
   source_url: string;
   source_published_at: string | null;
   fetched_at: string | null;
   published_at?: string | null;
   status: MarketNewsArticleRecord["status"];
-  category: string | null;
+  category: MarketNewsNormalizedCategory | null;
   impact_label: MarketNewsArticleRecord["impact_label"];
   sentiment: string | null;
   language?: string | null;
@@ -85,6 +97,8 @@ export type InsertMarketNewsArticleInput = {
   seo_title: string | null;
   seo_description: string | null;
   keywords: string[];
+  author_name: string | null;
+  author_slug: string | null;
 };
 
 export type InsertMarketNewsArticleEntityInput = {
@@ -129,6 +143,18 @@ export type InsertMarketNewsAnalyticsEventInput = {
 export type MarketNewsPublishedSitemapEntry = {
   slug: string;
   published_at: string;
+  updated_at: string;
+};
+
+export type MarketNewsGoogleNewsSitemapEntry = {
+  slug: string;
+  title: string;
+  published_at: string;
+  updated_at: string;
+  image_url: string | null;
+  keywords: string[];
+  entity_names: string[];
+  entity_symbols: string[];
 };
 
 export type MarketNewsEntityArticleLookup = {
@@ -166,6 +192,465 @@ function getMarketNewsReadClient() {
 }
 
 const PUBLIC_MARKET_NEWS_STATUSES: MarketNewsArticleStatus[] = ["ready", "published"];
+
+function getArticleTimestampValue(
+  article: Pick<
+    MarketNewsArticleRecord,
+    "published_at" | "source_published_at" | "created_at"
+  >,
+) {
+  return article.published_at ?? article.source_published_at ?? article.created_at;
+}
+
+function getArticleRecencyTimestamp(
+  article: Pick<
+    MarketNewsArticleRecord,
+    "published_at" | "source_published_at" | "created_at"
+  >,
+) {
+  return Date.parse(getArticleTimestampValue(article) ?? "");
+}
+
+function normalizeSourceReliabilityScore(value: number | null | undefined) {
+  if (!Number.isFinite(value)) {
+    return 0.5;
+  }
+
+  const numericValue = Number(value);
+
+  if (numericValue > 1) {
+    return Math.min(Math.max(numericValue / 100, 0), 1);
+  }
+
+  return Math.min(Math.max(numericValue, 0), 1);
+}
+
+const LOW_VALUE_MARKET_NEWS_PATTERNS = [
+  /\b(sponsored|sponsor(ed)? content|advertorial|partner content|paid post|paid content|promotion|promoted)\b/i,
+  /\b(opinion|op-ed|editorial|guest column|column)\b/i,
+  /\btop\s+\d+\b/i,
+  /\b\d+\s+(stocks?|things|reasons|ways)\b/i,
+  /\b(best|top)\s+(stocks?|mutual funds?|etfs?)\s+to\s+(buy|watch)\b/i,
+];
+
+const LOW_VALUE_MARKET_NEWS_SOURCE_PATTERNS = [
+  /\/blog(s)?\//i,
+  /\/opinion(s)?\//i,
+  /\/editorial\//i,
+  /\bblog\b/i,
+];
+
+const MINOR_UPDATE_MARKET_NEWS_PATTERNS = [
+  /\b(live update|live coverage|minute[- ]by[- ]minute|live blog|liveblog)\b/i,
+  /\b(opening bell|closing bell|pre[- ]open|post[- ]market|market wrap|mid[- ]session|midday update)\b/i,
+  /\b(top gainers|top losers|stocks to watch|buzzing stocks|opening trade|closing trade|watchlist)\b/i,
+];
+
+const REPETITIVE_MARKET_NEWS_PATTERNS = [
+  /\b(update|updates|outlook|highlights|recap|roundup)\b/i,
+  /\b(week ahead|morning briefing|market check|market live)\b/i,
+];
+
+const MAJOR_MACRO_MARKET_NEWS_PATTERNS = [
+  /\b(rbi|repo rate|inflation|gdp|fiscal deficit|budget|policy|fomc|tariff|crude oil|bond yields?)\b/i,
+];
+
+function buildMarketNewsQualityText(
+  article: Pick<
+    MarketNewsArticleRecord,
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+  > & {
+    entities?: readonly unknown[];
+  },
+) {
+  return [
+    article.rewritten_title,
+    article.original_title,
+    article.short_summary,
+    article.summary,
+    article.source_name,
+    article.source_url,
+    article.canonical_url,
+    article.category,
+    article.impact_label,
+    ...(article.entities ?? []).flatMap((entity) => {
+      if (!entity || typeof entity !== "object") {
+        return [] as string[];
+      }
+
+      const record = entity as Record<string, unknown>;
+      const displayName =
+        typeof record.display_name === "string" ? record.display_name : "";
+      const symbol = typeof record.symbol === "string" ? record.symbol : "";
+
+      return [displayName, symbol];
+    }),
+  ]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ")
+    .toLowerCase();
+}
+
+function normalizeMarketNewsCategoryForRanking(
+  article: Pick<
+    MarketNewsArticleRecord,
+    "category" | "impact_label" | "rewritten_title" | "original_title" | "short_summary" | "summary"
+  >,
+) {
+  const contextText = buildMarketNewsQualityText({
+    ...article,
+    source_name: "",
+    source_url: "",
+    canonical_url: "",
+  });
+
+  if (/\b(earnings|results|quarterly results|q1|q2|q3|q4|fy\d{2})\b/.test(contextText)) {
+    return "earnings" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(ipo|listing|public issue)\b/.test(contextText)) {
+    return "ipo" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(sebi|regulatory|order|circular|tribunal|court|appeal|compliance)\b/.test(contextText)) {
+    return "regulatory" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(economy|inflation|gdp|rbi|policy|macro)\b/.test(contextText)) {
+    return "macro" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(company news|company_news|companies|corporate action|corporate update|board|dividend)\b/.test(contextText)) {
+    return "corporate_action" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(merger|acquisition|acquire|deal|buyout)\b/.test(contextText)) {
+    return "acquisition" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(funding|fundraise|investment round|raised capital)\b/.test(contextText)) {
+    return "funding" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(mutual fund|amc|scheme|fund house)\b/.test(contextText)) {
+    return "mutual_fund" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(bitcoin|ethereum|crypto|cryptocurrency)\b/.test(contextText)) {
+    return "crypto" satisfies MarketNewsNormalizedCategory;
+  }
+
+  if (/\b(markets|market update|market_news|nifty|sensex|bank nifty|fii|dii)\b/.test(contextText)) {
+    return "markets" satisfies MarketNewsNormalizedCategory;
+  }
+
+  return "general_business" satisfies MarketNewsNormalizedCategory;
+}
+
+function getMarketNewsImportanceScore(
+  article: Pick<
+    MarketNewsArticleRecord,
+    "category" | "impact_label" | "rewritten_title" | "original_title" | "short_summary" | "summary"
+  > & {
+    entities: readonly Pick<MarketNewsArticleEntityRecord, "entity_type" | "symbol">[];
+  },
+) {
+  let score = 10;
+  const normalizedCategory = normalizeMarketNewsCategoryForRanking(article);
+  const impactLabel = String(article.impact_label ?? "").trim().toLowerCase();
+  const hasStockEntity = article.entities.some((entity) => entity.entity_type === "stock");
+
+  if (hasStockEntity) {
+    score += 100;
+  }
+
+  if (normalizedCategory === "earnings" || impactLabel === "results") {
+    score += 80;
+  }
+
+  if (normalizedCategory === "ipo" || impactLabel === "ipo") {
+    score += 70;
+  }
+
+  if (normalizedCategory === "regulatory" || impactLabel === "regulatory") {
+    score += 50;
+  }
+
+  if (
+    normalizedCategory === "macro" ||
+    impactLabel === "macro" ||
+    MAJOR_MACRO_MARKET_NEWS_PATTERNS.some((pattern) =>
+      pattern.test(buildMarketNewsQualityText({ ...article, source_name: "", source_url: "", canonical_url: "" })),
+    )
+  ) {
+    score += 40;
+  }
+
+  return score;
+}
+
+function isLowValueMarketNewsArticle(
+  article: Pick<
+    MarketNewsArticleRecord,
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+  > & {
+    entities: readonly Pick<MarketNewsArticleEntityRecord, "entity_type" | "display_name" | "symbol">[];
+  },
+) {
+  const qualityText = buildMarketNewsQualityText(article);
+  const normalizedCategory = normalizeMarketNewsCategoryForRanking(article);
+  const hasStockEntity = article.entities.some((entity) => entity.entity_type === "stock");
+  const hasHighPriorityCategory =
+    normalizedCategory === "earnings" ||
+    normalizedCategory === "ipo" ||
+    normalizedCategory === "regulatory" ||
+    normalizedCategory === "macro";
+
+  if (LOW_VALUE_MARKET_NEWS_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    return !hasStockEntity && !hasHighPriorityCategory;
+  }
+
+  if (LOW_VALUE_MARKET_NEWS_SOURCE_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    return !hasStockEntity && normalizedCategory === "general_business";
+  }
+
+  return false;
+}
+
+function getMarketNewsMinorUpdatePenaltyScore(
+  article: Pick<
+    MarketNewsArticleRecord,
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+  > & {
+    entities: readonly Pick<MarketNewsArticleEntityRecord, "entity_type">[];
+  },
+) {
+  const qualityText = buildMarketNewsQualityText(article);
+  let penalty = 0;
+
+  if (MINOR_UPDATE_MARKET_NEWS_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    penalty += 28;
+  }
+
+  if (REPETITIVE_MARKET_NEWS_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    penalty += 14;
+  }
+
+  const normalizedCategory = normalizeMarketNewsCategoryForRanking(article);
+  const hasStockEntity = article.entities.some((entity) => entity.entity_type === "stock");
+
+  if (!hasStockEntity && normalizedCategory === "markets") {
+    penalty += 10;
+  }
+
+  return penalty;
+}
+
+function getArticleReliabilityBoostMs(article: Pick<MarketNewsArticleWithRelations, "source_reliability_score">) {
+  return normalizeSourceReliabilityScore(article.source_reliability_score) * 45 * 60 * 1000;
+}
+
+function getArticleImportanceBoostMs(article: Pick<MarketNewsArticleWithRelations, "importance_score">) {
+  return Math.min(Math.max(article.importance_score, 0), 240) * 18 * 60 * 1000;
+}
+
+function getArticleMinorUpdatePenaltyMs(
+  article: Pick<
+    MarketNewsArticleWithRelations,
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+) {
+  return getMarketNewsMinorUpdatePenaltyScore(article) * 30 * 60 * 1000;
+}
+
+function getPublicListingScore(
+  article: Pick<
+    MarketNewsArticleWithRelations,
+    | "published_at"
+    | "source_published_at"
+    | "created_at"
+    | "source_reliability_score"
+    | "importance_score"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+) {
+  const recencyTimestamp = getArticleRecencyTimestamp(article);
+
+  if (!Number.isFinite(recencyTimestamp)) {
+    return (
+      getArticleReliabilityBoostMs(article) +
+      getArticleImportanceBoostMs(article) -
+      getArticleMinorUpdatePenaltyMs(article)
+    );
+  }
+
+  return (
+    recencyTimestamp +
+    getArticleReliabilityBoostMs(article) +
+    getArticleImportanceBoostMs(article) -
+    getArticleMinorUpdatePenaltyMs(article)
+  );
+}
+
+function comparePublicListingArticles(
+  left: Pick<
+    MarketNewsArticleWithRelations,
+    | "published_at"
+    | "source_published_at"
+    | "created_at"
+    | "source_reliability_score"
+    | "importance_score"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+  right: Pick<
+    MarketNewsArticleWithRelations,
+    | "published_at"
+    | "source_published_at"
+    | "created_at"
+    | "source_reliability_score"
+    | "importance_score"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+) {
+  const scoreDelta = getPublicListingScore(right) - getPublicListingScore(left);
+
+  if (scoreDelta !== 0) {
+    return scoreDelta;
+  }
+
+  return String(getArticleTimestampValue(right)).localeCompare(String(getArticleTimestampValue(left)));
+}
+
+function getArticleDuplicateGroupKey(
+  article: Pick<MarketNewsArticleRecord, "id" | "duplicate_group_id">,
+) {
+  return normalizeLooseFilterValue(article.duplicate_group_id) || `article:${article.id}`;
+}
+
+function getDuplicateGroupPreferenceScore(
+  article: Pick<
+    MarketNewsArticleWithRelations,
+    | "status"
+    | "published_at"
+    | "source_published_at"
+    | "created_at"
+    | "source_reliability_score"
+    | "display_image_url"
+    | "uses_fallback_image"
+    | "importance_score"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+) {
+  const publishedBonus = article.status === "published" ? 100 : 0;
+  const reliabilityBonus = normalizeSourceReliabilityScore(article.source_reliability_score) * 25;
+  const imageBonus = article.display_image_url && !article.uses_fallback_image ? 10 : 0;
+  const importanceBonus = article.importance_score * 0.9;
+  const minorUpdatePenalty = getMarketNewsMinorUpdatePenaltyScore(article);
+  const recencyTimestamp = getArticleRecencyTimestamp(article);
+  const recencyBonus = Number.isFinite(recencyTimestamp)
+    ? recencyTimestamp / (1000 * 60 * 60 * 24)
+    : 0;
+
+  return publishedBonus + reliabilityBonus + imageBonus + importanceBonus + recencyBonus - minorUpdatePenalty;
+}
+
+function dedupeMarketNewsArticlesByDuplicateGroup(
+  articles: readonly MarketNewsArticleWithRelations[],
+  limit?: number,
+) {
+  const preferredByGroup = new Map<string, MarketNewsArticleWithRelations>();
+
+  for (const article of articles) {
+    const groupKey = getArticleDuplicateGroupKey(article);
+    const existing = preferredByGroup.get(groupKey);
+
+    if (!existing) {
+      preferredByGroup.set(groupKey, article);
+      continue;
+    }
+
+    if (getDuplicateGroupPreferenceScore(article) > getDuplicateGroupPreferenceScore(existing)) {
+      preferredByGroup.set(groupKey, article);
+    }
+  }
+
+  const deduped = Array.from(preferredByGroup.values()).sort(comparePublicListingArticles);
+
+  if (typeof limit === "number" && Number.isFinite(limit)) {
+    return deduped.slice(0, Math.max(Math.trunc(limit), 0));
+  }
+
+  return deduped;
+}
 
 function normalizeLooseFilterValue(value: string | null | undefined) {
   return String(value ?? "").trim();
@@ -222,6 +707,261 @@ export async function listEnabledMarketNewsSources() {
   return (data ?? []) as MarketNewsSourceRecord[];
 }
 
+export async function listMarketNewsSources() {
+  const supabase = requireMarketNewsAdminClient();
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .select("*")
+    .order("is_enabled", { ascending: false })
+    .order("reliability_score", { ascending: false })
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(`Unable to load market news sources: ${error.message}`);
+  }
+
+  return (data ?? []) as MarketNewsSourceRecord[];
+}
+
+export async function findMarketNewsSourceById(sourceId: string) {
+  const supabase = requireMarketNewsAdminClient();
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .select("*")
+    .eq("id", sourceId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Unable to load market news source: ${error.message}`);
+  }
+
+  return (data as MarketNewsSourceRecord | null) ?? null;
+}
+
+function slugifyMarketNewsSource(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function normalizeOptionalSourceText(value: string | null | undefined) {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
+}
+
+function sanitizeMarketNewsSourcePayload(
+  input: MarketNewsSourceDraftInput & {
+    slug?: string | null;
+    source_type?: MarketNewsSourceType;
+    fetch_interval_minutes?: number | null;
+    last_checked_at?: string | null;
+    last_status?: string | null;
+    last_error?: string | null;
+    detected_feed_url?: string | null;
+  },
+) {
+  const derivedSlug = slugifyMarketNewsSource(
+    input.slug ||
+      input.name ||
+      normalizeOptionalSourceText(input.homepage_url)?.replace(/^https?:\/\//, "") ||
+      "market-news-source",
+  );
+  const safeFeedUrl = normalizeOptionalSourceText(input.feed_url);
+  const safeApiUrl = normalizeOptionalSourceText(input.api_url);
+  const safeHomepageUrl = normalizeOptionalSourceText(input.homepage_url);
+  const derivedSourceType = input.source_type
+    ? input.source_type
+    : safeApiUrl
+      ? "api"
+      : safeFeedUrl
+        ? "rss"
+        : "candidate";
+  const reliabilityScore = Number.isFinite(input.reliability_score)
+    ? Math.min(Math.max(Math.round(input.reliability_score), 0), 100)
+    : 70;
+  const fetchIntervalMinutes =
+    typeof input.fetch_interval_minutes === "number" && Number.isFinite(input.fetch_interval_minutes)
+      ? Math.min(Math.max(Math.trunc(input.fetch_interval_minutes), 5), 1440)
+      : 30;
+
+  return {
+    name: String(input.name ?? "").trim().slice(0, 160),
+    slug: derivedSlug,
+    source_type: derivedSourceType,
+    feed_url: safeFeedUrl,
+    api_url: safeApiUrl,
+    homepage_url: safeHomepageUrl,
+    category: normalizeOptionalSourceText(input.category)?.slice(0, 80) ?? null,
+    region: normalizeOptionalSourceText(input.region)?.slice(0, 80) ?? null,
+    reliability_score: reliabilityScore,
+    is_enabled: Boolean(input.is_enabled),
+    fetch_interval_minutes: fetchIntervalMinutes,
+    last_checked_at: normalizeOptionalSourceText(input.last_checked_at),
+    last_status: normalizeOptionalSourceText(input.last_status)?.slice(0, 80) ?? null,
+    last_error: normalizeOptionalSourceText(input.last_error)?.slice(0, 500) ?? null,
+    detected_feed_url: normalizeOptionalSourceText(input.detected_feed_url),
+    notes: normalizeOptionalSourceText(input.notes)?.slice(0, 1000) ?? null,
+    updated_at: new Date().toISOString(),
+  };
+}
+
+export async function saveMarketNewsSource(
+  input: MarketNewsSourceDraftInput & {
+    slug?: string | null;
+    source_type?: MarketNewsSourceType;
+    fetch_interval_minutes?: number | null;
+    last_checked_at?: string | null;
+    last_status?: string | null;
+    last_error?: string | null;
+    detected_feed_url?: string | null;
+  },
+) {
+  const supabase = requireMarketNewsAdminClient();
+  const payload = sanitizeMarketNewsSourcePayload(input);
+
+  if (!payload.name) {
+    throw new Error("Source name is required.");
+  }
+
+  if (!payload.slug) {
+    throw new Error("Source slug could not be derived.");
+  }
+
+  if (input.id) {
+    const { data, error } = await supabase
+      .from("market_news_sources")
+      .update(payload)
+      .eq("id", input.id)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw new Error(`Unable to update market news source: ${error.message}`);
+    }
+
+    return data as MarketNewsSourceRecord;
+  }
+
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .insert(payload)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Unable to create market news source: ${error.message}`);
+  }
+
+  return data as MarketNewsSourceRecord;
+}
+
+export async function setMarketNewsSourceEnabled(sourceId: string, isEnabled: boolean) {
+  const supabase = requireMarketNewsAdminClient();
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .update({
+      is_enabled: isEnabled,
+      last_status: isEnabled ? "enabled" : "disabled",
+      last_error: isEnabled ? null : "Disabled from the admin source console.",
+      last_checked_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Unable to update market news source state: ${error.message}`);
+  }
+
+  return data as MarketNewsSourceRecord;
+}
+
+export async function softDisableMarketNewsSource(
+  sourceId: string,
+  reason = "Disabled from the admin source console.",
+) {
+  const supabase = requireMarketNewsAdminClient();
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .update({
+      is_enabled: false,
+      last_checked_at: new Date().toISOString(),
+      last_status: "disabled",
+      last_error: reason,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Unable to disable market news source: ${error.message}`);
+  }
+
+  return data as MarketNewsSourceRecord;
+}
+
+export async function updateMarketNewsSourceHealth(
+  sourceId: string,
+  payload: Partial<
+    Pick<
+      MarketNewsSourceRecord,
+      | "feed_url"
+      | "detected_feed_url"
+      | "is_enabled"
+      | "last_checked_at"
+      | "last_error"
+      | "last_status"
+      | "notes"
+      | "source_type"
+    >
+  >,
+) {
+  const supabase = requireMarketNewsAdminClient();
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .update({
+      ...payload,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", sourceId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Unable to update market news source health: ${error.message}`);
+  }
+
+  return data as MarketNewsSourceRecord;
+}
+
+export async function applyMarketNewsSourceTestResult(
+  sourceId: string,
+  result: MarketNewsSourceTestResult,
+) {
+  const nextStatus = result.classification;
+  const nextSourceType =
+    result.classification === "blocked"
+      ? "blocked"
+      : result.feedUrl || result.detectedFeedUrl
+        ? "rss"
+        : result.sourceType;
+
+  return updateMarketNewsSourceHealth(sourceId, {
+    source_type: nextSourceType,
+    feed_url: result.feedUrl || result.detectedFeedUrl || null,
+    detected_feed_url: result.detectedFeedUrl,
+    last_checked_at: new Date().toISOString(),
+    last_status: nextStatus,
+    last_error: result.errorMessage,
+    is_enabled:
+      result.classification === "working" && Boolean(result.feedUrl || result.detectedFeedUrl),
+  });
+}
+
 export async function seedMarketNewsSources(sources: readonly MarketNewsSourceSeed[]) {
   const supabase = requireMarketNewsAdminClient();
   const payload = sources.map((source) => ({
@@ -231,9 +971,16 @@ export async function seedMarketNewsSources(sources: readonly MarketNewsSourceSe
     feed_url: source.feed_url,
     api_url: source.api_url,
     homepage_url: source.homepage_url,
+    category: source.category ?? null,
+    region: source.region ?? null,
     reliability_score: source.reliability_score,
     is_enabled: source.is_enabled,
     fetch_interval_minutes: source.fetch_interval_minutes,
+    last_checked_at: source.last_checked_at ?? null,
+    last_status: source.last_status ?? null,
+    last_error: source.last_error ?? null,
+    detected_feed_url: source.detected_feed_url ?? null,
+    notes: source.notes ?? source.disabledReason ?? null,
     updated_at: new Date().toISOString(),
   }));
 
@@ -263,9 +1010,16 @@ export async function syncMissingMarketNewsSources(sources: readonly MarketNewsS
     feed_url: source.feed_url,
     api_url: source.api_url,
     homepage_url: source.homepage_url,
+    category: source.category ?? null,
+    region: source.region ?? null,
     reliability_score: source.reliability_score,
     is_enabled: source.is_enabled,
     fetch_interval_minutes: source.fetch_interval_minutes,
+    last_checked_at: source.last_checked_at ?? null,
+    last_status: source.last_status ?? null,
+    last_error: source.last_error ?? null,
+    detected_feed_url: source.detected_feed_url ?? null,
+    notes: source.notes ?? source.disabledReason ?? null,
     updated_at: new Date().toISOString(),
   }));
 
@@ -289,6 +1043,72 @@ export async function syncMissingMarketNewsSources(sources: readonly MarketNewsS
   }
 
   return (data ?? []) as MarketNewsSourceRecord[];
+}
+
+export async function importMissingMarketNewsSources(sources: readonly MarketNewsSourceSeed[]) {
+  if (!sources.length) {
+    return {
+      inserted: [] as MarketNewsSourceRecord[],
+      skipped: [] as MarketNewsSourceRecord[],
+    };
+  }
+
+  const supabase = requireMarketNewsAdminClient();
+  const candidateSlugs = Array.from(new Set(sources.map((source) => source.slug)));
+  const { data: existingData, error: existingError } = await supabase
+    .from("market_news_sources")
+    .select("*")
+    .in("slug", candidateSlugs);
+
+  if (existingError) {
+    throw new Error(`Unable to inspect existing market news sources: ${existingError.message}`);
+  }
+
+  const existingBySlug = new Map(
+    ((existingData ?? []) as MarketNewsSourceRecord[]).map((source) => [source.slug, source]),
+  );
+  const missingSources = sources.filter((source) => !existingBySlug.has(source.slug));
+
+  if (!missingSources.length) {
+    return {
+      inserted: [] as MarketNewsSourceRecord[],
+      skipped: Array.from(existingBySlug.values()),
+    };
+  }
+
+  const payload = missingSources.map((source) => ({
+    name: source.name,
+    slug: source.slug,
+    source_type: source.source_type,
+    feed_url: source.feed_url,
+    api_url: source.api_url,
+    homepage_url: source.homepage_url,
+    category: source.category ?? null,
+    region: source.region ?? null,
+    reliability_score: source.reliability_score,
+    is_enabled: source.is_enabled,
+    fetch_interval_minutes: source.fetch_interval_minutes,
+    last_checked_at: source.last_checked_at ?? null,
+    last_status: source.last_status ?? null,
+    last_error: source.last_error ?? null,
+    detected_feed_url: source.detected_feed_url ?? null,
+    notes: source.notes ?? source.disabledReason ?? null,
+    updated_at: new Date().toISOString(),
+  }));
+
+  const { data, error } = await supabase
+    .from("market_news_sources")
+    .insert(payload)
+    .select("*");
+
+  if (error) {
+    throw new Error(`Unable to import missing market news sources: ${error.message}`);
+  }
+
+  return {
+    inserted: (data ?? []) as MarketNewsSourceRecord[],
+    skipped: Array.from(existingBySlug.values()),
+  };
 }
 
 export async function createMarketNewsIngestionRun(sourceId: string, status = "running") {
@@ -623,11 +1443,23 @@ async function hydrateMarketNewsArticles(
         display_image_url: resolvedImage.displayImageUrl,
         image_display_alt_text: resolvedImage.altText,
         uses_fallback_image: resolvedImage.usesFallback,
+        source_reliability_score: null,
+        importance_score: getMarketNewsImportanceScore({
+          ...article,
+          entities: [],
+        }),
       };
     });
   }
 
   const articleIds = articles.map((article) => article.id);
+  const rawItemIds = Array.from(
+    new Set(
+      articles
+        .map((article) => normalizeLooseFilterValue(article.raw_item_id))
+        .filter(Boolean),
+    ),
+  );
   const [{ data: entitiesData, error: entitiesError }, { data: imagesData, error: imagesError }] =
     await Promise.all([
       supabase
@@ -653,6 +1485,45 @@ async function hydrateMarketNewsArticles(
 
   const entityMap = new Map<string, MarketNewsArticleEntityRecord[]>();
   const imageMap = new Map<string, MarketNewsArticleImageRecord>();
+  const rawSourceIdMap = new Map<string, string | null>();
+  const sourceReliabilityMap = new Map<string, number | null>();
+
+  if (rawItemIds.length) {
+    const { data: rawItemsData, error: rawItemsError } = await supabase
+      .from("market_news_raw_items")
+      .select("id, source_id")
+      .in("id", rawItemIds);
+
+    if (rawItemsError) {
+      throw new Error(`Unable to load market news raw items for source weighting: ${rawItemsError.message}`);
+    }
+
+    const sourceIds = Array.from(
+      new Set(
+        ((rawItemsData ?? []) as Array<{ id: string; source_id: string | null }>)
+          .map((item) => {
+            rawSourceIdMap.set(String(item.id), item.source_id ?? null);
+            return normalizeLooseFilterValue(item.source_id);
+          })
+          .filter(Boolean),
+      ),
+    );
+
+    if (sourceIds.length) {
+      const { data: sourceData, error: sourceError } = await supabase
+        .from("market_news_sources")
+        .select("id, reliability_score")
+        .in("id", sourceIds);
+
+      if (sourceError) {
+        throw new Error(`Unable to load market news source reliability scores: ${sourceError.message}`);
+      }
+
+      for (const source of (sourceData ?? []) as Array<{ id: string; reliability_score: number | null }>) {
+        sourceReliabilityMap.set(String(source.id), source.reliability_score ?? null);
+      }
+    }
+  }
 
   for (const entity of (entitiesData ?? []) as MarketNewsArticleEntityRecord[]) {
     const existing = entityMap.get(entity.article_id) ?? [];
@@ -669,6 +1540,9 @@ async function hydrateMarketNewsArticles(
   return articles.map((article) => {
     const image = imageMap.get(article.id) ?? null;
     const resolvedImage = getNewsImageForArticle(article, image);
+    const rawItemId = normalizeLooseFilterValue(article.raw_item_id);
+    const sourceId = rawItemId ? rawSourceIdMap.get(rawItemId) ?? null : null;
+    const sourceReliabilityScore = sourceId ? sourceReliabilityMap.get(sourceId) ?? null : null;
 
     return {
       ...article,
@@ -677,6 +1551,11 @@ async function hydrateMarketNewsArticles(
       display_image_url: resolvedImage.displayImageUrl,
       image_display_alt_text: resolvedImage.altText,
       uses_fallback_image: resolvedImage.usesFallback,
+      source_reliability_score: sourceReliabilityScore,
+      importance_score: getMarketNewsImportanceScore({
+        ...article,
+        entities: entityMap.get(article.id) ?? [],
+      }),
     };
   });
 }
@@ -690,14 +1569,29 @@ function decorateAdminArticles(
   }));
 }
 
-function sortArticlesByRecency<T extends Pick<MarketNewsArticleRecord, "published_at" | "source_published_at" | "created_at">>(
+function sortArticlesByRecency<
+  T extends Pick<
+    MarketNewsArticleWithRelations,
+    | "published_at"
+    | "source_published_at"
+    | "created_at"
+    | "source_reliability_score"
+    | "importance_score"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "source_name"
+    | "source_url"
+    | "canonical_url"
+    | "category"
+    | "impact_label"
+    | "entities"
+  >,
+>(
   articles: readonly T[],
 ) {
-  return [...articles].sort((left, right) => {
-    const leftValue = left.published_at ?? left.source_published_at ?? left.created_at;
-    const rightValue = right.published_at ?? right.source_published_at ?? right.created_at;
-    return String(rightValue).localeCompare(String(leftValue));
-  });
+  return [...articles].sort(comparePublicListingArticles);
 }
 
 async function listMarketNewsArticleIdsByEntityMatch(input: {
@@ -966,13 +1860,18 @@ export async function getMarketNewsArticles(input?: number | MarketNewsArticleFi
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("source_published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(filters.limit);
+    .limit(Math.min(Math.max(filters.limit * 5, 40), 240));
 
   if (error) {
     throw new Error(`Unable to load market news articles: ${error.message}`);
   }
 
-  return hydrateMarketNewsArticles((data ?? []) as MarketNewsArticleRecord[]);
+  const hydrated = await hydrateMarketNewsArticles((data ?? []) as MarketNewsArticleRecord[]);
+  const curated = sortArticlesByRecency(
+    hydrated.filter((article) => !isLowValueMarketNewsArticle(article)),
+  );
+
+  return dedupeMarketNewsArticlesByDuplicateGroup(curated, filters.limit);
 }
 
 export async function getPublishedMarketNewsSitemapEntries() {
@@ -984,7 +1883,7 @@ export async function getPublishedMarketNewsSitemapEntries() {
 
   const { data, error } = await supabase
     .from("market_news_articles")
-    .select("slug, published_at")
+    .select("slug, published_at, updated_at")
     .eq("status", "published")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false });
@@ -996,38 +1895,63 @@ export async function getPublishedMarketNewsSitemapEntries() {
   return (data ?? []) as MarketNewsPublishedSitemapEntry[];
 }
 
-function getMarketNewsTopStoryScore(article: MarketNewsArticleWithRelations) {
-  // TODO: Replace with full ML ranking later.
-  let score = 0;
+export async function getPublishedGoogleNewsSitemapEntries(hoursWindow = 48) {
+  const supabase = getMarketNewsReadClient();
 
-  const hasStockEntity = article.entities.some((entity) => entity.entity_type === "stock");
-  const hasSymbol = article.entities.some((entity) => Boolean(entity.symbol?.trim()));
-  const normalizedCategory = String(article.category ?? "").trim().toLowerCase();
-  const hasPriorityCategory =
-    normalizedCategory === "company_news" || normalizedCategory === "earnings";
-  const hasPriorityImpact = String(article.impact_label ?? "").trim().toLowerCase() !== "neutral";
-
-  if (hasStockEntity) {
-    score += 100;
+  if (!supabase) {
+    return [] as MarketNewsGoogleNewsSitemapEntry[];
   }
 
-  if (hasSymbol) {
-    score += 60;
+  const safeWindowHours = Number.isFinite(hoursWindow)
+    ? Math.min(Math.max(Math.trunc(hoursWindow), 1), 168)
+    : 48;
+  const cutoffIso = new Date(Date.now() - safeWindowHours * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("market_news_articles")
+    .select("*")
+    .eq("status", "published")
+    .gte("published_at", cutoffIso)
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(240);
+
+  if (error) {
+    throw new Error(`Unable to load Google News sitemap entries: ${error.message}`);
   }
 
-  if (hasPriorityCategory) {
-    score += 40;
-  }
+  const hydrated = dedupeMarketNewsArticlesByDuplicateGroup(
+    await hydrateMarketNewsArticles((data ?? []) as MarketNewsArticleRecord[]),
+  );
 
-  if (hasPriorityImpact) {
-    score += 20;
-  }
-
-  return score;
+  return hydrated.map((article) => ({
+    slug: article.slug,
+    title: article.rewritten_title || article.original_title,
+    published_at: article.published_at || article.source_published_at || article.created_at,
+    updated_at: article.updated_at,
+    image_url: article.uses_fallback_image ? null : article.display_image_url,
+    keywords: article.keywords ?? [],
+    entity_names: article.entities.map((entity) => entity.display_name).filter(Boolean),
+    entity_symbols: article.entities.map((entity) => entity.symbol ?? "").filter(Boolean),
+  })) satisfies MarketNewsGoogleNewsSitemapEntry[];
 }
 
-function getArticleRecencyTimestamp(article: Pick<MarketNewsArticleRecord, "published_at" | "source_published_at" | "created_at">) {
-  return Date.parse(article.published_at ?? article.source_published_at ?? article.created_at ?? "");
+function getMarketNewsTopStoryScore(article: MarketNewsArticleWithRelations) {
+  // TODO: Replace with full ML ranking later.
+  let score = article.importance_score;
+
+  score += normalizeSourceReliabilityScore(article.source_reliability_score) * 15;
+
+  if (article.impact_note?.trim()) {
+    score += 4;
+  }
+
+  if (!article.uses_fallback_image) {
+    score += 5;
+  }
+
+  score -= getMarketNewsMinorUpdatePenaltyScore(article);
+
+  return score;
 }
 
 function getMarketNewsAgePenalty(article: Pick<MarketNewsArticleRecord, "published_at" | "source_published_at" | "created_at">) {
@@ -1104,6 +2028,36 @@ async function getMarketNewsClickMetrics(articleIds: readonly string[]) {
   return metrics;
 }
 
+function getMarketNewsTrendingScore(
+  article: MarketNewsArticleWithRelations,
+  metrics?: { clicks24h: number; clicks7d: number } | null,
+) {
+  const clickMetrics = metrics ?? { clicks24h: 0, clicks7d: 0 };
+
+  return (
+    clickMetrics.clicks24h * 5 +
+    clickMetrics.clicks7d * 2 -
+    getMarketNewsAgePenalty(article) +
+    getMarketNewsRecencyDecayBoost(article) +
+    normalizeSourceReliabilityScore(article.source_reliability_score) * 4 +
+    article.importance_score * 0.8 -
+    getMarketNewsMinorUpdatePenaltyScore(article)
+  );
+}
+
+function isMarketNewsArticleWithinLastHours(
+  article: Pick<MarketNewsArticleRecord, "published_at" | "source_published_at" | "created_at">,
+  hours: number,
+) {
+  const timestamp = getArticleRecencyTimestamp(article);
+
+  if (!Number.isFinite(timestamp)) {
+    return false;
+  }
+
+  return timestamp >= Date.now() - hours * 60 * 60 * 1000;
+}
+
 export async function getTopMarketNewsArticles(input?: number | MarketNewsArticleFilters) {
   const filters = normalizeMarketNewsArticleFilters(input);
   const safeLimit = Math.min(Math.max(filters.limit || 3, 1), 12);
@@ -1118,7 +2072,8 @@ export async function getTopMarketNewsArticles(input?: number | MarketNewsArticl
   );
 
   if (!hasAnalyticsData) {
-    return [...articles]
+    return dedupeMarketNewsArticlesByDuplicateGroup(
+      [...articles]
       .sort((left, right) => {
         const scoreDelta = getMarketNewsTopStoryScore(right) - getMarketNewsTopStoryScore(left);
 
@@ -1126,40 +2081,63 @@ export async function getTopMarketNewsArticles(input?: number | MarketNewsArticl
           return scoreDelta;
         }
 
-        const rightValue = right.published_at ?? right.source_published_at ?? right.created_at;
-        const leftValue = left.published_at ?? left.source_published_at ?? left.created_at;
-
-        return String(rightValue).localeCompare(String(leftValue));
-      })
-      .slice(0, safeLimit);
+        return comparePublicListingArticles(left, right);
+      }),
+      safeLimit,
+    );
   }
 
-  return [...articles]
+  return dedupeMarketNewsArticlesByDuplicateGroup(
+    [...articles]
     .sort((left, right) => {
       const leftMetrics = clickMetrics.get(left.id) ?? { clicks24h: 0, clicks7d: 0 };
       const rightMetrics = clickMetrics.get(right.id) ?? { clicks24h: 0, clicks7d: 0 };
-      const leftScore =
-        leftMetrics.clicks24h * 5 +
-        leftMetrics.clicks7d * 2 -
-        getMarketNewsAgePenalty(left) +
-        getMarketNewsRecencyDecayBoost(left);
-      const rightScore =
-        rightMetrics.clicks24h * 5 +
-        rightMetrics.clicks7d * 2 -
-        getMarketNewsAgePenalty(right) +
-        getMarketNewsRecencyDecayBoost(right);
+      const leftScore = getMarketNewsTrendingScore(left, leftMetrics);
+      const rightScore = getMarketNewsTrendingScore(right, rightMetrics);
       const scoreDelta = rightScore - leftScore;
 
       if (scoreDelta !== 0) {
         return scoreDelta;
       }
 
-      const rightValue = right.published_at ?? right.source_published_at ?? right.created_at;
-      const leftValue = left.published_at ?? left.source_published_at ?? left.created_at;
+      return comparePublicListingArticles(left, right);
+    }),
+    safeLimit,
+  );
+}
 
-      return String(rightValue).localeCompare(String(leftValue));
-    })
-    .slice(0, safeLimit);
+export async function getDailyMarketBriefArticles(limit = 5) {
+  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 10) : 5;
+  const candidateArticles = await getMarketNewsArticles({
+    limit: Math.max(safeLimit * 10, 40),
+  });
+  const recentArticles = candidateArticles.filter((article) =>
+    isMarketNewsArticleWithinLastHours(article, 24),
+  );
+
+  if (!recentArticles.length) {
+    return [] as MarketNewsArticleWithRelations[];
+  }
+
+  const clickMetrics = await getMarketNewsClickMetrics(recentArticles.map((article) => article.id));
+
+  return dedupeMarketNewsArticlesByDuplicateGroup(
+    [...recentArticles]
+      .sort((left, right) => {
+        const leftScore =
+          left.importance_score * 1.1 + getMarketNewsTrendingScore(left, clickMetrics.get(left.id));
+        const rightScore =
+          right.importance_score * 1.1 + getMarketNewsTrendingScore(right, clickMetrics.get(right.id));
+        const scoreDelta = rightScore - leftScore;
+
+        if (scoreDelta !== 0) {
+          return scoreDelta;
+        }
+
+        return comparePublicListingArticles(left, right);
+      }),
+    safeLimit,
+  );
 }
 
 export async function getMarketNewsFilterOptions(limit = 160) {
@@ -1217,7 +2195,11 @@ export async function getMarketNewsFilterOptions(limit = 160) {
     categories: sortOptions(
       Array.from(categorySet.values()).map((value) => ({
         value,
-        label: value,
+        label: value
+          .split("_")
+          .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
+          .join(" ")
+          .trim(),
       })),
     ),
     impactLabels: sortOptions(
@@ -1296,6 +2278,7 @@ export async function getRelatedMarketNewsArticles(
   );
 
   const ranked = hydrated
+    .filter((candidate) => !isLowValueMarketNewsArticle(candidate))
     .map((candidate) => {
       const overlap = candidate.entities.reduce((count, entity) => {
         return count + (articleEntityKeys.has(`${entity.entity_type}:${entity.entity_slug}`) ? 1 : 0);
@@ -1315,12 +2298,11 @@ export async function getRelatedMarketNewsArticles(
         return right.overlap - left.overlap;
       }
 
-      return String(right.recency).localeCompare(String(left.recency));
+      return comparePublicListingArticles(left.article, right.article);
     })
-    .slice(0, safeLimit)
     .map((item) => item.article);
 
-  return ranked;
+  return dedupeMarketNewsArticlesByDuplicateGroup(ranked, safeLimit);
 }
 
 async function listAdminMarketNewsArticlesByStatuses(
@@ -1438,14 +2420,42 @@ export async function listRecentMarketNewsIngestionRuns(limit = 12) {
   });
 }
 
+export async function listAdminMarketNewsSources() {
+  const [sources, recentRuns] = await Promise.all([
+    listMarketNewsSources(),
+    listRecentMarketNewsIngestionRuns(120),
+  ]);
+  const lastRunBySource = new Map<string, MarketNewsAdminIngestionRun>();
+
+  for (const run of recentRuns) {
+    if (!run.source_id || lastRunBySource.has(run.source_id)) {
+      continue;
+    }
+
+    lastRunBySource.set(run.source_id, run);
+  }
+
+  return sources.map((source) => {
+    const lastRun = lastRunBySource.get(source.id);
+
+    return {
+      ...source,
+      last_run_status: lastRun?.status ?? null,
+      last_run_started_at: lastRun?.started_at ?? null,
+      last_run_error: lastRun?.error_message ?? null,
+    } satisfies MarketNewsAdminSourceRecord;
+  });
+}
+
 export async function getAdminMarketNewsDashboardState(): Promise<MarketNewsAdminDashboardState> {
-  const [readyArticles, publishedArticles, rejectedArticles, failedRewriteItems, recentIngestionRuns] =
+  const [readyArticles, publishedArticles, rejectedArticles, failedRewriteItems, recentIngestionRuns, sources] =
     await Promise.all([
       listAdminMarketNewsArticlesByStatuses(["ready"], 30),
       listAdminMarketNewsArticlesByStatuses(["published"], 30),
       listAdminMarketNewsArticlesByStatuses(["rejected"], 30),
       listFailedMarketNewsRewriteItems(20),
       listRecentMarketNewsIngestionRuns(12),
+      listAdminMarketNewsSources(),
     ]);
 
   return {
@@ -1454,6 +2464,7 @@ export async function getAdminMarketNewsDashboardState(): Promise<MarketNewsAdmi
     rejected_articles: rejectedArticles,
     failed_rewrite_items: failedRewriteItems,
     recent_ingestion_runs: recentIngestionRuns,
+    sources,
   };
 }
 

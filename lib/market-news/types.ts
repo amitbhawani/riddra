@@ -3,6 +3,8 @@ export const MARKET_NEWS_SOURCE_TYPES = [
   "api",
   "official",
   "manual",
+  "candidate",
+  "blocked",
 ] as const;
 
 export const MARKET_NEWS_SOURCE_CONTENT_CATEGORIES = [
@@ -42,6 +44,20 @@ export const MARKET_NEWS_IMPACT_LABELS = [
   "corporate_action",
 ] as const;
 
+export const MARKET_NEWS_ALLOWED_CATEGORIES = [
+  "earnings",
+  "corporate_action",
+  "acquisition",
+  "funding",
+  "regulatory",
+  "macro",
+  "markets",
+  "ipo",
+  "mutual_fund",
+  "crypto",
+  "general_business",
+] as const;
+
 export const MARKET_NEWS_ENTITY_TYPES = [
   "stock",
   "mutual_fund",
@@ -66,6 +82,8 @@ export type MarketNewsSourceContentCategory =
 export type MarketNewsRawItemStatus = (typeof MARKET_NEWS_RAW_ITEM_STATUSES)[number];
 export type MarketNewsArticleStatus = (typeof MARKET_NEWS_ARTICLE_STATUSES)[number];
 export type MarketNewsImpactLabel = (typeof MARKET_NEWS_IMPACT_LABELS)[number];
+export type MarketNewsNormalizedCategory =
+  (typeof MARKET_NEWS_ALLOWED_CATEGORIES)[number];
 export type MarketNewsEntityType = (typeof MARKET_NEWS_ENTITY_TYPES)[number];
 export type MarketNewsFallbackImageKey = (typeof MARKET_NEWS_FALLBACK_IMAGE_KEYS)[number];
 
@@ -103,6 +121,7 @@ export type MarketNewsAiRewritePayload = {
   seo_description: string;
   short_summary: string;
   summary: string;
+  impact_note: string;
   slug: string;
   category: string;
   impact_label: string;
@@ -168,9 +187,16 @@ export type MarketNewsSourceRecord = {
   feed_url: string | null;
   api_url: string | null;
   homepage_url: string | null;
+  category: string | null;
+  region: string | null;
   reliability_score: number;
   is_enabled: boolean;
   fetch_interval_minutes: number;
+  last_checked_at: MarketNewsTimestamp | null;
+  last_status: string | null;
+  last_error: string | null;
+  detected_feed_url: string | null;
+  notes: string | null;
   created_at: MarketNewsTimestamp;
   updated_at: MarketNewsTimestamp;
 };
@@ -202,6 +228,7 @@ export type MarketNewsArticleRecord = {
   rewritten_title: string | null;
   short_summary: string | null;
   summary: string | null;
+  impact_note: string | null;
   source_name: string;
   source_url: string;
   source_published_at: MarketNewsTimestamp | null;
@@ -220,6 +247,8 @@ export type MarketNewsArticleRecord = {
   seo_title: string | null;
   seo_description: string | null;
   keywords: string[];
+  author_name: string | null;
+  author_slug: string | null;
   created_at: MarketNewsTimestamp;
   updated_at: MarketNewsTimestamp;
 };
@@ -256,6 +285,8 @@ export type MarketNewsArticleWithRelations = MarketNewsArticleRecord & {
   display_image_url: string;
   image_display_alt_text: string;
   uses_fallback_image: boolean;
+  source_reliability_score: number | null;
+  importance_score: number;
 };
 
 export type MarketNewsArticleFilters = {
@@ -327,10 +358,45 @@ export type MarketNewsAdminIngestionRun = MarketNewsIngestionRunRecord & {
   source_slug: string | null;
 };
 
+export type MarketNewsAdminSourceRecord = MarketNewsSourceRecord & {
+  last_run_status: string | null;
+  last_run_started_at: MarketNewsTimestamp | null;
+  last_run_error: string | null;
+};
+
+export type MarketNewsSourceDraftInput = {
+  id?: string | null;
+  name: string;
+  homepage_url: string | null;
+  feed_url: string | null;
+  api_url: string | null;
+  category: string | null;
+  region: string | null;
+  reliability_score: number;
+  is_enabled: boolean;
+  notes: string | null;
+};
+
+export type MarketNewsSourceTestResult = {
+  sourceName: string;
+  sourceSlug: string | null;
+  sourceType: MarketNewsSourceType;
+  homepageUrl: string | null;
+  feedUrl: string | null;
+  detectedFeedUrl: string | null;
+  reachable: boolean;
+  statusCode: number | null;
+  sampleItemCount: number;
+  blocked: boolean;
+  errorMessage: string | null;
+  classification: "working" | "blocked" | "candidate" | "failed";
+};
+
 export type MarketNewsAdminDashboardState = {
   ready_articles: MarketNewsAdminArticleRecord[];
   published_articles: MarketNewsAdminArticleRecord[];
   rejected_articles: MarketNewsAdminArticleRecord[];
   failed_rewrite_items: MarketNewsAdminFailedRewriteItem[];
   recent_ingestion_runs: MarketNewsAdminIngestionRun[];
+  sources: MarketNewsAdminSourceRecord[];
 };

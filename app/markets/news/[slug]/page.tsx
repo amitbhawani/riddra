@@ -4,37 +4,74 @@ import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
+import { JsonLd } from "@/components/json-ld";
 import { MarketNewsEntityChips } from "@/components/market-news-entity-chips";
 import { MarketNewsImage } from "@/components/market-news-image";
 import { MarketNewsList } from "@/components/market-news-list";
 import { ProductCard, ProductSectionTitle } from "@/components/product-page-system";
 import { getStocks } from "@/lib/content";
+import {
+  formatMarketNewsDateTime,
+  formatMarketNewsFullDate,
+  formatMarketNewsRelativeTime,
+} from "@/lib/market-news/formatting";
 import { getMarketNewsArticleBySlug, getRelatedMarketNewsArticles } from "@/lib/market-news/queries";
 import type { StockSnapshot } from "@/lib/mock-data";
+import { getPublicSiteUrl } from "@/lib/public-site-url";
+import { buildBreadcrumbSchema } from "@/lib/seo";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ stories?: string }>;
 };
 
-function formatDateLabel(value: string | null | undefined) {
-  const parsed = Date.parse(value ?? "");
+function getArticlePublishDateValue(article: {
+  published_at: string | null;
+  source_published_at: string | null;
+  created_at: string;
+}) {
+  return article.published_at || article.source_published_at || article.created_at;
+}
 
-  if (!Number.isFinite(parsed)) {
+function buildMarketNewsDetailUrl(slug: string) {
+  return `${getPublicSiteUrl()}/markets/news/${slug}`;
+}
+
+function buildNewsArticleSchema(article: Awaited<ReturnType<typeof getMarketNewsArticleBySlug>>) {
+  if (!article) {
     return null;
   }
 
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(parsed));
-}
+  const canonicalUrl = buildMarketNewsDetailUrl(article.slug);
+  const publishedAt = getArticlePublishDateValue(article);
+  const modifiedAt = article.updated_at || publishedAt;
 
-function formatImpactLabel(value: string | null | undefined) {
-  return String(value ?? "")
-    .split("_")
-    .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
-    .join(" ")
-    .trim();
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.rewritten_title || article.original_title,
+    description:
+      article.seo_description ||
+      article.short_summary ||
+      article.summary ||
+      "Latest market news article on Riddra.",
+    datePublished: publishedAt,
+    dateModified: modifiedAt,
+    author: {
+      "@type": "Person",
+      name: article.author_name || "Author Amit",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Riddra",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl,
+    },
+    url: canonicalUrl,
+    image: article.display_image_url ? [article.display_image_url] : undefined,
+  };
 }
 
 function normalizeLooseSlug(value: string | null | undefined) {
@@ -247,7 +284,19 @@ async function getStocksInFocus(
   return results.slice(0, limit);
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+function parseStoriesCount(value: string | undefined) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return 3;
+  }
+
+  return Math.min(Math.max(Math.trunc(parsed), 3), 18);
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<PageProps, "params">): Promise<Metadata> {
   const { slug } = await params;
   const article = await getMarketNewsArticleBySlug(slug).catch(() => null);
 
@@ -258,181 +307,231 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const title = article.seo_title || article.rewritten_title || article.original_title;
+  const description =
+    article.seo_description ||
+    article.short_summary ||
+    article.summary ||
+    "Latest market news article on Riddra.";
+  const canonicalUrl = buildMarketNewsDetailUrl(article.slug);
+  const imageUrl = article.display_image_url || `${getPublicSiteUrl()}/news-fallbacks/riddra-market-news.svg`;
+
   return {
-    title: article.seo_title || article.rewritten_title || article.original_title,
-    description:
-      article.seo_description ||
-      article.short_summary ||
-      article.summary ||
-      "Latest market news article on Riddra.",
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "article",
+      images: imageUrl ? [{ url: imageUrl, alt: article.image_display_alt_text }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
   };
 }
 
-export default async function MarketNewsDetailPage({ params }: PageProps) {
+export default async function MarketNewsDetailPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
   const article = await getMarketNewsArticleBySlug(slug).catch(() => null);
 
   if (!article) {
     notFound();
   }
 
-  const relatedArticles = await getRelatedMarketNewsArticles(article, 4).catch(() => []);
+  const relatedArticles = await getRelatedMarketNewsArticles(article, 12).catch(() => []);
+  const visibleStoriesCount = parseStoriesCount(resolvedSearchParams.stories);
+  const visibleRelatedArticles = relatedArticles.slice(0, visibleStoriesCount);
+  const canLoadMoreStories = visibleStoriesCount < relatedArticles.length;
+  const canShowLessStories = visibleStoriesCount > 3;
+  const nextStoriesCount = Math.min(visibleStoriesCount + 3, relatedArticles.length);
+  const taggedStockEntities = article.entities.filter((entity) => entity.entity_type === "stock");
+  const visibleDetailEntities = taggedStockEntities.length ? taggedStockEntities : article.entities;
   const focusStocks = await getStocksInFocus(article, 3);
-  const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
-  const impactLabel = formatImpactLabel(article.impact_label);
+  const publishDateValue = getArticlePublishDateValue(article);
+  const publishedLabel = formatMarketNewsDateTime(publishDateValue);
+  const publishedRelativeLabel = formatMarketNewsRelativeTime(publishDateValue);
+  const publishedFullDate = formatMarketNewsFullDate(publishDateValue);
+  const modifiedLabel = formatMarketNewsDateTime(article.updated_at);
   const fallbackSrc =
     article.image?.fallback_image_url || article.fallback_image_url || article.display_image_url;
+  const breadcrumbs = [
+    { name: "Home", href: "/" },
+    { name: "Markets", href: "/markets" },
+    { name: "Market News", href: "/markets/news" },
+    { name: article.rewritten_title || article.original_title, href: `/markets/news/${article.slug}` },
+  ];
+  const byline = publishedFullDate
+    ? `Published ${publishedRelativeLabel ?? "recently"} on ${publishedFullDate} By ${article.author_name || "Author Amit"}`
+    : null;
 
   return (
-    <GlobalSidebarPageShell
-      category="markets"
-      className="space-y-4"
-      leftClassName="riddra-legacy-light-surface space-y-6"
-    >
-      <Breadcrumbs
-        items={[
-          { name: "Home", href: "/" },
-          { name: "Markets", href: "/markets" },
-          { name: "Market News", href: "/markets/news" },
-          { name: article.rewritten_title || article.original_title, href: `/markets/news/${article.slug}` },
-        ]}
-      />
+    <>
+      <JsonLd data={buildBreadcrumbSchema(breadcrumbs)} />
+      <JsonLd data={buildNewsArticleSchema(article)} />
+      <GlobalSidebarPageShell
+        category="markets"
+        className="space-y-4"
+        leftClassName="riddra-legacy-light-surface space-y-6"
+      >
+        <Breadcrumbs items={breadcrumbs} />
 
-      <ProductCard tone="primary" className="overflow-hidden p-0">
-        <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_220px]">
-          <div className="space-y-5 p-4 sm:p-5">
-            <div className="flex flex-wrap gap-2">
-              {impactLabel ? (
-                <span className="rounded-full border border-[rgba(212,133,59,0.24)] bg-[rgba(212,133,59,0.1)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#8E5723]">
-                  {impactLabel}
-                </span>
-              ) : null}
-              {article.category ? (
-                <span className="rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.03)] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#1B3A6B]">
-                  {article.category}
-                </span>
-              ) : null}
-              {publishedLabel ? (
-                <span className="rounded-full border border-[rgba(221,215,207,0.92)] bg-white px-3 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.86)]">
-                  {publishedLabel}
-                </span>
-              ) : null}
-            </div>
+        <ProductCard tone="primary" className="overflow-hidden p-4 sm:p-5">
+          <article className="space-y-5">
+            {publishedLabel ? (
+              <p className="riddra-product-body text-[12px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
+                {publishedLabel}
+              </p>
+            ) : null}
 
             <div className="space-y-3">
               <h1 className="riddra-product-body text-[30px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[38px]">
                 {article.rewritten_title || article.original_title}
               </h1>
-              <p className="riddra-product-body max-w-3xl text-[15px] leading-8 text-[rgba(75,85,99,0.86)]">
-                {article.summary || article.short_summary || "Market News is being prepared."}
-              </p>
-              <MarketNewsEntityChips entities={article.entities} limit={6} />
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-[12px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4">
-                <p className="riddra-product-body text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.74)]">
-                  Source attribution
-                </p>
-                <p className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">{article.source_name}</p>
-                <p className="riddra-product-body mt-2 text-sm leading-7 text-[rgba(107,114,128,0.86)]">
-                  The original reporting remains external. Use the source link below to read the full source story.
-                </p>
-              </div>
-
-              <div className="rounded-[12px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4">
-                <p className="riddra-product-body text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.74)]">
-                  Story posture
-                </p>
-                <p className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">
-                  {impactLabel || "Market update"}
-                </p>
-                <p className="riddra-product-body mt-2 text-sm leading-7 text-[rgba(107,114,128,0.86)]">
-                  {article.category ? `${article.category} coverage` : "Market intelligence coverage"} with a direct link back to the original source.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <a
-                href={article.source_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#244b85]"
-              >
-                Read full story
-              </a>
-              <Link
-                href="/markets/news"
-                className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
-              >
-                Back to Market News
-              </Link>
-            </div>
-          </div>
-
-          <div className="border-t border-[rgba(221,215,207,0.82)] bg-[rgba(248,246,243,0.92)] p-4 sm:p-5 lg:border-l lg:border-t-0">
-            <MarketNewsImage
-              primarySrc={article.display_image_url}
-              fallbackSrc={fallbackSrc}
-              alt={article.image_display_alt_text}
-              className="h-[180px] w-full rounded-[18px] border border-[rgba(221,215,207,0.92)] object-cover shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
-            />
-          </div>
-        </div>
-      </ProductCard>
-
-      <ProductCard tone="secondary" className="space-y-4 p-4 sm:p-5">
-        <ProductSectionTitle
-          eyebrow="Market relevance"
-          title="Stocks in Focus"
-          description="These linked stock routes are the closest public market pages tied to the story, the matched companies, or the sector context around this update."
-        />
-        {focusStocks.length ? (
-          <div className="grid gap-3 md:grid-cols-3">
-            {focusStocks.map((stock) => (
-              <Link
-                key={stock.slug}
-                href={`/stocks/${stock.slug}`}
-                className="rounded-[16px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4 transition hover:border-[rgba(212,133,59,0.28)] hover:shadow-[0_16px_34px_rgba(15,23,42,0.06)]"
-              >
-                <p className="riddra-product-body text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.74)]">
-                  {isPlaceholderSector(stock.sector) ? "Stock in focus" : stock.sector}
-                </p>
-                <p className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">{stock.name}</p>
-                <p className="riddra-product-body mt-1 text-sm text-[rgba(107,114,128,0.82)]">{stock.symbol}</p>
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="riddra-product-body text-[18px] font-semibold text-[#111827]">{stock.price}</span>
-                  <span
-                    className={`riddra-product-body text-sm font-semibold ${
-                      isPositiveChange(stock.change)
-                        ? "text-[#15803d]"
-                        : isNegativeChange(stock.change)
-                          ? "text-[#b42318]"
-                          : "text-[rgba(55,65,81,0.86)]"
-                    }`}
-                  >
-                    {stock.change}
-                  </span>
+              {byline ? (
+                <div className="space-y-1.5">
+                  <p className="riddra-product-body text-[14px] leading-7 text-[rgba(75,85,99,0.86)]">
+                    {byline}
+                  </p>
+                  {modifiedLabel && modifiedLabel !== publishedLabel ? (
+                    <p className="riddra-product-body text-[13px] leading-6 text-[rgba(107,114,128,0.8)]">
+                      Updated {modifiedLabel}
+                    </p>
+                  ) : null}
                 </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-[16px] border border-dashed border-[rgba(221,215,207,0.94)] bg-white px-4 py-5 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
-            Related stock routes will appear here as more company-to-story links are mapped into the market news system.
-          </div>
-        )}
-      </ProductCard>
+              ) : null}
+              <div className="space-y-3">
+                <div className="float-right mb-3 ml-4 w-[118px] overflow-hidden rounded-[16px] border border-[rgba(221,215,207,0.92)] bg-[rgba(248,246,243,0.92)] shadow-[0_12px_28px_rgba(15,23,42,0.07)] sm:w-[132px]">
+                  <MarketNewsImage
+                    primarySrc={article.display_image_url}
+                    fallbackSrc={fallbackSrc}
+                    alt={article.image_display_alt_text}
+                    className="h-[118px] w-full object-cover sm:h-[132px]"
+                  />
+                </div>
+                <p className="riddra-product-body text-[15px] leading-8 text-[rgba(75,85,99,0.86)]">
+                  {article.summary || article.short_summary || "Market News is being prepared."}
+                </p>
+                {article.impact_note?.trim() ? (
+                  <p className="riddra-product-body inline-flex rounded-[14px] border border-[rgba(212,133,59,0.16)] bg-[rgba(212,133,59,0.08)] px-4 py-2 text-[13px] font-medium leading-6 text-[#8E5723]">
+                    {article.impact_note}
+                  </p>
+                ) : null}
+                <div className="clear-both" />
+              </div>
+            </div>
 
-      <MarketNewsList
-        articles={relatedArticles}
-        title="Similar and latest stories"
-        description="Riddra ranks nearby stories using shared matched entities first, then falls back to the latest market news."
-        compact
-        emptyTitle="More stories are being prepared"
-        emptyDescription="Additional related market news articles will appear here as the public news archive fills out."
-      />
-    </GlobalSidebarPageShell>
+            <div className="space-y-3">
+              <p className="riddra-product-body text-[13px] leading-6 text-[rgba(107,114,128,0.84)]">
+                Source attribution:{" "}
+                <span className="font-medium text-[#1B3A6B]">{article.source_name}</span>
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                {visibleDetailEntities.length ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="riddra-product-body text-[12px] font-medium text-[rgba(107,114,128,0.82)]">
+                      {taggedStockEntities.length ? "Tagged stocks" : "Related entities"}
+                    </span>
+                    <MarketNewsEntityChips entities={visibleDetailEntities} limit={4} />
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href={article.source_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="riddra-button-link-primary inline-flex rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#244b85]"
+                  >
+                    Read full story
+                  </a>
+                </div>
+              </div>
+            </div>
+          </article>
+        </ProductCard>
+
+        <ProductCard tone="secondary" className="space-y-4 p-4 sm:p-5">
+          <ProductSectionTitle
+            eyebrow="Market relevance"
+            title="Stocks in Focus"
+            description="These linked stock routes are the closest public market pages tied to the story, the matched companies, or the sector context around this update."
+          />
+          {focusStocks.length ? (
+            <div className="grid gap-3 md:grid-cols-3">
+              {focusStocks.map((stock) => (
+                <Link
+                  key={stock.slug}
+                  href={`/stocks/${stock.slug}`}
+                  className="rounded-[16px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4 transition hover:border-[rgba(212,133,59,0.28)] hover:shadow-[0_16px_34px_rgba(15,23,42,0.06)]"
+                >
+                  <p className="riddra-product-body text-[11px] uppercase tracking-[0.16em] text-[rgba(107,114,128,0.74)]">
+                    {isPlaceholderSector(stock.sector) ? "Stock in focus" : stock.sector}
+                  </p>
+                  <p className="riddra-product-body mt-2 text-[20px] font-semibold text-[#1B3A6B]">{stock.name}</p>
+                  <p className="riddra-product-body mt-1 text-sm text-[rgba(107,114,128,0.82)]">{stock.symbol}</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="riddra-product-body text-[18px] font-semibold text-[#111827]">{stock.price}</span>
+                    <span
+                      className={`riddra-product-body text-sm font-semibold ${
+                        isPositiveChange(stock.change)
+                          ? "text-[#15803d]"
+                          : isNegativeChange(stock.change)
+                            ? "text-[#b42318]"
+                            : "text-[rgba(55,65,81,0.86)]"
+                      }`}
+                    >
+                      {stock.change}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[16px] border border-dashed border-[rgba(221,215,207,0.94)] bg-white px-4 py-5 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
+              Related stock routes will appear here as more company-to-story links are mapped into the market news system.
+            </div>
+          )}
+        </ProductCard>
+
+        <MarketNewsList
+          articles={visibleRelatedArticles}
+          title="Similar News"
+          compact
+          emptyTitle="More stories are being prepared"
+          emptyDescription="Additional related market news articles will appear here as the public news archive fills out."
+        />
+        {canLoadMoreStories || canShowLessStories ? (
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
+            {canLoadMoreStories ? (
+              <Link
+                href={`/markets/news/${article.slug}?stories=${nextStoriesCount}`}
+                className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-5 py-2.5 text-sm font-medium transition hover:bg-[#244b85]"
+              >
+                Load more stories
+              </Link>
+            ) : null}
+            {canShowLessStories ? (
+              <Link
+                href={`/markets/news/${article.slug}`}
+                className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-5 py-2.5 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
+              >
+                Show less
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+      </GlobalSidebarPageShell>
+    </>
   );
 }

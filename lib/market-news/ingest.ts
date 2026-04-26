@@ -13,6 +13,7 @@ import {
   finalizeMarketNewsIngestionRun,
   findExistingMarketNewsRawItem,
   insertMarketNewsRawItem,
+  updateMarketNewsSourceHealth,
 } from "@/lib/market-news/queries";
 import {
   loadMarketNewsSourceRegistry,
@@ -65,6 +66,29 @@ const API_IMAGE_FIELD_KEYS = [
   "twitterimage",
   "urltoimage",
 ] as const;
+
+const LOW_VALUE_MARKET_NEWS_PATTERNS = [
+  /\b(sponsored|sponsor(ed)? content|advertorial|partner content|paid post|paid content|promotion|promoted)\b/i,
+  /\b(opinion|op-ed|editorial|guest column|column)\b/i,
+  /\btop\s+\d+\b/i,
+  /\b\d+\s+(stocks?|things|reasons|ways)\b/i,
+  /\b(best|top)\s+(stocks?|mutual funds?|etfs?)\s+to\s+(buy|watch)\b/i,
+];
+
+const LOW_VALUE_MARKET_NEWS_SOURCE_PATTERNS = [
+  /\/blog(s)?\//i,
+  /\/opinion(s)?\//i,
+  /\/editorial\//i,
+  /\bblog\b/i,
+];
+
+const HIGH_VALUE_MARKET_NEWS_PATTERNS = [
+  /\b(results|earnings|quarterly results|q1|q2|q3|q4|fy\d{2})\b/i,
+  /\b(ipo|listing|public issue)\b/i,
+  /\b(sebi|regulatory|order|circular|tribunal|court|appeal|compliance)\b/i,
+  /\b(economy|inflation|gdp|rbi|policy|macro)\b/i,
+  /\b(company|corporate|dividend|board|merger|acquisition|deal|funding|investment round)\b/i,
+];
 
 export type MarketNewsSourceIngestionResult = {
   source: string;
@@ -556,8 +580,10 @@ function parseApiFeed(payload: MarketNewsJsonValue, source: MarketNewsConfigured
 }
 
 async function fetchSourceItems(source: MarketNewsConfiguredSource) {
-  if ((source.source_type === "rss" || source.source_type === "official") && source.feed_url) {
-    const feed = await fetchText(source.feed_url);
+  const sourceFeedUrl = source.feed_url ?? source.detected_feed_url;
+
+  if ((source.source_type === "rss" || source.source_type === "official") && sourceFeedUrl) {
+    const feed = await fetchText(sourceFeedUrl);
     return parseRssFeed(feed, source);
   }
 
@@ -584,6 +610,40 @@ function determineSourceResultStatus(input: {
   return "success" as const;
 }
 
+function shouldDropLowValueMarketNewsItem(
+  source: MarketNewsConfiguredSource,
+  item: Pick<MarketNewsFetchedItem, "original_title" | "original_excerpt" | "source_name" | "source_url" | "canonical_url">,
+) {
+  const qualityText = normalizeWhitespace(
+    [
+      source.name,
+      source.slug,
+      source.contentCategory,
+      item.source_name,
+      item.original_title,
+      item.original_excerpt,
+      item.source_url,
+      item.canonical_url,
+    ].join(" "),
+  ).toLowerCase();
+
+  const hasHighValueSignals = HIGH_VALUE_MARKET_NEWS_PATTERNS.some((pattern) => pattern.test(qualityText));
+
+  if (hasHighValueSignals) {
+    return false;
+  }
+
+  if (LOW_VALUE_MARKET_NEWS_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    return true;
+  }
+
+  if (LOW_VALUE_MARKET_NEWS_SOURCE_PATTERNS.some((pattern) => pattern.test(qualityText))) {
+    return true;
+  }
+
+  return false;
+}
+
 export async function runMarketNewsIngestion() {
   const startedAt = new Date().toISOString();
   const registry = await loadMarketNewsSourceRegistry();
@@ -595,6 +655,7 @@ export async function runMarketNewsIngestion() {
     let insertedCount = 0;
     let duplicateCount = 0;
     let failedCount = 0;
+    let filteredCount = 0;
     let errorMessage: string | null = null;
 
     try {
@@ -603,13 +664,18 @@ export async function runMarketNewsIngestion() {
 
       for (const item of items) {
         try {
+          if (shouldDropLowValueMarketNewsItem(source, item)) {
+            filteredCount += 1;
+            continue;
+          }
+
           const canonicalUrl = normalizeMarketNewsUrl(
             item.canonical_url ?? item.source_url,
-            source.feed_url ?? source.api_url ?? source.homepage_url,
+            source.feed_url ?? source.detected_feed_url ?? source.api_url ?? source.homepage_url,
           );
           const sourceUrl = normalizeMarketNewsUrl(
             item.source_url,
-            source.feed_url ?? source.api_url ?? source.homepage_url,
+            source.feed_url ?? source.detected_feed_url ?? source.api_url ?? source.homepage_url,
           );
           const normalizedTitle = normalizeMarketNewsTitle(item.original_title);
 
@@ -654,7 +720,7 @@ export async function runMarketNewsIngestion() {
                 : item.raw_payload,
             image_url: normalizeNewsImageUrl(
               item.image_url,
-              source.feed_url ?? source.api_url ?? source.homepage_url,
+              source.feed_url ?? source.detected_feed_url ?? source.api_url ?? source.homepage_url,
             ),
             content_hash: contentHash,
             status: "new",
@@ -681,6 +747,19 @@ export async function runMarketNewsIngestion() {
       duplicate_count: duplicateCount,
       failed_count: failedCount,
       error_message: errorMessage,
+    });
+
+    await updateMarketNewsSourceHealth(source.id, {
+      detected_feed_url: source.feed_url ?? source.detected_feed_url ?? null,
+      last_checked_at: finishedAt,
+      last_status: status,
+      last_error:
+        errorMessage ||
+        (failedCount > 0
+          ? `${failedCount} item(s) failed during ingestion.`
+          : filteredCount > 0
+            ? `Filtered ${filteredCount} low-value item(s) during ingestion.`
+            : null),
     });
 
     sourceResults.push({

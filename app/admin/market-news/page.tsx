@@ -11,7 +11,7 @@ import { getAdminMarketNewsDashboardState } from "@/lib/market-news/queries";
 
 export const metadata: Metadata = {
   title: "Admin Market News",
-  description: "Moderate rewritten market news articles, failed rewrites, and recent ingestion status.",
+  description: "Moderate rewritten market news articles, manage sources, and review recent ingestion status.",
 };
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,7 @@ export default async function AdminMarketNewsPage() {
         ]}
         eyebrow="Market News"
         title="Market News moderation"
-        description="Review ready articles, live stories, rejected items, failed rewrites, and the latest ingestion runs from one admin route."
+        description="Review ready articles, live stories, rejected items, failed rewrites, source health, and the latest ingestion runs from one admin route."
         actions={
           <>
             <AdminActionLink href="/markets/news" label="Open public news" />

@@ -128,7 +128,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...publishedMarketNewsEntries.map((article) => ({
       url: `${siteUrl}/markets/news/${article.slug}`,
-      lastModified: new Date(article.published_at),
+      lastModified: new Date(article.updated_at || article.published_at),
     })),
   ];
 }
