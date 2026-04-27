@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
 import { buildAccountUserKey } from "@/lib/account-identity";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { accountInvoiceSamples, billingLedgerRules, billingLedgerSamples } from "@/lib/billing-ledger";
 import { paymentOpsRules, recentPaymentEventSamples } from "@/lib/payment-ops";
@@ -317,6 +318,10 @@ async function buildDefaultStore(): Promise<BillingLedgerMemoryStore> {
 }
 
 async function readStore(): Promise<BillingLedgerMemoryStore | null> {
+  if (!canUseFileFallback()) {
+    return await buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as BillingLedgerMemoryStore;
@@ -332,6 +337,10 @@ async function readStore(): Promise<BillingLedgerMemoryStore | null> {
 }
 
 async function writeStore(store: BillingLedgerMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Billing ledger persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -367,7 +376,32 @@ async function writeDurableBillingGlobalState(store: BillingLedgerMemoryStore) {
   );
 }
 
-async function ensureStore() {
+async function persistBillingState(
+  store: BillingLedgerMemoryStore,
+  accountRecord?: BillingLedgerAccountRecord,
+) {
+  const results = await Promise.all([
+    accountRecord ? writeDurableBillingAccountRecord(accountRecord) : Promise.resolve(true),
+    writeDurableBillingGlobalState(store),
+  ]);
+  const [wroteAccountRecord, wroteGlobalState] = results;
+
+  if (wroteAccountRecord && wroteGlobalState) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return "supabase_private_beta" as const;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Billing ledger persistence"));
+  }
+
+  await writeStore(store);
+  return "file_backed_preview" as const;
+}
+
+async function ensureStore(): Promise<BillingLedgerMemoryStore> {
   const store = await readStore();
   const durableGlobalState = await readDurableBillingGlobalState();
 
@@ -378,6 +412,11 @@ async function ensureStore() {
       ledgerRows: durableGlobalState.ledgerRows.map(cloneBillingLedgerRow),
       eventRows: durableGlobalState.eventRows.map(cloneBillingEventRow),
     };
+  }
+
+  if (!canUseFileFallback()) {
+    const nextStore = await buildDefaultStore();
+    return nextStore;
   }
 
   const storeExists = await access(STORE_PATH)
@@ -455,14 +494,13 @@ async function ensureAccountRecord(user: Pick<User, "id" | "email">) {
   const ensured = ensureAccountRecordInStore(store, user);
 
   if (ensured.store !== store) {
-    await writeStore(ensured.store);
+    if (canUseFileFallback()) {
+      await writeStore(ensured.store);
+    }
   }
 
   const storageMode =
-    (await writeDurableBillingAccountRecord(ensured.record)) &&
-    (await writeDurableBillingGlobalState(ensured.store))
-      ? ("supabase_private_beta" as const)
-      : ("file_backed_preview" as const);
+    await persistBillingState(ensured.store, ensured.record);
 
   return { ...ensured, storageMode };
 }
@@ -545,11 +583,7 @@ export async function addBillingInvoice(
       eventRows: [nextEvent, ...store.eventRows.filter((item) => item.id !== nextEvent.id)],
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableBillingAccountRecord(updatedRecord),
-      writeDurableBillingGlobalState(nextStore),
-    ]);
+    await persistBillingState(nextStore, updatedRecord);
   });
 
   billingLedgerMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -622,11 +656,7 @@ export async function removeBillingInvoice(
       ),
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableBillingAccountRecord(updatedRecord),
-      writeDurableBillingGlobalState(nextStore),
-    ]);
+    await persistBillingState(nextStore, updatedRecord);
   });
 
   billingLedgerMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -679,11 +709,7 @@ export async function addBillingEvent(
       eventRows: [nextEvent, ...store.eventRows.filter((item) => item.id !== nextEvent.id)],
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableBillingAccountRecord(updatedRecord),
-      writeDurableBillingGlobalState(nextStore),
-    ]);
+    await persistBillingState(nextStore, updatedRecord);
   });
 
   billingLedgerMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -752,11 +778,7 @@ export async function removeBillingEvent(
       eventRows: remainingEvents,
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableBillingAccountRecord(updatedRecord),
-      writeDurableBillingGlobalState(nextStore),
-    ]);
+    await persistBillingState(nextStore, updatedRecord);
   });
 
   billingLedgerMutationQueue = mutation.then(() => undefined, () => undefined);

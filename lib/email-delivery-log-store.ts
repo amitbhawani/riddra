@@ -1,6 +1,8 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 export type EmailDeliveryFamily =
   | "support_acknowledgement"
   | "support_follow_up"
@@ -49,6 +51,13 @@ function createEntryId(family: EmailDeliveryFamily) {
 }
 
 async function readStore(): Promise<EmailDeliveryLogStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      entries: [],
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as EmailDeliveryLogStore;
@@ -58,11 +67,22 @@ async function readStore(): Promise<EmailDeliveryLogStore | null> {
 }
 
 async function writeStore(store: EmailDeliveryLogStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Email delivery log"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      entries: [],
+    };
+  }
+
   const exists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 
 export type ContactRequestStatus = "Queued" | "Acknowledged" | "Needs review" | "Closed";
@@ -48,6 +49,13 @@ function createContactRequestId(email: string, topic: string) {
 }
 
 async function readStore(): Promise<ContactRequestStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      requests: [],
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ContactRequestStore>;
@@ -61,6 +69,10 @@ async function readStore(): Promise<ContactRequestStore | null> {
 }
 
 async function writeStore(store: ContactRequestStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Contact request memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -85,8 +97,17 @@ async function writeDurableContactRequestState(store: ContactRequestStore) {
 }
 
 async function persistStore(store: ContactRequestStore) {
+  const wroteDurableState = await writeDurableContactRequestState(store);
+
+  if (wroteDurableState) {
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Contact request memory"));
+  }
+
   await writeStore(store);
-  await writeDurableContactRequestState(store);
 }
 
 async function ensureStore() {
@@ -97,6 +118,13 @@ async function ensureStore() {
     return {
       version: store?.version ?? STORE_VERSION,
       requests: durableState.requests,
+    };
+  }
+
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      requests: [],
     };
   }
 

@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { aiWorkflowCards } from "@/lib/ai-ops";
 import { knowledgeSourceSamples } from "@/lib/knowledge-ops";
@@ -277,6 +278,10 @@ async function buildDefaultStore(): Promise<AiGenerationStore> {
 }
 
 async function readStore(): Promise<AiGenerationStore | null> {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<AiGenerationStore>;
@@ -298,6 +303,10 @@ async function readStore(): Promise<AiGenerationStore | null> {
 }
 
 async function writeStore(store: AiGenerationStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("AI generation memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -326,8 +335,17 @@ async function writeDurableAiGenerationState(store: AiGenerationStore) {
 }
 
 async function persistStore(store: AiGenerationStore) {
+  const wroteDurableState = await writeDurableAiGenerationState(store);
+
+  if (wroteDurableState) {
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("AI generation memory"));
+  }
+
   await writeStore(store);
-  await writeDurableAiGenerationState(store);
 }
 
 async function ensureStore() {
@@ -341,6 +359,10 @@ async function ensureStore() {
       generationRuns: durableState.generationRuns,
       answerPackets: durableState.answerPackets,
     };
+  }
+
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
   }
 
   const storeExists = await access(STORE_PATH)

@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { buildAccountUserKey } from "@/lib/account-identity";
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { getSubscriberWorkspaceMemory } from "@/lib/subscriber-workspace-store";
 
@@ -341,6 +342,10 @@ async function buildDefaultStore(): Promise<NotificationEventStore> {
 }
 
 async function readStore(): Promise<NotificationEventStore | null> {
+  if (!canUseFileFallback()) {
+    return await buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as NotificationEventStore;
@@ -358,6 +363,10 @@ async function readStore(): Promise<NotificationEventStore | null> {
 }
 
 async function writeStore(store: NotificationEventStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Notification event persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -382,7 +391,24 @@ async function writeDurableNotificationEventBusState(store: NotificationEventSto
   });
 }
 
-async function ensureStore() {
+async function persistNotificationEventBusState(store: NotificationEventStore) {
+  const wroteEventBusState = await writeDurableNotificationEventBusState(store);
+
+  if (wroteEventBusState) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Notification event persistence"));
+  }
+
+  await writeStore(store);
+}
+
+async function ensureStore(): Promise<NotificationEventStore> {
   const store = await readStore();
   const durableEventBusState = await readDurableNotificationEventBusState();
 
@@ -392,6 +418,11 @@ async function ensureStore() {
       sharedEvents: durableEventBusState.sharedEvents.map(cloneNotificationEvent),
       accounts: Array.isArray(store?.accounts) ? store.accounts.map(cloneNotificationAccountRecord) : [],
     };
+  }
+
+  if (!canUseFileFallback()) {
+    const nextStore = await buildDefaultStore();
+    return nextStore;
   }
 
   const storeExists = await access(STORE_PATH)
@@ -487,11 +518,17 @@ async function saveAccountRecord(
   );
 
   if (wroteDurableRecord) {
-    await writeStore({
-      ...nextStore,
-      accounts: nextStore.accounts.filter((item) => item.userKey !== record.userKey).map(cloneNotificationAccountRecord),
-    });
+    if (canUseFileFallback()) {
+      await writeStore({
+        ...nextStore,
+        accounts: nextStore.accounts.filter((item) => item.userKey !== record.userKey).map(cloneNotificationAccountRecord),
+      });
+    }
     return "supabase_private_beta";
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Notification event persistence"));
   }
 
   await writeStore(nextStore);
@@ -654,7 +691,7 @@ export async function saveNotificationEvent(
       accounts: store.accounts.map((item) => (item.userKey === record.userKey ? nextRecord : item)),
     };
     const storageMode = await saveAccountRecord(nextRecord, nextStore);
-    await writeDurableNotificationEventBusState(nextStore);
+    await persistNotificationEventBusState(nextStore);
 
     return {
       userKey: nextRecord.userKey,
@@ -704,7 +741,7 @@ export async function removeNotificationEvent(
     }
 
     const storageMode = await saveAccountRecord(nextRecord, nextStore);
-    await writeDurableNotificationEventBusState(nextStore);
+    await persistNotificationEventBusState(nextStore);
 
     return {
       userKey: nextRecord.userKey,
@@ -769,7 +806,7 @@ export async function updateNotificationEvent(
     }
 
     const storageMode = await saveAccountRecord(nextRecord, nextStore);
-    await writeDurableNotificationEventBusState(nextStore);
+    await persistNotificationEventBusState(nextStore);
 
     return {
       userKey: nextRecord.userKey,

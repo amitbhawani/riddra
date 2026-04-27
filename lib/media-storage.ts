@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 export type MediaStorageMode = "local";
 
 export type SaveMediaBinaryInput = {
@@ -34,6 +36,10 @@ function buildStoredFileName(originalFileName: string) {
 }
 
 async function saveToLocalStorage(input: SaveMediaBinaryInput): Promise<SavedMediaBinary> {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Media upload storage"));
+  }
+
   await mkdir(LOCAL_MEDIA_UPLOADS_DIR, { recursive: true });
 
   const storedFileName = buildStoredFileName(input.originalFileName);
@@ -53,6 +59,15 @@ export async function saveMediaBinary(input: SaveMediaBinaryInput) {
 }
 
 export function getMediaStorageSummary() {
+  if (!canUseFileFallback()) {
+    return {
+      mode: "local" as const,
+      label: "Hosted upload blocked",
+      detail:
+        "Hosted mode does not allow writing media binaries to public/media-library. Configure durable remote media storage before enabling uploads in production.",
+    };
+  }
+
   return {
     mode: "local" as const,
     label: "Local filesystem adapter",

@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
 import { buildAccountUserKey } from "@/lib/account-identity";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { getAccountBillingMemory, getBillingLedgerMemory } from "@/lib/billing-ledger-memory-store";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 
@@ -325,6 +326,15 @@ function toLifecycleOpsState(store: SubscriptionLifecycleStore): SubscriptionLif
 }
 
 async function readStore(): Promise<SubscriptionLifecycleStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+      opsJobs: buildDefaultOpsJobs(),
+      opsRecoveryActions: buildDefaultOpsRecoveryActions(),
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as SubscriptionLifecycleStore;
@@ -340,6 +350,10 @@ async function readStore(): Promise<SubscriptionLifecycleStore | null> {
 }
 
 async function writeStore(store: SubscriptionLifecycleStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Subscription lifecycle persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -377,6 +391,30 @@ async function writeDurableLifecycleOpsState(store: SubscriptionLifecycleStore) 
   );
 }
 
+async function persistLifecycleState(
+  store: SubscriptionLifecycleStore,
+  accountRecord?: SubscriptionLifecycleAccountRecord,
+) {
+  const [wroteAccountRecord, wroteOpsState] = await Promise.all([
+    accountRecord ? writeDurableLifecycleAccountRecord(accountRecord) : Promise.resolve(true),
+    writeDurableLifecycleOpsState(store),
+  ]);
+
+  if (wroteAccountRecord && wroteOpsState) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return "supabase_private_beta" as const;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Subscription lifecycle persistence"));
+  }
+
+  await writeStore(store);
+  return "file_backed_preview" as const;
+}
+
 async function ensureStore() {
   const store = await readStore();
   const durableOpsState = await readDurableLifecycleOpsState();
@@ -387,6 +425,15 @@ async function ensureStore() {
       accounts: Array.isArray(store?.accounts) ? store.accounts.map(cloneLifecycleAccountRecord) : [],
       opsJobs: durableOpsState.opsJobs.map(cloneLifecycleJob),
       opsRecoveryActions: durableOpsState.opsRecoveryActions.map(cloneRecoveryAction),
+    };
+  }
+
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+      opsJobs: buildDefaultOpsJobs(),
+      opsRecoveryActions: buildDefaultOpsRecoveryActions(),
     };
   }
 
@@ -475,14 +522,13 @@ async function ensureAccountRecord(user: Pick<User, "id" | "email">) {
   const ensured = await ensureAccountRecordInStore(store, user, accountBilling);
 
   if (ensured.store !== store) {
-    await writeStore(ensured.store);
+    if (canUseFileFallback()) {
+      await writeStore(ensured.store);
+    }
   }
 
   const storageMode =
-    (await writeDurableLifecycleAccountRecord(ensured.record)) &&
-    (await writeDurableLifecycleOpsState(ensured.store))
-      ? ("supabase_private_beta" as const)
-      : ("file_backed_preview" as const);
+    await persistLifecycleState(ensured.store, ensured.record);
 
   return { ...ensured, accountBilling, storageMode };
 }
@@ -585,11 +631,7 @@ export async function saveSubscriptionLifecycleAccountJob(
       accounts: store.accounts.map((item) => (item.userKey === record.userKey ? nextRecord : item)),
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableLifecycleAccountRecord(nextRecord),
-      writeDurableLifecycleOpsState(nextStore),
-    ]);
+    await persistLifecycleState(nextStore, nextRecord);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -623,11 +665,7 @@ export async function saveSubscriptionRecoveryAction(
       accounts: store.accounts.map((item) => (item.userKey === record.userKey ? nextRecord : item)),
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableLifecycleAccountRecord(nextRecord),
-      writeDurableLifecycleOpsState(nextStore),
-    ]);
+    await persistLifecycleState(nextStore, nextRecord);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -649,8 +687,7 @@ export async function saveSubscriptionLifecycleOpsJob(
       opsJobs,
     };
 
-    await writeStore(nextStore);
-    await writeDurableLifecycleOpsState(nextStore);
+    await persistLifecycleState(nextStore);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -675,8 +712,7 @@ export async function saveSubscriptionRecoveryOpsAction(
       opsRecoveryActions,
     };
 
-    await writeStore(nextStore);
-    await writeDurableLifecycleOpsState(nextStore);
+    await persistLifecycleState(nextStore);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -714,11 +750,7 @@ export async function removeSubscriptionLifecycleAccountJob(
       accounts: store.accounts.map((item) => (item.userKey === record.userKey ? nextRecord : item)),
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableLifecycleAccountRecord(nextRecord),
-      writeDurableLifecycleOpsState(nextStore),
-    ]);
+    await persistLifecycleState(nextStore, nextRecord);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -756,11 +788,7 @@ export async function removeSubscriptionRecoveryAction(
       accounts: store.accounts.map((item) => (item.userKey === record.userKey ? nextRecord : item)),
     };
 
-    await writeStore(nextStore);
-    await Promise.all([
-      writeDurableLifecycleAccountRecord(nextRecord),
-      writeDurableLifecycleOpsState(nextStore),
-    ]);
+    await persistLifecycleState(nextStore, nextRecord);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -790,8 +818,7 @@ export async function removeSubscriptionLifecycleOpsJob(
       opsJobs,
     };
 
-    await writeStore(nextStore);
-    await writeDurableLifecycleOpsState(nextStore);
+    await persistLifecycleState(nextStore);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -821,8 +848,7 @@ export async function removeSubscriptionRecoveryOpsAction(
       opsRecoveryActions,
     };
 
-    await writeStore(nextStore);
-    await writeDurableLifecycleOpsState(nextStore);
+    await persistLifecycleState(nextStore);
   });
 
   subscriptionLifecycleMutationQueue = mutation.then(() => undefined, () => undefined);

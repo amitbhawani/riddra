@@ -29,9 +29,11 @@ function getTrendColor(value: string | null | undefined) {
 function SidebarSectionHeading({
   title,
   eyebrow,
+  meta,
 }: {
   title: string;
   eyebrow?: string;
+  meta?: string;
 }) {
   return (
     <div className="rounded-[12px] border border-[rgba(255,255,255,0.08)] bg-[#141414] px-3 py-2.5 shadow-[0_8px_18px_rgba(15,15,15,0.14)]">
@@ -44,9 +46,23 @@ function SidebarSectionHeading({
         <h3 className="font-[family:var(--font-riddra-mono)] text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
           {title}
         </h3>
+        {meta ? (
+          <p className="mt-1 font-[family:var(--font-riddra-mono)] text-[9px] uppercase tracking-[0.14em] text-[rgba(255,255,255,0.48)]">
+            {meta}
+          </p>
+        ) : null}
       </div>
     </div>
   );
+}
+
+function formatSidebarUpdatedLabel() {
+  return `Updated ${new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  }).format(new Date())} IST`;
 }
 
 export function SharedMarketSidebarRail({
@@ -72,6 +88,7 @@ export function SharedMarketSidebarRail({
   const showTopGainers = visibleBlocks?.topGainers ?? true;
   const showTopLosers = visibleBlocks?.topLosers ?? true;
   const showPopularStocks = visibleBlocks?.popularStocks ?? true;
+  const updatedLabel = formatSidebarUpdatedLabel();
 
   return (
     <div className="shared-market-sidebar-rail space-y-3">
@@ -79,7 +96,7 @@ export function SharedMarketSidebarRail({
         <div className="grid gap-3">
           {marketSnapshotSections.map((section) => (
           <ProductCard key={section.title} tone="primary" className="space-y-3">
-            <SidebarSectionHeading title={section.title} />
+            <SidebarSectionHeading title={section.title} meta={updatedLabel} />
             <div className="shared-market-sidebar-table overflow-hidden rounded-[10px] border border-[rgba(27,58,107,0.08)] bg-white">
               <div className="shared-market-sidebar-header grid grid-cols-[minmax(0,46%)_minmax(68px,34%)_minmax(54px,20%)] items-center gap-2 border-b border-[rgba(27,58,107,0.08)] bg-[rgba(255,255,255,0.92)] px-3 py-2">
                 <span className="shared-market-sidebar-table-label text-left font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
@@ -134,7 +151,7 @@ export function SharedMarketSidebarRail({
           .filter((group): group is { title: string; rows: SharedSidebarMover[]; positive: boolean } => Boolean(group))
           .map((group) => (
           <ProductCard key={group.title} tone="secondary" className="space-y-3">
-            <SidebarSectionHeading title={group.title} />
+            <SidebarSectionHeading title={group.title} meta={updatedLabel} />
             <div className="grid gap-1.5">
               {group.rows.map((item, index) => (
                 <SidebarMoverRow
@@ -159,7 +176,7 @@ export function SharedMarketSidebarRail({
 
       {showPopularStocks ? (
         <ProductCard tone="secondary" className="space-y-3">
-          <SidebarSectionHeading title="Popular Stocks" />
+          <SidebarSectionHeading title="Popular Stocks" meta={updatedLabel} />
           <div className="grid gap-1.5">
             {popularStocks.slice(0, 6).map((item, index) => (
               <SidebarMoverRow key={`${item.label}-${index}`} href={item.href} name={item.label} price={item.price} />

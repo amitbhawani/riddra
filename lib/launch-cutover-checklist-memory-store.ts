@@ -6,6 +6,7 @@ import {
   hasRuntimeSupabaseAdminEnv,
   hasRuntimeSupabaseEnv,
 } from "@/lib/runtime-launch-config";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { getResendReadiness } from "@/lib/email/resend";
 
 type LaunchCutoverChecklistAutoStatus =
@@ -223,6 +224,13 @@ function getTemplates(): LaunchCutoverChecklistTemplate[] {
 }
 
 async function readStore(): Promise<LaunchCutoverChecklistStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      items: [],
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as LaunchCutoverChecklistStore;
@@ -232,11 +240,22 @@ async function readStore(): Promise<LaunchCutoverChecklistStore | null> {
 }
 
 async function writeStore(store: LaunchCutoverChecklistStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Launch cutover checklist persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      items: [],
+    };
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

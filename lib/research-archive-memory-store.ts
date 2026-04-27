@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { sampleFunds, sampleIpos, sampleStocks } from "@/lib/mock-data";
 
@@ -252,6 +253,10 @@ async function buildDefaultStore(): Promise<ResearchArchiveStore> {
 }
 
 async function readStore(): Promise<ResearchArchiveStore | null> {
+  if (!canUseFileFallback()) {
+    return await buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ResearchArchiveStore>;
@@ -268,6 +273,10 @@ async function readStore(): Promise<ResearchArchiveStore | null> {
 }
 
 async function writeStore(store: ResearchArchiveStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Research archive persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -294,8 +303,20 @@ async function writeDurableResearchArchiveState(store: ResearchArchiveStore) {
 }
 
 async function persistStore(store: ResearchArchiveStore) {
+  const wroteDurableState = await writeDurableResearchArchiveState(store);
+
+  if (wroteDurableState) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Research archive persistence"));
+  }
+
   await writeStore(store);
-  await writeDurableResearchArchiveState(store);
 }
 
 async function ensureStore() {
@@ -308,6 +329,10 @@ async function ensureStore() {
       records: durableState.records,
       familyLanes: durableState.familyLanes,
     };
+  }
+
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
   }
 
   const storeExists = await access(STORE_PATH)

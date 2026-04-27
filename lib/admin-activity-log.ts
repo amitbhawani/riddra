@@ -7,6 +7,10 @@ import {
   hasDurableCmsStateStore,
   listDurableAdminActivityLog,
 } from "@/lib/cms-durable-state";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 import { listUserProductProfiles } from "@/lib/user-product-store";
 
 export type AdminActivityLogEntry = {
@@ -33,6 +37,7 @@ const STORE_PATH = path.join(process.cwd(), "data", "admin-activity-log.json");
 const MAX_FALLBACK_ENTRIES = 500;
 const SYSTEM_ACTOR_LABEL = "System";
 const LOCAL_BYPASS_ACTOR_ID = "local-admin-bypass";
+const ADMIN_ACTIVITY_LOG_FILE_FALLBACK_SCOPE = "Admin activity log";
 
 function cleanString(value: string | null | undefined, maxLength = 2000) {
   return String(value ?? "").trim().slice(0, maxLength);
@@ -136,6 +141,10 @@ async function resolveAdminActivityActor(input: {
 }
 
 async function readFallbackStore(): Promise<AdminActivityLogStore> {
+  if (!canUseFileFallback()) {
+    return { entries: [] };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<AdminActivityLogStore>;
@@ -151,7 +160,18 @@ async function readFallbackStore(): Promise<AdminActivityLogStore> {
   }
 }
 
-async function writeFallbackStore(store: AdminActivityLogStore) {
+async function writeFallbackStore(
+  store: AdminActivityLogStore,
+  options?: { skipWhenDisabled?: boolean },
+) {
+  if (!canUseFileFallback()) {
+    if (options?.skipWhenDisabled) {
+      return;
+    }
+
+    throw new Error(getFileFallbackDisabledMessage(ADMIN_ACTIVITY_LOG_FILE_FALLBACK_SCOPE));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(
     STORE_PATH,
@@ -236,25 +256,35 @@ export async function appendAdminActivityLog(input: Omit<AdminActivityLogEntry, 
     createdAt: input.createdAt ?? new Date().toISOString(),
   });
 
+  if (hasDurableCmsStateStore()) {
+    const durableEntry = await appendDurableAdminActivityLog(entry);
+    if (durableEntry) {
+      if (canUseFileFallback()) {
+        const fallbackStore = await readFallbackStore();
+        await writeFallbackStore(
+          {
+            entries: [
+              durableEntry,
+              ...fallbackStore.entries.filter(
+                (item) => item.id !== durableEntry.id && item.id !== entry.id,
+              ),
+            ],
+          },
+          { skipWhenDisabled: true },
+        );
+      }
+      return durableEntry;
+    }
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(ADMIN_ACTIVITY_LOG_FILE_FALLBACK_SCOPE));
+  }
+
   const fallbackStore = await readFallbackStore();
   await writeFallbackStore({
     entries: [entry, ...fallbackStore.entries.filter((item) => item.id !== entry.id)],
   });
-
-  if (hasDurableCmsStateStore()) {
-    const durableEntry = await appendDurableAdminActivityLog(entry);
-    if (durableEntry) {
-      await writeFallbackStore({
-        entries: [
-          durableEntry,
-          ...fallbackStore.entries.filter(
-            (item) => item.id !== durableEntry.id && item.id !== entry.id,
-          ),
-        ],
-      });
-      return durableEntry;
-    }
-  }
 
   return entry;
 }

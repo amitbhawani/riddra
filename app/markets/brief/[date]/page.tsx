@@ -1,63 +1,78 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cache } from "react";
+import { notFound } from "next/navigation";
 
-import { JsonLd } from "@/components/json-ld";
 import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
+import { JsonLd } from "@/components/json-ld";
 import {
   ProductBreadcrumbs,
   ProductCard,
 } from "@/components/product-page-system";
 import {
   getRiddraDailyBriefStorySummary,
-  getRiddraDailyMarketBrief,
+  getRiddraDailyMarketBriefByDate,
   getRiddraDailyMarketBriefHistory,
 } from "@/lib/market-news/brief";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
-const getCachedDailyBrief = cache(() => getRiddraDailyMarketBrief());
-const getCachedDailyBriefHistory = cache(() => getRiddraDailyMarketBriefHistory(5));
+type PageProps = {
+  params: Promise<{ date: string }>;
+};
 
-export async function generateMetadata(): Promise<Metadata> {
-  const brief = await getCachedDailyBrief();
-  const canonicalUrl = `${getPublicSiteUrl()}/markets/brief`;
-  const title = brief.headline;
-  const description =
-    brief.articles.length > 0
-      ? `Daily roundup of the top ${brief.articles.length} Riddra market stories from the past 24 hours.`
-      : "Daily roundup of the most important Riddra market stories from the past 24 hours.";
+function getStoryNumber(index: number) {
+  return String(index + 1).padStart(2, "0");
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { date } = await params;
+  const brief = await getRiddraDailyMarketBriefByDate(date).catch(() => null);
+
+  if (!brief) {
+    return {
+      title: "Market Brief not found",
+      description: "The requested Riddra Market Brief could not be found.",
+    };
+  }
+
+  const canonicalUrl = `${getPublicSiteUrl()}${brief.href}`;
 
   return {
-    title,
-    description,
+    title: brief.headline,
+    description: brief.summary,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title,
-      description,
+      title: brief.headline,
+      description: brief.summary,
       url: canonicalUrl,
       type: "article",
     },
   };
 }
 
-function getStoryNumber(index: number) {
-  return String(index + 1).padStart(2, "0");
-}
-
-export default async function MarketBriefPage() {
-  const [brief, recentBriefs] = await Promise.all([
-    getCachedDailyBrief(),
-    getCachedDailyBriefHistory(),
+export default async function MarketBriefArchiveDetailPage({ params }: PageProps) {
+  const { date } = await params;
+  const [brief, history] = await Promise.all([
+    getRiddraDailyMarketBriefByDate(date).catch(() => null),
+    getRiddraDailyMarketBriefHistory(7).catch(() => []),
   ]);
-  const archivedBriefs = recentBriefs.filter((entry) => entry.dateKey !== brief.dateKey).slice(0, 4);
-  const previousBrief = archivedBriefs[0] ?? null;
+
+  if (!brief) {
+    notFound();
+  }
+
+  const currentIndex = history.findIndex((entry) => entry.dateKey === brief.dateKey);
+  const newerBrief = currentIndex > 0 ? history[currentIndex - 1] ?? null : null;
+  const olderBrief =
+    currentIndex >= 0 && currentIndex < history.length - 1 ? history[currentIndex + 1] ?? null : null;
+  const archivedBriefs = history.filter((entry) => entry.dateKey !== brief.dateKey).slice(0, 4);
   const breadcrumbs = [
     { label: "Home", href: "/" },
     { label: "Markets", href: "/markets" },
     { label: "Market brief", href: "/markets/brief" },
+    { label: brief.dateLabel, href: brief.href },
   ];
 
   return (
@@ -78,9 +93,8 @@ export default async function MarketBriefPage() {
         <JsonLd
           data={buildWebPageSchema({
             title: brief.headline,
-            description:
-              "Editorial daily roundup of the top Riddra market stories from the past 24 hours.",
-            path: "/markets/brief",
+            description: brief.summary,
+            path: brief.href,
           })}
         />
 
@@ -99,7 +113,7 @@ export default async function MarketBriefPage() {
             </p>
           </div>
 
-          {brief.articles.length > 0 ? (
+          {brief.articles.length ? (
             <>
               <div className="space-y-2">
                 <h2 className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[rgba(107,114,128,0.78)]">
@@ -156,21 +170,27 @@ export default async function MarketBriefPage() {
             </>
           ) : (
             <div className="rounded-[12px] border border-dashed border-[rgba(221,215,207,0.94)] bg-white/75 px-4 py-5 text-sm leading-7 text-[rgba(75,85,99,0.84)]">
-              Today&apos;s market brief is being prepared. Check back after the next market news run to see the latest five-story roundup.
+              This archived market brief is being prepared.
             </div>
           )}
         </ProductCard>
 
         <div className="flex items-center justify-between gap-3 border-y border-[rgba(226,222,217,0.82)] py-3 text-[13px]">
-          {previousBrief ? (
-            <Link href={previousBrief.href} className="font-medium text-[#1B3A6B] transition hover:text-[#D4853B]">
+          {olderBrief ? (
+            <Link href={olderBrief.href} className="font-medium text-[#1B3A6B] transition hover:text-[#D4853B]">
               ← Previous brief
             </Link>
           ) : (
             <span />
           )}
           <span className="text-[rgba(75,85,99,0.84)]">{brief.dateLabel}</span>
-          <span className="text-[rgba(156,163,175,0.92)]">Next brief →</span>
+          {newerBrief ? (
+            <Link href={newerBrief.href} className="font-medium text-[#1B3A6B] transition hover:text-[#D4853B]">
+              Next brief →
+            </Link>
+          ) : (
+            <span className="text-[rgba(156,163,175,0.92)]">Next brief →</span>
+          )}
         </div>
 
         {archivedBriefs.length ? (

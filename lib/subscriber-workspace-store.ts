@@ -8,6 +8,10 @@ import { buildAccountUserKey } from "@/lib/account-identity";
 import { alertFeedItems, alertPreferences, type AlertFeedItem, type AlertPreference } from "@/lib/alerts";
 import { inboxItems, type InboxItem } from "@/lib/account-inbox";
 import { consentOpsItems, consentOpsRules, consentOpsSummary } from "@/lib/consent-ops";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 import { savedScreenSamples, watchlistSamples } from "@/lib/subscriber-workspace";
 
 type WorkspaceWatchlist = {
@@ -173,6 +177,7 @@ const STORE_PATH = path.join(process.cwd(), "data", "subscriber-workspace-memory
 const STORE_VERSION = 1;
 const DURABLE_LANE = "workspace" as const;
 let workspaceMutationQueue = Promise.resolve();
+const SUBSCRIBER_WORKSPACE_FALLBACK_SCOPE = "Subscriber workspace";
 
 const LEGACY_WATCHLIST_BLUEPRINT = [
   {
@@ -406,6 +411,10 @@ function buildDefaultWorkspaceRecord(user: Pick<User, "id" | "email">): Subscrib
 }
 
 async function readStore(): Promise<SubscriberWorkspaceStore> {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<SubscriberWorkspaceStore>;
@@ -422,6 +431,10 @@ async function readStore(): Promise<SubscriberWorkspaceStore> {
 }
 
 async function writeStore(store: SubscriberWorkspaceStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(SUBSCRIBER_WORKSPACE_FALLBACK_SCOPE));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -470,6 +483,10 @@ async function saveWorkspaceRecord(record: SubscriberWorkspaceRecord): Promise<S
     return "supabase_private_beta";
   }
 
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(SUBSCRIBER_WORKSPACE_FALLBACK_SCOPE));
+  }
+
   const store = await readStore();
   const nextAccounts = store.accounts.some((item) => item.userKey === record.userKey)
     ? store.accounts.map((item) => (item.userKey === record.userKey ? cloneWorkspaceRecord(record) : cloneWorkspaceRecord(item)))
@@ -500,6 +517,13 @@ async function ensureWorkspaceRecord(user: Pick<User, "id" | "email">) {
 
     return {
       record: durableRecord,
+      storageMode: "supabase_private_beta" as const,
+    };
+  }
+
+  if (!canUseFileFallback()) {
+    return {
+      record: buildDefaultWorkspaceRecord(user),
       storageMode: "supabase_private_beta" as const,
     };
   }

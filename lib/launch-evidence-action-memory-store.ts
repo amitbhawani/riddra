@@ -5,6 +5,7 @@ import {
   getLaunchEvidenceRegistryRows,
   type LaunchEvidenceRegistryRow,
 } from "@/lib/launch-evidence-registry";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type LaunchEvidenceActionStatus =
   | "Not started"
@@ -135,6 +136,10 @@ function toActionItem(
 }
 
 async function readStore(): Promise<LaunchEvidenceActionStore | null> {
+  if (!canUseFileFallback()) {
+    return null;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as LaunchEvidenceActionStore;
@@ -144,6 +149,10 @@ async function readStore(): Promise<LaunchEvidenceActionStore | null> {
 }
 
 async function writeStore(store: LaunchEvidenceActionStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Launch evidence action persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -166,6 +175,10 @@ async function buildDefaultStore(): Promise<LaunchEvidenceActionStore> {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

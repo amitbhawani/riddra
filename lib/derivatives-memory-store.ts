@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 
 export type DerivativesChainSnapshot = {
@@ -139,6 +140,10 @@ function buildDefaultStore(): DerivativesMemoryStore {
 }
 
 async function readStore(): Promise<DerivativesMemoryStore | null> {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<DerivativesMemoryStore>;
@@ -160,6 +165,10 @@ async function readStore(): Promise<DerivativesMemoryStore | null> {
 }
 
 async function writeStore(store: DerivativesMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Derivatives memory persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -188,8 +197,20 @@ async function writeDurableDerivativesState(store: DerivativesMemoryStore) {
 }
 
 async function persistStore(store: DerivativesMemoryStore) {
+  const wroteDurableState = await writeDurableDerivativesState(store);
+
+  if (wroteDurableState) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Derivatives memory persistence"));
+  }
+
   await writeStore(store);
-  await writeDurableDerivativesState(store);
 }
 
 async function ensureStore() {
@@ -203,6 +224,10 @@ async function ensureStore() {
       analyticsLanes: durableState.analyticsLanes,
       backlogLanes: durableState.backlogLanes,
     };
+  }
+
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
   }
 
   const storeExists = await access(STORE_PATH)

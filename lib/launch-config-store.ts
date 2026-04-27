@@ -6,6 +6,7 @@ import {
   listDurableLaunchConfigSections,
   saveDurableLaunchConfigSection,
 } from "@/lib/cms-durable-state";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type LaunchConfigStore = {
   basic: {
@@ -445,6 +446,10 @@ const emptyStore: LaunchConfigStore = {
 };
 
 async function readStore(): Promise<LaunchConfigStore> {
+  if (!canUseFileFallback()) {
+    return emptyStore;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<LaunchConfigStore>;
@@ -474,6 +479,10 @@ async function readStore(): Promise<LaunchConfigStore> {
 }
 
 async function writeStore(store: LaunchConfigStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Launch config persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -533,10 +542,18 @@ export async function saveLaunchConfigSection<
   };
 
   if (hasDurableCmsStateStore()) {
-    await saveDurableLaunchConfigSection(section, data);
+    const durableSaved = await saveDurableLaunchConfigSection(section, data);
+
+    if (!durableSaved && !canUseFileFallback()) {
+      throw new Error(getFileFallbackDisabledMessage("Launch config persistence"));
+    }
+  } else if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Launch config persistence"));
   }
 
-  await writeStore(nextStore);
+  if (canUseFileFallback()) {
+    await writeStore(nextStore);
+  }
   return nextStore;
 }
 

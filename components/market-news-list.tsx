@@ -7,6 +7,7 @@ export function MarketNewsList({
   title,
   description,
   compact = false,
+  wrapInCard = true,
   emptyTitle = "Market News is being prepared",
   emptyDescription = "Fresh stories will appear here once the latest market news articles are ready.",
 }: {
@@ -14,6 +15,7 @@ export function MarketNewsList({
   title?: string;
   description?: string;
   compact?: boolean;
+  wrapInCard?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
@@ -42,6 +44,14 @@ export function MarketNewsList({
     );
   }
 
+  const content = (
+    <div className="divide-y-0">
+      {articles.map((article) => (
+        <MarketNewsCard key={article.id} article={article} compact={compact} />
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-5">
       {title ? (
@@ -57,11 +67,7 @@ export function MarketNewsList({
         </div>
       ) : null}
 
-      <div className="grid gap-5">
-        {articles.map((article) => (
-          <MarketNewsCard key={article.id} article={article} compact={compact} />
-        ))}
-      </div>
+      {wrapInCard ? <ProductCard tone="secondary" className="p-0">{content}</ProductCard> : content}
     </div>
   );
 }

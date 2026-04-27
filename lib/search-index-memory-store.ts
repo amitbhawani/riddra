@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { getSearchIndexRegistryRows } from "@/lib/search-index-registry";
 
 export type SearchIndexLane = {
@@ -150,6 +151,10 @@ async function buildDefaultStore(): Promise<SearchIndexMemoryStore> {
 }
 
 async function readStore(): Promise<SearchIndexMemoryStore | null> {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const cached = readTimedCache(searchIndexStoreCache);
 
   if (cached) {
@@ -170,6 +175,10 @@ async function readStore(): Promise<SearchIndexMemoryStore | null> {
 }
 
 async function writeStore(store: SearchIndexMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Search index memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
   searchIndexStoreCache = {
@@ -183,6 +192,10 @@ async function writeStore(store: SearchIndexMemoryStore) {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

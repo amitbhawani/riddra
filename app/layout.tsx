@@ -95,6 +95,7 @@ export default async function RootLayout({
         ) : (
           <div className="public-site-shell relative min-h-screen overflow-hidden [--site-top-row-height:56px] [--site-ticker-row-height:24px] [--site-header-offset:calc(var(--site-top-row-height)+var(--site-ticker-row-height))]">
             <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:42px_42px] opacity-[0.08]" />
+            {/* MarketTicker: render once only — do not nest inside page components */}
             <SiteHeader />
             <main className="public-site-main relative pt-[var(--site-header-offset)]">{children}</main>
             <SiteFooter />

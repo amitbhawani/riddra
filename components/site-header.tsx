@@ -6,7 +6,15 @@ import { SiteHeaderNavClient } from "@/components/site-header-nav-client";
 export async function SiteHeader() {
   const siteChrome = getSiteChromeConfig();
   const user = await getCurrentUser();
-  const profile = user ? await getUserProductProfile(user) : null;
+  let profile = null;
+
+  if (user) {
+    try {
+      profile = await getUserProductProfile(user);
+    } catch {
+      profile = null;
+    }
+  }
 
   return (
     <SiteHeaderNavClient

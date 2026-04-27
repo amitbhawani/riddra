@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { sourceJobSamples } from "@/lib/source-jobs";
 
@@ -138,6 +139,10 @@ const DEFAULT_STORE: SourceJobMemoryStore = {
 };
 
 async function readStore(): Promise<SourceJobMemoryStore> {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<SourceJobMemoryStore>;
@@ -156,6 +161,10 @@ async function readStore(): Promise<SourceJobMemoryStore> {
 }
 
 async function writeStore(store: SourceJobMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Source job memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -182,8 +191,17 @@ async function writeDurableSourceJobState(store: SourceJobMemoryStore) {
 }
 
 async function persistStore(store: SourceJobMemoryStore) {
+  const wroteDurableState = await writeDurableSourceJobState(store);
+
+  if (wroteDurableState) {
+    return;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Source job memory"));
+  }
+
   await writeStore(store);
-  await writeDurableSourceJobState(store);
 }
 
 async function ensureStore() {
@@ -196,6 +214,10 @@ async function ensureStore() {
       runs: durableState.runs,
       hotCacheLanes: durableState.hotCacheLanes,
     };
+  }
+
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
   }
 
   const storeExists = await access(STORE_PATH)

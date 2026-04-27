@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 type CommodityHistoryStore = {
   gold: GoldHistoryEntry[];
   silver: SilverHistoryEntry[];
@@ -39,6 +41,10 @@ function getTodayIso() {
 }
 
 async function readStore(): Promise<CommodityHistoryStore> {
+  if (!canUseFileFallback()) {
+    return { gold: [], silver: [] };
+  }
+
   try {
     const content = await readFile(getHistoryPath(), "utf8");
     const parsed = JSON.parse(content) as Partial<CommodityHistoryStore>;
@@ -52,6 +58,10 @@ async function readStore(): Promise<CommodityHistoryStore> {
 }
 
 async function writeStore(store: CommodityHistoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Commodity history persistence"));
+  }
+
   const target = getHistoryPath();
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, JSON.stringify(store, null, 2), "utf8");

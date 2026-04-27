@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 import type { CandlePoint } from "@/lib/advanced-chart-data";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type IndexSourceEntry = {
   indexSlug: string;
@@ -253,6 +254,10 @@ function sortNewestFirst<T extends { createdAt: string }>(entries: T[]) {
 }
 
 async function readStore(): Promise<SourceEntryStore> {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<SourceEntryStore>;
@@ -283,6 +288,10 @@ async function readStore(): Promise<SourceEntryStore> {
 }
 
 async function writeStore(store: SourceEntryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Source entry console persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }

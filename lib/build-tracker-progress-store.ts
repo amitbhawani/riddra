@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import {
   backendPendingChecklist,
   buildTrackerPhases,
@@ -166,6 +167,10 @@ function truncateCopy(value: string, maxLength: number) {
 }
 
 async function readStore() {
+  if (!canUseFileFallback()) {
+    return null;
+  }
+
   try {
     const content = await readFile(PROGRESS_STORE_PATH, "utf8");
     return JSON.parse(content) as BuildTrackerProgressStore;
@@ -175,11 +180,22 @@ async function readStore() {
 }
 
 async function writeStore(store: BuildTrackerProgressStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Build tracker progress history"));
+  }
+
   await mkdir(path.dirname(PROGRESS_STORE_PATH), { recursive: true });
   await writeFile(PROGRESS_STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      history: legacyHistorySeed,
+    };
+  }
+
   const exists = await access(PROGRESS_STORE_PATH)
     .then(() => true)
     .catch(() => false);

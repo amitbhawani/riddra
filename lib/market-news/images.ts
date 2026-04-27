@@ -5,6 +5,7 @@ import {
 import type {
   MarketNewsArticleImageRecord,
   MarketNewsArticleRecord,
+  MarketNewsArticleWithRelations,
   MarketNewsFallbackImageKey,
   MarketNewsImageContext,
   MarketNewsRawItemRecord,
@@ -111,6 +112,60 @@ export const MARKET_NEWS_FALLBACK_IMAGES: Record<
   ipo: "/news-fallbacks/riddra-ipo-news.svg",
 };
 
+const BRANDED_MARKET_NEWS_FALLBACK_IMAGE = "/images/news-fallback.svg";
+
+export function getMarketNewsDisplayFallbackImage(
+  article:
+    | Pick<
+        MarketNewsArticleRecord,
+        | "rewritten_title"
+        | "original_title"
+        | "short_summary"
+        | "summary"
+        | "source_name"
+        | "source_url"
+        | "canonical_url"
+        | "fallback_image_url"
+      >
+    | Pick<
+        MarketNewsArticleWithRelations,
+        | "rewritten_title"
+        | "original_title"
+        | "short_summary"
+        | "summary"
+        | "source_name"
+        | "source_url"
+        | "canonical_url"
+        | "fallback_image_url"
+      >,
+) {
+  // Today this resolves to static Riddra artwork. A future admin-managed
+  // placeholder image can plug into this single fallback path.
+  const resolvedFallback =
+    normalizeNewsImageUrl(article.fallback_image_url, article.canonical_url ?? article.source_url) ??
+    getFallbackNewsImage({
+      title: article.rewritten_title || article.original_title,
+      excerpt: article.short_summary || article.summary,
+      sourceName: article.source_name,
+      sourceUrl: article.source_url,
+      canonicalUrl: article.canonical_url,
+    });
+
+  if (!resolvedFallback) {
+    return BRANDED_MARKET_NEWS_FALLBACK_IMAGE;
+  }
+
+  if (
+    resolvedFallback.includes("/news-fallbacks/") ||
+    resolvedFallback.includes("riddra-stock-news.svg") ||
+    resolvedFallback.includes("riddra-market-news.svg")
+  ) {
+    return BRANDED_MARKET_NEWS_FALLBACK_IMAGE;
+  }
+
+  return resolvedFallback;
+}
+
 function normalizeKeywordText(...values: Array<string | null | undefined>) {
   return values
     .map((value) => normalizeWhitespace(value).toLowerCase())
@@ -163,10 +218,20 @@ export function normalizeNewsImageUrl(
   value: string | null | undefined,
   baseUrl?: string | null,
 ) {
+  const rawValue = normalizeWhitespace(value);
+
+  if (rawValue.startsWith("/")) {
+    return rawValue;
+  }
+
   const normalizedUrl = normalizeMarketNewsUrl(value, baseUrl);
 
   if (!normalizedUrl) {
     return null;
+  }
+
+  if (normalizedUrl.startsWith("/")) {
+    return normalizedUrl;
   }
 
   try {

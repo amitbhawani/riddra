@@ -8,6 +8,7 @@ import {
   listDurableAdminEditorLocks,
   saveDurableAdminEditorLock,
 } from "@/lib/cms-durable-state";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type AdminEditorLock = {
   id: string;
@@ -56,6 +57,10 @@ function isActiveLock(lock: AdminEditorLock) {
 }
 
 async function readFallbackStore(): Promise<AdminEditorLockStore> {
+  if (!canUseFileFallback()) {
+    return { locks: [] };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<AdminEditorLockStore>;
@@ -74,6 +79,10 @@ async function readFallbackStore(): Promise<AdminEditorLockStore> {
 }
 
 async function writeFallbackStore(store: AdminEditorLockStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Admin editor lock persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(
     STORE_PATH,
@@ -83,6 +92,10 @@ async function writeFallbackStore(store: AdminEditorLockStore) {
 }
 
 async function syncFallbackLock(lock: AdminEditorLock) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   const store = await readFallbackStore();
   await writeFallbackStore({
     locks: [
@@ -155,11 +168,19 @@ export async function heartbeatAdminEditorLock(input: {
   if (hasDurableCmsStateStore()) {
     const durableSaved = await saveDurableAdminEditorLock(lock);
     if (durableSaved) {
-      await syncFallbackLock(durableSaved);
+      if (canUseFileFallback()) {
+        await syncFallbackLock(durableSaved);
+      }
     } else {
+      if (!canUseFileFallback()) {
+        throw new Error(getFileFallbackDisabledMessage("Admin editor lock persistence"));
+      }
       await syncFallbackLock(lock);
     }
   } else {
+    if (!canUseFileFallback()) {
+      throw new Error(getFileFallbackDisabledMessage("Admin editor lock persistence"));
+    }
     await syncFallbackLock(lock);
   }
 
@@ -177,18 +198,20 @@ export async function releaseAdminEditorLock(input: {
   const family = cleanString(input.family, 120);
   const slug = cleanString(input.slug, 160).toLowerCase();
   const editorEmail = cleanString(input.editorEmail, 240);
-  const store = await readFallbackStore();
+  if (canUseFileFallback()) {
+    const store = await readFallbackStore();
 
-  await writeFallbackStore({
-    locks: store.locks.filter(
-      (lock) =>
-        !(
-          lock.family === family &&
-          lock.slug === slug &&
-          lock.editorEmail.toLowerCase() === editorEmail.toLowerCase()
-        ),
-    ),
-  });
+    await writeFallbackStore({
+      locks: store.locks.filter(
+        (lock) =>
+          !(
+            lock.family === family &&
+            lock.slug === slug &&
+            lock.editorEmail.toLowerCase() === editorEmail.toLowerCase()
+          ),
+      ),
+    });
+  }
 
   if (hasDurableCmsStateStore()) {
     await deleteDurableAdminEditorLock(family, slug, editorEmail);

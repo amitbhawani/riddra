@@ -37,6 +37,7 @@ import {
 } from "@/lib/admin-operator-store";
 import { saveAdminPendingApproval } from "@/lib/admin-approvals";
 import { persistApprovedAdminRecordChange } from "@/lib/admin-record-workflow";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { canEditAdminFamily, hasProductUserCapability, type ProductUserCapability, type ProductUserRole } from "@/lib/product-permissions";
 
 export const supportedAdminImportFamilies = [
@@ -1880,6 +1881,10 @@ const EMPTY_STORE: ImportStore = {
 };
 
 async function readFallbackStore() {
+  if (!canUseFileFallback()) {
+    return EMPTY_STORE;
+  }
+
   try {
     const fileStats = await stat(STORE_PATH);
     if (storeCache && storeCache.mtimeMs === fileStats.mtimeMs) {
@@ -1899,6 +1904,10 @@ async function readFallbackStore() {
 }
 
 async function writeFallbackStore(store: ImportStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Admin content import persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
   try {
@@ -1946,6 +1955,10 @@ async function readImportStore() {
 }
 
 async function mirrorBatchToFallback(batch: AdminImportBatch, rows: AdminImportBatchRow[]) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   const fallbackStore = await readFallbackStore();
   const existingIndex = fallbackStore.batches.findIndex((item) => item.id === batch.id);
   const nextBatches =

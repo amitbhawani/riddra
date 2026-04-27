@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
 import { buildAccountUserKey } from "@/lib/account-identity";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { getAccountBillingMemory, getBillingLedgerMemory } from "@/lib/billing-ledger-memory-store";
 import { readDurableGlobalStateLane, writeDurableGlobalStateLane } from "@/lib/global-state-durable-store";
 import { type PlanTier, getPlanLabel } from "@/lib/plan-tiers";
@@ -259,6 +260,10 @@ async function buildDefaultStore(): Promise<EntitlementSyncStore> {
 }
 
 async function readStore(): Promise<EntitlementSyncStore | null> {
+  if (!canUseFileFallback()) {
+    return await buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as EntitlementSyncStore;
@@ -268,6 +273,10 @@ async function readStore(): Promise<EntitlementSyncStore | null> {
 }
 
 async function writeStore(store: EntitlementSyncStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Entitlement sync persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -289,6 +298,10 @@ async function writeDurableEntitlementHistoryRows(historyRows: EntitlementSyncHi
 }
 
 async function removeEntitlementAccountRecordFromFileStore(userKey: string) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   const store = await readStore();
 
   if (!store?.accounts?.some((item) => item.userKey === userKey)) {
@@ -320,6 +333,14 @@ async function ensureStore() {
     };
   }
 
+  if (!canUseFileFallback()) {
+    const nextStore = await buildDefaultStore();
+    return {
+      ...nextStore,
+      historyRows: durableHistoryRows ?? nextStore.historyRows,
+    };
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);
@@ -333,6 +354,37 @@ async function ensureStore() {
   await writeStore(nextStore);
   await writeDurableEntitlementHistoryRows(nextStore.historyRows);
   return nextStore;
+}
+
+async function persistEntitlementState(
+  store: EntitlementSyncStore,
+  accountRecord?: EntitlementSyncAccountRecord,
+) {
+  const [wroteHistoryRows, wroteAccountRecord] = await Promise.all([
+    writeDurableEntitlementHistoryRows(store.historyRows),
+    accountRecord
+      ? writeDurableAccountStateLane(
+          accountRecord.userKey,
+          accountRecord.email,
+          DURABLE_LANE,
+          cloneEntitlementAccountRecord(accountRecord),
+        )
+      : Promise.resolve(true),
+  ]);
+
+  if (wroteHistoryRows && wroteAccountRecord) {
+    if (canUseFileFallback()) {
+      await writeStore(store);
+    }
+    return "supabase_private_beta" as const;
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Entitlement sync persistence"));
+  }
+
+  await writeStore(store);
+  return "file_backed_preview" as const;
 }
 
 async function ensureAccountRecordInStore(store: EntitlementSyncStore, user: Pick<User, "id" | "email">, plan: PlanTier) {
@@ -444,17 +496,12 @@ async function ensureAccountRecord(user: Pick<User, "id" | "email">, plan: PlanT
   let storageMode: AccountEntitlementSyncMemory["storageMode"] = "file_backed_preview";
 
   if (ensured.store !== store) {
-    await writeStore(ensured.store);
+    if (canUseFileFallback()) {
+      await writeStore(ensured.store);
+    }
   }
 
-  storageMode = await writeDurableAccountStateLane(
-    ensured.record.userKey,
-    ensured.record.email,
-    DURABLE_LANE,
-    cloneEntitlementAccountRecord(ensured.record),
-  )
-    ? "supabase_private_beta"
-    : "file_backed_preview";
+  storageMode = await persistEntitlementState(ensured.store, ensured.record);
 
   if (storageMode === "supabase_private_beta") {
     await removeEntitlementAccountRecordFromFileStore(ensured.record.userKey);
@@ -549,14 +596,7 @@ export async function saveEntitlementOverride(
       historyRows: [nextHistory, ...store.historyRows],
     };
 
-    await writeStore(nextStore);
-    await writeDurableEntitlementHistoryRows(nextStore.historyRows);
-    await writeDurableAccountStateLane(
-      updatedRecord.userKey,
-      updatedRecord.email,
-      DURABLE_LANE,
-      cloneEntitlementAccountRecord(updatedRecord),
-    );
+    await persistEntitlementState(nextStore, updatedRecord);
   });
 
   entitlementSyncMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -605,14 +645,7 @@ export async function recordEntitlementSyncChange(
       historyRows: [nextHistory, ...store.historyRows],
     };
 
-    await writeStore(nextStore);
-    await writeDurableEntitlementHistoryRows(nextStore.historyRows);
-    await writeDurableAccountStateLane(
-      updatedRecord.userKey,
-      updatedRecord.email,
-      DURABLE_LANE,
-      cloneEntitlementAccountRecord(updatedRecord),
-    );
+    await persistEntitlementState(nextStore, updatedRecord);
   });
 
   entitlementSyncMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -653,14 +686,7 @@ export async function removeEntitlementSyncHistoryRow(
       historyRows: store.historyRows.filter((item) => item.id !== id),
     };
 
-    await writeStore(nextStore);
-    await writeDurableEntitlementHistoryRows(nextStore.historyRows);
-    await writeDurableAccountStateLane(
-      updatedRecord.userKey,
-      updatedRecord.email,
-      DURABLE_LANE,
-      cloneEntitlementAccountRecord(updatedRecord),
-    );
+    await persistEntitlementState(nextStore, updatedRecord);
   });
 
   entitlementSyncMutationQueue = mutation.then(() => undefined, () => undefined);
@@ -708,14 +734,7 @@ export async function syncAccountEntitlementsFromBilling(
       historyRows: nextHistoryRows.length > 0 ? [...nextHistoryRows, ...store.historyRows] : store.historyRows,
     };
 
-    await writeStore(nextStore);
-    await writeDurableEntitlementHistoryRows(nextStore.historyRows);
-    await writeDurableAccountStateLane(
-      updatedRecord.userKey,
-      updatedRecord.email,
-      DURABLE_LANE,
-      cloneEntitlementAccountRecord(updatedRecord),
-    );
+    await persistEntitlementState(nextStore, updatedRecord);
   });
 
   entitlementSyncMutationQueue = mutation.then(() => undefined, () => undefined);

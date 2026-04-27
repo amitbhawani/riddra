@@ -1,6 +1,8 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 export type ArchiveRefreshRun = {
   family: string;
   sourceClass: string;
@@ -153,6 +155,10 @@ const DEFAULT_STORE: ArchiveRefreshStore = {
 };
 
 async function readStore(): Promise<ArchiveRefreshStore> {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<ArchiveRefreshStore>;
@@ -171,11 +177,19 @@ async function readStore(): Promise<ArchiveRefreshStore> {
 }
 
 async function writeStore(store: ArchiveRefreshStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Archive refresh memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function MarketNewsImage({
   primarySrc,
@@ -16,6 +16,10 @@ export function MarketNewsImage({
   const normalizedPrimary = useMemo(() => String(primarySrc || "").trim(), [primarySrc]);
   const normalizedFallback = useMemo(() => String(fallbackSrc || "").trim(), [fallbackSrc]);
   const [src, setSrc] = useState(normalizedPrimary || normalizedFallback);
+
+  useEffect(() => {
+    setSrc(normalizedPrimary || normalizedFallback);
+  }, [normalizedFallback, normalizedPrimary]);
 
   return (
     <img

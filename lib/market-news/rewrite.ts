@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { matchMarketNewsEntities } from "@/lib/market-news/entity-matcher";
+import { sanitizeMarketNewsEditorialCopy } from "@/lib/market-news/formatting";
 import { getNewsImageForRawItem } from "@/lib/market-news/images";
 import { normalizeWhitespace } from "@/lib/market-news/normalizers";
 import {
@@ -32,9 +33,9 @@ const ACCEPTABLE_SUMMARY_MIN_WORDS = 80;
 const ACCEPTABLE_SUMMARY_MAX_WORDS = 170;
 
 const MARKET_NEWS_AUTHORS = [
-  { name: "Author Amit", slug: "author-amit" },
-  { name: "Author Ramit", slug: "author-ramit" },
-  { name: "Author Tamit", slug: "author-tamit" },
+  { name: "Amit", slug: "author-amit" },
+  { name: "Ramit", slug: "author-ramit" },
+  { name: "Tamit", slug: "author-tamit" },
 ] as const;
 
 type OpenAiChatCompletionResponse = {
@@ -395,41 +396,26 @@ function buildSummaryFactSentences(
 ) {
   const facts: string[] = [];
 
-  if (rawItem.original_title) {
-    facts.push(
-      ensureSentence(`The original source headline focuses on ${rawItem.original_title}`),
-    );
-  }
-
   if (rawItem.original_excerpt) {
-    facts.push(
-      ensureSentence(`The available source excerpt says ${rawItem.original_excerpt}`),
-    );
-  }
-
-  if (rawItem.source_name) {
-    facts.push(
-      ensureSentence(`This update is attributed to ${rawItem.source_name}`),
-    );
+    facts.push(ensureSentence(trimToWordLimit(rawItem.original_excerpt, 28)));
+  } else if (rawItem.original_title) {
+    facts.push(ensureSentence(trimToWordLimit(rawItem.original_title, 18)));
   }
 
   const publishedAt = formatPublishedAt(rawItem.source_published_at);
 
   if (publishedAt) {
-    facts.push(
-      ensureSentence(`The source published this item on ${publishedAt}`),
-    );
+    facts.push(ensureSentence(`The update was published on ${publishedAt}`));
   }
 
-  if (rawItem.source_url) {
+  if (payload.companies.length) {
     facts.push(
-      "The original source link remains attached for direct attribution and additional context.",
-    );
-  }
-
-  if (payload.category) {
-    facts.push(
-      ensureSentence(`Riddra has classified the update under ${payload.category}`),
+      ensureSentence(
+        trimToWordLimit(
+          `${payload.companies.join(", ")} remain central to this update.`,
+          16,
+        ),
+      ),
     );
   }
 
@@ -505,12 +491,12 @@ function normalizeRewritePayload(
       trimToWordLimit(payload.seo_title || rewrittenTitle || rawItem.original_title, 14),
       protectedTerms,
     ),
-    seo_description: normalizeWhitespace(payload.seo_description),
+    seo_description: sanitizeMarketNewsEditorialCopy(normalizeWhitespace(payload.seo_description)),
     category: normalizedCategory,
-    impact_note: ensureSentence(trimToWordLimit(payload.impact_note, 22)),
+    impact_note: ensureSentence(trimToWordLimit(sanitizeMarketNewsEditorialCopy(payload.impact_note), 22)),
     slug: slugify(payload.slug || rewrittenTitle || rawItem.original_title),
-    summary: expandSummaryWithFacts(payload.summary, rawItem, payload),
-    short_summary: normalizeWhitespace(payload.short_summary),
+    summary: sanitizeMarketNewsEditorialCopy(expandSummaryWithFacts(payload.summary, rawItem, payload)),
+    short_summary: sanitizeMarketNewsEditorialCopy(normalizeWhitespace(payload.short_summary)),
   };
 
   if (countWords(normalized.summary) > TARGET_SUMMARY_MAX_WORDS) {

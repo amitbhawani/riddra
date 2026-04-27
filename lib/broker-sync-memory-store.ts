@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { getBrokerAdapterProfile } from "@/lib/broker-adapter-registry";
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
 import { buildAccountUserKey } from "@/lib/account-identity";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type BrokerSyncTarget = {
   brokerName: string;
@@ -251,6 +252,13 @@ function normalizeLegacySeededBrokerRecord(record: BrokerSyncAccountRecord): Bro
 }
 
 async function readStore(): Promise<BrokerSyncStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as BrokerSyncStore;
@@ -260,6 +268,10 @@ async function readStore(): Promise<BrokerSyncStore | null> {
 }
 
 async function writeStore(store: BrokerSyncStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Broker sync persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -283,6 +295,13 @@ async function readDurableBrokerRecord(userKey: string) {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+    };
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);
@@ -358,6 +377,10 @@ async function saveAccountRecord(record: BrokerSyncAccountRecord): Promise<Broke
   if (wroteDurableRecord) {
     await removeBrokerRecordFromFileStore(record.userKey);
     return "supabase_private_beta";
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Broker sync persistence"));
   }
 
   const store = await ensureStore();

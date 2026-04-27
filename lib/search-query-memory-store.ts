@@ -1,6 +1,8 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 export type SearchQueryEvent = {
   query: string;
   loggedAt: string;
@@ -77,6 +79,10 @@ function readTimedCache<T>(entry: TimedCacheEntry<T> | null) {
 }
 
 async function readStore(): Promise<SearchQueryMemoryStore | null> {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const cached = readTimedCache(searchQueryStoreCache);
 
   if (cached) {
@@ -97,6 +103,10 @@ async function readStore(): Promise<SearchQueryMemoryStore | null> {
 }
 
 async function writeStore(store: SearchQueryMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Search query memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
   searchQueryStoreCache = {
@@ -117,6 +127,10 @@ function buildDefaultStore(): SearchQueryMemoryStore {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

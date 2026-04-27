@@ -24,6 +24,10 @@ import {
   normalizeMembershipFeatureAccess,
   type MembershipFeatureAccess,
 } from "@/lib/membership-product-features";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 
 export type AdminPublishState =
   | "draft"
@@ -392,6 +396,7 @@ export const coreMembershipTierSlugs = ["free", "pro", "pro-max"] as const;
 
 const STORE_PATH = path.join(process.cwd(), "data", "admin-operator-console.json");
 const STORE_VERSION = 5;
+const ADMIN_OPERATOR_FILE_FALLBACK_SCOPE = "Admin operator data";
 let storeCache:
   | {
       mtimeMs: number;
@@ -1246,6 +1251,10 @@ const EMPTY_STORE: AdminOperatorStore = normalizeStore({
 });
 
 async function readFallbackStore(): Promise<AdminOperatorStore> {
+  if (!canUseFileFallback()) {
+    return EMPTY_STORE;
+  }
+
   try {
     const fileStats = await stat(STORE_PATH);
 
@@ -1265,7 +1274,18 @@ async function readFallbackStore(): Promise<AdminOperatorStore> {
   }
 }
 
-async function writeFallbackStore(store: AdminOperatorStore) {
+async function writeFallbackStore(
+  store: AdminOperatorStore,
+  options?: { skipWhenDisabled?: boolean },
+) {
+  if (!canUseFileFallback()) {
+    if (options?.skipWhenDisabled) {
+      return;
+    }
+
+    throw new Error(getFileFallbackDisabledMessage(ADMIN_OPERATOR_FILE_FALLBACK_SCOPE));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
   try {
@@ -1404,7 +1424,7 @@ async function readStore(): Promise<AdminOperatorStore> {
     return fallbackStore;
   }
 
-  if (shouldSeedDurableStore(durableStore, fallbackStore)) {
+  if (canUseFileFallback() && shouldSeedDurableStore(durableStore, fallbackStore)) {
     await seedDurableStoreFromFallback(fallbackStore);
     const seeded = await readDurableStore();
     return seeded ?? fallbackStore;
@@ -1413,8 +1433,11 @@ async function readStore(): Promise<AdminOperatorStore> {
   return durableStore;
 }
 
-async function writeStore(store: AdminOperatorStore) {
-  await writeFallbackStore(store);
+async function writeStore(
+  store: AdminOperatorStore,
+  options?: { skipWhenDisabled?: boolean },
+) {
+  await writeFallbackStore(store, options);
 }
 
 function withDerivedRefreshCounts(store: AdminOperatorStore) {
@@ -1643,15 +1666,18 @@ export async function saveAdminManagedRecord(input: SaveAdminRecordInput) {
     const durableSaved = await saveDurableAdminManagedRecordRow(nextRecord);
     if (durableSaved) {
       const normalizedSaved = normalizeRecord(durableSaved, existingIndex >= 0 ? existingIndex : 0);
-      await writeStore({
-        ...nextStore,
-        records:
-          existingIndex >= 0
-            ? nextStore.records.map((record, index) =>
-                index === existingIndex ? normalizedSaved : record,
-              )
-            : [normalizedSaved, ...nextStore.records.filter((record) => record.id !== normalizedSaved.id)],
-      });
+      await writeStore(
+        {
+          ...nextStore,
+          records:
+            existingIndex >= 0
+              ? nextStore.records.map((record, index) =>
+                  index === existingIndex ? normalizedSaved : record,
+                )
+              : [normalizedSaved, ...nextStore.records.filter((record) => record.id !== normalizedSaved.id)],
+        },
+        { skipWhenDisabled: true },
+      );
       return normalizedSaved;
     }
   }
@@ -1692,6 +1718,8 @@ export async function deleteAdminManagedRecord(input: {
       family: deletedRecord.family,
       slug: deletedRecord.slug,
     });
+    await writeStore(nextStore, { skipWhenDisabled: true });
+    return deletedRecord;
   }
 
   await writeStore(nextStore);
@@ -1725,7 +1753,7 @@ export async function appendAdminRecordRevision(
   if (hasDurableCmsStateStore()) {
     const durableRevision = await appendDurableAdminRecordRevisionRow(revision);
     if (durableRevision) {
-      await writeStore(nextStore);
+      await writeStore(nextStore, { skipWhenDisabled: true });
       return durableRevision;
     }
   }
@@ -1760,7 +1788,7 @@ export async function appendAdminGlobalRevision(
   if (hasDurableCmsStateStore()) {
     const durableRevision = await appendDurableAdminGlobalRevisionRow(revision);
     if (durableRevision) {
-      await writeStore(nextStore);
+      await writeStore(nextStore, { skipWhenDisabled: true });
       return durableRevision;
     }
   }
@@ -1791,13 +1819,16 @@ export async function saveAdminGlobalCollection(
   if (hasDurableCmsStateStore()) {
     const durableItems = await saveDurableAdminGlobalCollectionRows(input.section, items);
     if (durableItems) {
-      await writeStore({
-        ...nextStore,
-        globalSite: {
-          ...nextStore.globalSite,
-          [input.section]: durableItems.map((item, index) => normalizeGlobalModule(item, index)),
+      await writeStore(
+        {
+          ...nextStore,
+          globalSite: {
+            ...nextStore.globalSite,
+            [input.section]: durableItems.map((item, index) => normalizeGlobalModule(item, index)),
+          },
         },
-      });
+        { skipWhenDisabled: true },
+      );
       return durableItems;
     }
   }
@@ -1843,23 +1874,28 @@ export async function saveAdminMembershipTier(
     );
     const saved = await saveDurableAdminMembershipTier(tier);
     if (saved) {
-      const fallbackStore = await readFallbackStore();
-      const existingFallbackIndex = fallbackStore.membershipTiers.findIndex(
-        (item) => item.slug === saved.slug,
-      );
-      const nextMembershipTiers =
-        existingFallbackIndex >= 0
-          ? fallbackStore.membershipTiers.map((item, index) =>
-              index === existingFallbackIndex ? saved : item,
-            )
-          : [...fallbackStore.membershipTiers, saved];
-      await writeFallbackStore({
-        ...fallbackStore,
-        membershipTiers: nextMembershipTiers.sort(
-          (left, right) => left.displayOrder - right.displayOrder,
-        ),
-        updatedAt: saved.updatedAt,
-      });
+      if (canUseFileFallback()) {
+        const fallbackStore = await readFallbackStore();
+        const existingFallbackIndex = fallbackStore.membershipTiers.findIndex(
+          (item) => item.slug === saved.slug,
+        );
+        const nextMembershipTiers =
+          existingFallbackIndex >= 0
+            ? fallbackStore.membershipTiers.map((item, index) =>
+                index === existingFallbackIndex ? saved : item,
+              )
+            : [...fallbackStore.membershipTiers, saved];
+        await writeFallbackStore(
+          {
+            ...fallbackStore,
+            membershipTiers: nextMembershipTiers.sort(
+              (left, right) => left.displayOrder - right.displayOrder,
+            ),
+            updatedAt: saved.updatedAt,
+          },
+          { skipWhenDisabled: true },
+        );
+      }
       return saved;
     }
   }
@@ -1989,7 +2025,7 @@ export async function updateAdminImportItemStatus(
   if (hasDurableCmsStateStore()) {
     const durableRecord = await saveDurableAdminManagedRecordRow(nextRecord);
     if (durableRecord) {
-      await writeStore(nextStore);
+      await writeStore(nextStore, { skipWhenDisabled: true });
       return nextImport;
     }
   }
@@ -2036,7 +2072,7 @@ export async function saveAdminRefreshJob(input: SaveAdminRefreshJobInput) {
   if (hasDurableCmsStateStore()) {
     const durableJob = await saveDurableAdminRefreshJobRow(nextJob);
     if (durableJob) {
-      await writeStore(nextStore);
+      await writeStore(nextStore, { skipWhenDisabled: true });
       return durableJob;
     }
   }
@@ -2083,7 +2119,7 @@ export async function runAdminRefreshJob(input: RunAdminRefreshJobInput) {
   if (hasDurableCmsStateStore()) {
     const durableJob = await saveDurableAdminRefreshJobRow(nextJob);
     if (durableJob) {
-      await writeStore(nextStore);
+      await writeStore(nextStore, { skipWhenDisabled: true });
       return durableJob;
     }
   }

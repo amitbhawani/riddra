@@ -5,14 +5,10 @@ import { GlobalSidebarPageShell } from "@/components/global-sidebar-page-shell";
 import { MarketNewsList } from "@/components/market-news-list";
 import { MarketNewsTopStories } from "@/components/market-news-top-stories";
 import { ProductCard } from "@/components/product-page-system";
-import {
-  getRiddraDailyMarketBrief,
-  getRiddraDailyMarketBriefPreview,
-} from "@/lib/market-news/brief";
+import { getRiddraDailyMarketBrief } from "@/lib/market-news/brief";
 import {
   getMarketNewsArticles,
   getMarketNewsFilterOptions,
-  getTopMarketNewsArticles,
 } from "@/lib/market-news/queries";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 
@@ -106,6 +102,13 @@ function hasActiveFilters(filters: {
   return Boolean(filters.company || filters.sector || filters.category || filters.impactLabel);
 }
 
+function getFilterOptionLabel(
+  options: readonly { value: string; label: string }[],
+  value: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 export default async function MarketNewsPage({ searchParams }: PageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const filters = {
@@ -117,7 +120,7 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
   const visibleNewsCount = parseVisibleNewsCount(resolvedSearchParams.news_count);
   const activeFilters = hasActiveFilters(filters);
 
-  const [filterOptions, dailyBrief, topStories, articles] = await Promise.all([
+  const [filterOptions, dailyBrief, articles] = await Promise.all([
     getMarketNewsFilterOptions().catch(() => ({
       companies: [],
       sectors: [],
@@ -125,18 +128,18 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
       impactLabels: [],
     })),
     getRiddraDailyMarketBrief().catch(() => null),
-    getTopMarketNewsArticles({
-      ...filters,
-      limit: 3,
-    }).catch(() => []),
     getMarketNewsArticles({
       ...filters,
-      limit: Math.min(visibleNewsCount + 1, 60),
+      limit: Math.min(visibleNewsCount + 16, 60),
     }).catch(() => []),
   ]);
-  const visibleArticles = articles.slice(0, visibleNewsCount);
-  const hasMoreArticles = articles.length > visibleNewsCount;
+
+  const topStories = articles.slice(0, 3);
+  const latestPool = articles.slice(topStories.length);
+  const visibleArticles = latestPool.slice(0, visibleNewsCount);
+  const hasMoreArticles = latestPool.length > visibleNewsCount;
   const shouldShowDailyBrief = Boolean(dailyBrief && dailyBrief.articles.length >= 3);
+  const shouldShowLatestSection = visibleArticles.length > 0 || !topStories.length;
   const loadMoreHref = hasMoreArticles
     ? buildMarketNewsPageHref({
         ...filters,
@@ -148,172 +151,190 @@ export default async function MarketNewsPage({ searchParams }: PageProps) {
     <GlobalSidebarPageShell
       category="markets"
       className="space-y-4"
-      leftClassName="riddra-legacy-light-surface space-y-6"
+      leftClassName="riddra-legacy-light-surface"
     >
-      <ProductCard tone="secondary" className="space-y-4 p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.72)]">
-              Filter stories
+      <div className="w-full space-y-6">
+        <ProductCard tone="secondary" className="space-y-5 p-5 sm:p-6">
+          <div className="space-y-2">
+            <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">
+              Market news
             </p>
+            <h1 className="riddra-product-body text-[34px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[40px]">
+              Market news
+            </h1>
             <p className="riddra-product-body text-[14px] leading-7 text-[rgba(107,114,128,0.86)]">
-              Filter stories by company, sector, category, or story impact.
+              Filter stories by company, sector, or category.
             </p>
           </div>
-          {activeFilters ? (
-            <Link
-              href="/markets/news"
-              className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
-            >
-              Clear filters
-            </Link>
-          ) : null}
-        </div>
 
-        <form action="/markets/news" method="get" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-1.5">
-            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
-              Company
-            </span>
-            <select
-              name="company"
-              defaultValue={filters.company}
-              className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
-            >
-              <option value="">All companies</option>
-              {filterOptions.companies.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-1.5">
-            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
-              Sector
-            </span>
-            <select
-              name="sector"
-              defaultValue={filters.sector}
-              className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
-            >
-              <option value="">All sectors</option>
-              {filterOptions.sectors.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-1.5">
-            <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
-              Category
-            </span>
-            <select
-              name="category"
-              defaultValue={filters.category}
-              className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
-            >
-              <option value="">All categories</option>
-              {filterOptions.categories.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex flex-wrap items-end gap-3 pt-6 xl:pt-0">
-            <button
-              type="submit"
-              className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium transition hover:bg-[#244b85]"
-            >
-              Apply filters
-            </button>
-            {activeFilters ? (
-              <Link
-                href="/markets/news"
-                className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
+          <form action="/markets/news" method="get" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <label className="grid gap-1.5">
+              <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
+                Company
+              </span>
+              <select
+                name="company"
+                defaultValue={filters.company}
+                className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
               >
-                Reset
-              </Link>
-            ) : null}
-          </div>
-        </form>
-      </ProductCard>
-
-      {shouldShowDailyBrief && dailyBrief ? (
-        <ProductCard tone="secondary" className="space-y-4 p-4 sm:p-5">
-          <div className="space-y-1.5">
-            <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.18em] text-[rgba(107,114,128,0.72)]">
-              Today&apos;s Market Brief
-            </p>
-            <h2 className="text-[28px] font-semibold tracking-[-0.03em] text-[#1B3A6B] sm:text-[32px]">
-              {dailyBrief.headline}
-            </h2>
-            <p className="riddra-product-body max-w-[920px] text-[14px] leading-7 text-[rgba(107,114,128,0.88)]">
-              {getRiddraDailyMarketBriefPreview(dailyBrief)}
-            </p>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div className="space-y-2">
-              <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-[rgba(107,114,128,0.72)]">
-                Key highlights
-              </p>
-              <ul className="space-y-2">
-                {dailyBrief.highlights.slice(0, 3).map((highlight, index) => (
-                  <li
-                    key={`${dailyBrief.articles[index]?.id ?? index}-${highlight}`}
-                    className="rounded-[12px] border border-[rgba(226,222,217,0.82)] bg-white/88 px-4 py-3 text-[14px] leading-7 text-[rgba(55,65,81,0.92)]"
-                  >
-                    {highlight}
-                  </li>
+                <option value="">All companies</option>
+                {filterOptions.companies.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
-              </ul>
-            </div>
+              </select>
+            </label>
 
-            <div className="flex lg:justify-end">
-              <Link
-                href="/markets/brief"
+            <label className="grid gap-1.5">
+              <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
+                Sector
+              </span>
+              <select
+                name="sector"
+                defaultValue={filters.sector}
+                className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
+              >
+                <option value="">All sectors</option>
+                {filterOptions.sectors.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-1.5">
+              <span className="text-[12px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
+                Category
+              </span>
+              <select
+                name="category"
+                defaultValue={filters.category}
+                className="rounded-[12px] border border-[rgba(221,215,207,0.94)] bg-white px-3 py-2.5 text-sm text-[#1B3A6B] outline-none transition focus:border-[rgba(27,58,107,0.28)]"
+              >
+                <option value="">All categories</option>
+                {filterOptions.categories.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex flex-wrap items-end gap-3 pt-6 xl:pt-0">
+              <button
+                type="submit"
                 className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-4 py-2 text-sm font-medium transition hover:bg-[#244b85]"
               >
-                Read full brief
+                Apply filters
+              </button>
+              {activeFilters ? (
+                <Link
+                  href="/markets/news"
+                  className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
+                >
+                  Clear all
+                </Link>
+              ) : null}
+            </div>
+          </form>
+
+          {activeFilters ? (
+            <div className="flex flex-wrap items-center gap-2 border-t border-[rgba(226,222,217,0.82)] pt-3">
+              {filters.company ? (
+                <span className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.04)] px-3 py-1.5 text-[12px] font-medium text-[#1B3A6B]">
+                  Company: {getFilterOptionLabel(filterOptions.companies, filters.company)}
+                </span>
+              ) : null}
+              {filters.sector ? (
+                <span className="inline-flex rounded-full border border-[rgba(107,114,128,0.16)] bg-[rgba(107,114,128,0.05)] px-3 py-1.5 text-[12px] font-medium text-[rgba(55,65,81,0.92)]">
+                  Sector: {getFilterOptionLabel(filterOptions.sectors, filters.sector)}
+                </span>
+              ) : null}
+              {filters.category ? (
+                <span className="inline-flex rounded-full border border-[rgba(212,133,59,0.16)] bg-[rgba(212,133,59,0.08)] px-3 py-1.5 text-[12px] font-medium text-[#8E5723]">
+                  Category: {getFilterOptionLabel(filterOptions.categories, filters.category)}
+                </span>
+              ) : null}
+              <span className="ml-auto text-[13px] text-[rgba(107,114,128,0.86)]">
+                Showing {articles.length} {articles.length === 1 ? "story" : "stories"}
+              </span>
+            </div>
+          ) : null}
+        </ProductCard>
+
+        {shouldShowDailyBrief && dailyBrief ? (
+          <ProductCard
+            tone="secondary"
+            className="space-y-4 border-l-[3px] border-l-[#D4853B] px-5 py-5 sm:px-6"
+          >
+            <div className="space-y-1.5">
+              <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.16em] text-[#8E5723]">
+                Today&apos;s market brief
+              </p>
+              <h2 className="riddra-product-body text-[28px] font-semibold tracking-tight text-[#1B3A6B] sm:text-[32px]">
+                {dailyBrief.headline}
+              </h2>
+            </div>
+
+            <ul className="space-y-2">
+              {dailyBrief.highlights.slice(0, 5).map((highlight, index) => (
+                <li
+                  key={`${dailyBrief.articles[index]?.id ?? index}-${highlight}`}
+                  className="rounded-[12px] border border-[rgba(226,222,217,0.82)] bg-white/88 px-4 py-3 text-[14px] leading-7 text-[rgba(55,65,81,0.92)]"
+                >
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex">
+              <Link
+                href="/markets/brief"
+                className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.04)] px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:bg-[rgba(27,58,107,0.08)]"
+              >
+                Read full brief →
               </Link>
             </div>
+          </ProductCard>
+        ) : null}
+
+        {topStories.length ? <MarketNewsTopStories articles={topStories} /> : null}
+
+        {shouldShowLatestSection ? (
+          <section className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[rgba(221,215,207,0.92)]" />
+              <p className="riddra-product-body text-[11px] font-medium uppercase tracking-[0.06em] text-[rgba(107,114,128,0.78)]">
+                Latest
+              </p>
+              <div className="h-px flex-1 bg-[rgba(221,215,207,0.92)]" />
+            </div>
+
+            <MarketNewsList
+              articles={visibleArticles}
+              emptyTitle={activeFilters ? "No stories match these filters yet" : "Market News is being prepared"}
+              emptyDescription={
+                activeFilters
+                  ? "Try clearing one or more filters to return to the broader market news feed."
+                  : "Fresh stories will appear here once the latest market news articles are ready for the public surface."
+              }
+            />
+          </section>
+        ) : null}
+
+        {loadMoreHref ? (
+          <div className="flex justify-center pt-1">
+            <Link
+              href={loadMoreHref}
+              className="inline-flex items-center justify-center rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-5 py-2.5 text-sm font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.22)] hover:bg-[rgba(27,58,107,0.04)]"
+            >
+              Load more stories
+            </Link>
           </div>
-        </ProductCard>
-      ) : null}
-
-      <MarketNewsTopStories articles={topStories} />
-
-      <MarketNewsList
-        articles={visibleArticles}
-        title="Latest stories"
-        description={
-          activeFilters
-            ? "Filtered stories matching the current market news selections."
-            : "Each story keeps the rewritten title, concise summary, time, and related entities in one card."
-        }
-        emptyTitle={activeFilters ? "No stories match these filters yet" : "Market News is being prepared"}
-        emptyDescription={
-          activeFilters
-            ? "Try clearing one or more filters to return to the broader market news feed."
-            : "Fresh stories will appear here once the latest market news articles are ready for the public surface."
-        }
-      />
-      {loadMoreHref ? (
-        <div className="flex justify-center pt-1">
-          <Link
-            href={loadMoreHref}
-            className="riddra-button-link-primary inline-flex items-center justify-center rounded-full border border-[rgba(27,58,107,0.16)] bg-[#1B3A6B] px-5 py-2.5 text-sm font-medium transition hover:bg-[#244b85]"
-          >
-            Load 5 more news
-          </Link>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </GlobalSidebarPageShell>
   );
 }

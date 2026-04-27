@@ -86,3 +86,21 @@ export function isHostedDbRuntime() {
 export function isLocalJsonRuntime() {
   return getDurableDataRuntime() === "local_json";
 }
+
+export function canUseFileFallback() {
+  const vercelFlag = String(process.env.VERCEL ?? "").trim().toLowerCase();
+
+  if (vercelFlag === "1" || vercelFlag === "true") {
+    return false;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  return isLocalDevRuntime() && isLocalJsonRuntime();
+}
+
+export function getFileFallbackDisabledMessage(scope = "This operation") {
+  return `${scope} requires durable Supabase storage in hosted mode. Local JSON fallback is disabled.`;
+}

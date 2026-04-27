@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 
 import { buildAccountUserKey } from "@/lib/account-identity";
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type SupportFollowUpRequest = {
   id: string;
@@ -110,6 +111,13 @@ function cloneRecord(record: SupportFollowUpRecord): SupportFollowUpRecord {
 }
 
 async function readStore(): Promise<SupportFollowUpStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as SupportFollowUpStore;
@@ -126,6 +134,10 @@ async function readStore(): Promise<SupportFollowUpStore | null> {
 }
 
 async function writeStore(store: SupportFollowUpStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Support follow-up persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -144,6 +156,13 @@ async function removeSupportRecordFromFileStore(userKey: string) {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      accounts: [],
+    };
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);
@@ -185,6 +204,10 @@ async function saveSupportRecord(record: SupportFollowUpRecord): Promise<Account
   if (wroteDurableRecord) {
     await removeSupportRecordFromFileStore(record.userKey);
     return "supabase_private_beta";
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Support follow-up persistence"));
   }
 
   const store = await ensureStore();

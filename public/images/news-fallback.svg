@@ -1,0 +1,23 @@
+<svg width="1200" height="675" viewBox="0 0 1200 675" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="675" rx="28" fill="#F5F1EA"/>
+  <rect x="48" y="48" width="1104" height="579" rx="24" fill="url(#paint0_linear)"/>
+  <rect x="96" y="108" width="220" height="220" rx="28" fill="#1B3A6B"/>
+  <path d="M164 271V165H212.5C238.3 165 256 180.8 256 204.6C256 222 245.7 235 229.2 240.3L261 271H220.6L195.4 246.5H190V271H164ZM190 224.7H208.7C220.4 224.7 228.1 217.4 228.1 206.4C228.1 195.5 220.4 188.3 208.7 188.3H190V224.7Z" fill="#F5F1EA"/>
+  <rect x="360" y="126" width="486" height="30" rx="15" fill="#D4853B" fill-opacity="0.22"/>
+  <rect x="360" y="190" width="588" height="34" rx="17" fill="#1B3A6B"/>
+  <rect x="360" y="246" width="540" height="22" rx="11" fill="#43618D"/>
+  <rect x="360" y="300" width="460" height="18" rx="9" fill="#7B8798"/>
+  <rect x="360" y="338" width="514" height="18" rx="9" fill="#7B8798"/>
+  <rect x="360" y="376" width="438" height="18" rx="9" fill="#7B8798"/>
+  <rect x="96" y="388" width="770" height="2" rx="1" fill="#D9D2C7"/>
+  <rect x="96" y="432" width="140" height="34" rx="17" fill="#1B3A6B"/>
+  <text x="167" y="454" text-anchor="middle" fill="#F7F3ED" font-family="Arial, sans-serif" font-size="18" font-weight="700">Riddra</text>
+  <text x="96" y="520" fill="#1B3A6B" font-family="Arial, sans-serif" font-size="30" font-weight="700">Market News</text>
+  <text x="96" y="556" fill="#6B7280" font-family="Arial, sans-serif" font-size="18">Editorial market coverage placeholder</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="600" y1="48" x2="600" y2="627" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDFC"/>
+      <stop offset="1" stop-color="#F6F1EA"/>
+    </linearGradient>
+  </defs>
+</svg>

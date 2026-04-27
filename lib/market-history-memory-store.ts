@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { getDurableJobSystemReadiness } from "@/lib/durable-jobs";
 import { getDurableMarketHistoryTelemetry } from "@/lib/market-data-durable-store";
 import { getMarketDataTargetStatuses } from "@/lib/market-data-targets";
@@ -213,6 +214,10 @@ function buildTelemetryMemory(telemetry: NonNullable<Awaited<ReturnType<typeof g
 }
 
 async function readStore(): Promise<MarketHistoryMemoryStore | null> {
+  if (!canUseFileFallback()) {
+    return null;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as MarketHistoryMemoryStore;
@@ -222,11 +227,19 @@ async function readStore(): Promise<MarketHistoryMemoryStore | null> {
 }
 
 async function writeStore(store: MarketHistoryMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Market history persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

@@ -1,6 +1,8 @@
 import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
+
 export type SearchQueryReviewStatus = "Open" | "In progress" | "Ready" | "Blocked";
 
 export type SearchQueryReviewRow = {
@@ -51,6 +53,10 @@ const STORE_VERSION = 1;
 let searchQueryReviewMutationQueue = Promise.resolve();
 
 async function readStore(): Promise<SearchQueryReviewStore | null> {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as SearchQueryReviewStore;
@@ -60,6 +66,10 @@ async function readStore(): Promise<SearchQueryReviewStore | null> {
 }
 
 async function writeStore(store: SearchQueryReviewStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Search query review memory"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -72,6 +82,10 @@ function buildDefaultStore(): SearchQueryReviewStore {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

@@ -548,9 +548,6 @@ export function SiteHeaderNavClient({
                   aria-haspopup="menu"
                   className={`inline-flex h-8 items-center gap-2 rounded-[6px] px-3 text-[13px] font-medium transition ${shellClasses.accountButton}`}
                 >
-                  <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
-                    {getAccountInitial(accountName)}
-                  </span>
                   <span className="max-w-[140px] truncate">{accountName}</span>
                   <Chevron />
                 </button>
@@ -613,12 +610,8 @@ export function SiteHeaderNavClient({
       <div className={`relative z-[60] -mt-[2px] ${shellClasses.ticker}`}>
         <div className="mx-auto w-full max-w-[1220px] px-4 sm:px-4 lg:px-3 xl:px-4">
           <div className="riddra-site-ticker-viewport flex h-[24px] items-center font-[family:var(--font-riddra-mono)] text-[10px]">
-            <div className="riddra-site-ticker-track hidden md:flex">
-              <div className="riddra-site-ticker-segment">{renderTickerItems("primary")}</div>
-              <div className="riddra-site-ticker-segment" aria-hidden="true">{renderTickerItems("duplicate", true)}</div>
-            </div>
-            <div className="riddra-site-ticker-manual flex min-w-max items-center gap-4 whitespace-nowrap px-0 md:hidden">
-              {renderTickerItems("mobile")}
+            <div className="riddra-site-ticker-manual flex min-w-max items-center gap-4 whitespace-nowrap px-0">
+              {renderTickerItems("primary")}
             </div>
           </div>
         </div>
@@ -666,9 +659,11 @@ export function SiteHeaderNavClient({
                 onClick={() => setMobileMenuOpen(false)}
                 className="mt-2 flex items-center gap-3"
               >
-                <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
-                  {getAccountInitial(accountName)}
-                </span>
+                {isSignedIn ? (
+                  <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
+                    {getAccountInitial(accountName)}
+                  </span>
+                ) : null}
                 <span className="text-sm font-medium">{accountName}</span>
               </Link>
               {!isSignedIn ? (

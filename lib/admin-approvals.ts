@@ -9,6 +9,7 @@ import {
   listDurableAdminPendingApprovals,
   saveDurableAdminPendingApproval,
 } from "@/lib/cms-durable-state";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type AdminApprovalDecision = "pending" | "approved" | "rejected";
 
@@ -159,6 +160,10 @@ const EMPTY_STORE: ApprovalStore = {
 };
 
 async function readFallbackStore() {
+  if (!canUseFileFallback()) {
+    return EMPTY_STORE;
+  }
+
   try {
     const fileStats = await stat(STORE_PATH);
     if (storeCache && storeCache.mtimeMs === fileStats.mtimeMs) {
@@ -178,6 +183,10 @@ async function readFallbackStore() {
 }
 
 async function writeFallbackStore(store: ApprovalStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Admin approvals persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
   try {
@@ -232,6 +241,10 @@ async function readStore(): Promise<ApprovalStore> {
 }
 
 async function mirrorApprovalToFallback(approval: AdminPendingApproval) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   const fallbackStore = await readFallbackStore();
   const existingIndex = fallbackStore.items.findIndex((item) => item.id === approval.id);
   const nextItems =

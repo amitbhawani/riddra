@@ -2,6 +2,7 @@ import { access, mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
 import { blockEditorSamples } from "@/lib/block-editor";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { editorialWorkflowSamples } from "@/lib/editorial-ops";
 
 export type EditorialRevisionEntry = {
@@ -272,6 +273,15 @@ async function buildDefaultStore(): Promise<EditorialRevisionStore> {
 }
 
 async function readStore(): Promise<EditorialRevisionStore | null> {
+  if (!canUseFileFallback()) {
+    return {
+      version: STORE_VERSION,
+      revisions: buildDefaultRevisions(),
+      rollbackScenarios: buildDefaultRollbackScenarios(),
+      familyLanes: buildDefaultFamilyLanes(buildDefaultRevisions(), buildDefaultRollbackScenarios()),
+    };
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as EditorialRevisionStore;
@@ -281,11 +291,27 @@ async function readStore(): Promise<EditorialRevisionStore | null> {
 }
 
 async function writeStore(store: EditorialRevisionStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Editorial revision persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    const revisions = buildDefaultRevisions();
+    const rollbackScenarios = buildDefaultRollbackScenarios();
+
+    return {
+      version: STORE_VERSION,
+      revisions,
+      rollbackScenarios,
+      familyLanes: buildDefaultFamilyLanes(revisions, rollbackScenarios),
+    };
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

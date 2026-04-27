@@ -45,6 +45,10 @@ import {
   normalizeMembershipFeatureAccess,
   type MembershipFeatureKey,
 } from "@/lib/membership-product-features";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 import { getConfiguredAdminEmails } from "@/lib/runtime-launch-config";
 import { getDurableStockQuoteSnapshot } from "@/lib/market-data-durable-store";
 import { saveMediaBinary } from "@/lib/media-storage";
@@ -292,6 +296,7 @@ export type RemoveUserPortfolioHoldingResult = {
 
 const STORE_PATH = path.join(process.cwd(), "data", "user-product-store.json");
 const STORE_VERSION = 1;
+const USER_PRODUCT_FILE_FALLBACK_SCOPE = "User product data";
 const PREVIEW_TTL_MS = 1000 * 60 * 60 * 24;
 const PREVIEW_TOKEN_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -752,7 +757,17 @@ async function ensureStoreDir() {
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
 }
 
+function buildFileFallbackDisabledError(scope = USER_PRODUCT_FILE_FALLBACK_SCOPE) {
+  return new Error(getFileFallbackDisabledMessage(scope));
+}
+
 async function readStore() {
+  if (!canUseFileFallback()) {
+    const fallback = pruneExpiredPreviewSessionsInStore(normalizeStore(defaultStore()));
+    storeCache = { mtimeMs: 0, store: fallback };
+    return fallback;
+  }
+
   try {
     const fileStat = await stat(STORE_PATH);
     if (storeCache && storeCache.mtimeMs === fileStat.mtimeMs) {
@@ -773,6 +788,10 @@ async function readStore() {
 }
 
 async function writeStore(store: UserProductStore) {
+  if (!canUseFileFallback()) {
+    throw buildFileFallbackDisabledError();
+  }
+
   pruneExpiredPreviewSessionsInStore(store);
   await ensureStoreDir();
   const nextStore = {
@@ -809,7 +828,14 @@ function buildNormalizedProfile(input: Partial<ProductUserProfile>): ProductUser
   return normalizeProfile(input);
 }
 
-async function mutateStore<T>(mutator: (store: UserProductStore) => Promise<T> | T) {
+async function mutateStore<T>(
+  mutator: (store: UserProductStore) => Promise<T> | T,
+  scope = USER_PRODUCT_FILE_FALLBACK_SCOPE,
+) {
+  if (!canUseFileFallback()) {
+    throw buildFileFallbackDisabledError(scope);
+  }
+
   const store = pruneExpiredPreviewSessionsInStore(await readStore());
   const result = await mutator(store);
   await writeStore(store);
@@ -1180,30 +1206,16 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
     });
     const saved = await saveDurableUserProfile(nextProfile);
     if (saved) {
-      await mutateStore(async (store) => {
-        const existingFallbackRecord =
-          store.users.find((item) => item.profile.userKey === saved.userKey) ??
-          store.users.find((item) => item.profile.email === saved.email) ??
-          null;
+      if (canUseFileFallback()) {
+        await mutateStore(async (store) => {
+          const existingFallbackRecord =
+            store.users.find((item) => item.profile.userKey === saved.userKey) ??
+            store.users.find((item) => item.profile.email === saved.email) ??
+            null;
 
-        if (existingFallbackRecord) {
-          existingFallbackRecord.profile = normalizeProfile({
-            ...existingFallbackRecord.profile,
-            ...saved,
-            username,
-            websiteUrl: saved.websiteUrl,
-            xHandle: saved.xHandle,
-            linkedinUrl: saved.linkedinUrl,
-            instagramHandle: saved.instagramHandle,
-            youtubeUrl: saved.youtubeUrl,
-            profileVisible:
-              typeof input.profileVisible === "boolean"
-                ? input.profileVisible
-                : existingFallbackRecord.profile.profileVisible,
-          });
-        } else {
-          store.users.push({
-            profile: normalizeProfile({
+          if (existingFallbackRecord) {
+            existingFallbackRecord.profile = normalizeProfile({
+              ...existingFallbackRecord.profile,
               ...saved,
               username,
               websiteUrl: saved.websiteUrl,
@@ -1212,15 +1224,31 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
               instagramHandle: saved.instagramHandle,
               youtubeUrl: saved.youtubeUrl,
               profileVisible:
-                typeof input.profileVisible === "boolean" ? input.profileVisible : true,
-            }),
-            watchlist: [],
-            portfolio: [],
-            bookmarks: [],
-            recentlyViewed: [],
-          });
-        }
-      });
+                typeof input.profileVisible === "boolean"
+                  ? input.profileVisible
+                  : existingFallbackRecord.profile.profileVisible,
+            });
+          } else {
+            store.users.push({
+              profile: normalizeProfile({
+                ...saved,
+                username,
+                websiteUrl: saved.websiteUrl,
+                xHandle: saved.xHandle,
+                linkedinUrl: saved.linkedinUrl,
+                instagramHandle: saved.instagramHandle,
+                youtubeUrl: saved.youtubeUrl,
+                profileVisible:
+                  typeof input.profileVisible === "boolean" ? input.profileVisible : true,
+              }),
+              watchlist: [],
+              portfolio: [],
+              bookmarks: [],
+              recentlyViewed: [],
+            });
+          }
+        });
+      }
       return {
         profile: normalizeProfile({
           ...saved,
@@ -1335,13 +1363,15 @@ export async function removeUserProductProfile(input: { email: string }): Promis
         throw new Error("Could not remove this user from the durable store right now.");
       }
 
-      await mutateStore(async (store) => {
-        store.users = store.users.filter(
-          (item) =>
-            item.profile.userKey !== existing.userKey &&
-            item.profile.email.toLowerCase() !== email,
-        );
-      });
+      if (canUseFileFallback()) {
+        await mutateStore(async (store) => {
+          store.users = store.users.filter(
+            (item) =>
+              item.profile.userKey !== existing.userKey &&
+              item.profile.email.toLowerCase() !== email,
+          );
+        });
+      }
 
       return {
         profile: normalizeProfile(existing),
@@ -1444,6 +1474,10 @@ async function syncWatchlistToFallbackStore(
   items: UserWatchlistItem[],
   lastActiveAt?: string,
 ) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   await mutateStore(async (store) => {
     const record = getOrCreateRecord(store, user);
     record.watchlist = items.map((item) => normalizeWatchlistItem(item));
@@ -1743,6 +1777,10 @@ async function syncPortfolioHoldingsToFallbackStore(
   holdings: UserPortfolioHolding[],
   lastActiveAt?: string,
 ) {
+  if (!canUseFileFallback()) {
+    return;
+  }
+
   await mutateStore(async (store) => {
     const record = getOrCreateRecord(store, user);
     record.portfolio = holdings.map((holding) => normalizePortfolioHolding(holding));

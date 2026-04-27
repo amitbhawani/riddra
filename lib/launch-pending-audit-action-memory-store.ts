@@ -6,6 +6,7 @@ import {
   type LaunchPendingAuditItem,
   type LaunchPendingAuditPerspective,
 } from "@/lib/launch-pending-audit";
+import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 
 export type LaunchPendingAuditActionStatus =
   | "Open"
@@ -140,6 +141,10 @@ function toActionItem(
 }
 
 async function readStore(): Promise<LaunchPendingAuditActionStore | null> {
+  if (!canUseFileFallback()) {
+    return null;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as LaunchPendingAuditActionStore;
@@ -149,6 +154,10 @@ async function readStore(): Promise<LaunchPendingAuditActionStore | null> {
 }
 
 async function writeStore(store: LaunchPendingAuditActionStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage("Launch pending audit persistence"));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -170,6 +179,10 @@ async function buildDefaultStore(): Promise<LaunchPendingAuditActionStore> {
 }
 
 async function ensureStore() {
+  if (!canUseFileFallback()) {
+    return buildDefaultStore();
+  }
+
   const storeExists = await access(STORE_PATH)
     .then(() => true)
     .catch(() => false);

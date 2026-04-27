@@ -5,6 +5,10 @@ import type { User } from "@supabase/supabase-js";
 
 import { readDurableAccountStateLane, writeDurableAccountStateLane } from "@/lib/account-state-durable-store";
 import { buildAccountUserKey } from "@/lib/account-identity";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 import { getDurableStockQuoteSnapshot } from "@/lib/market-data-durable-store";
 import { sampleStocks } from "@/lib/mock-data";
 import { importReviewItems, manualPortfolioFields, samplePortfolioHoldings } from "@/lib/portfolio";
@@ -167,6 +171,7 @@ const STORE_PATH = path.join(process.cwd(), "data", "portfolio-memory.json");
 const STORE_VERSION = 1;
 const DURABLE_LANE = "portfolio" as const;
 let portfolioMutationQueue = Promise.resolve();
+const PORTFOLIO_MEMORY_FALLBACK_SCOPE = "Portfolio workspace";
 
 const LEGACY_SEEDED_IMPORT_RUNS: Omit<
   PortfolioImportRun,
@@ -482,6 +487,10 @@ function buildDefaultRecord(user: Pick<User, "id" | "email">): PortfolioMemoryRe
 }
 
 async function readStore(): Promise<PortfolioMemoryStore> {
+  if (!canUseFileFallback()) {
+    return DEFAULT_STORE;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     const parsed = JSON.parse(content) as Partial<PortfolioMemoryStore>;
@@ -498,6 +507,10 @@ async function readStore(): Promise<PortfolioMemoryStore> {
 }
 
 async function writeStore(store: PortfolioMemoryStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(PORTFOLIO_MEMORY_FALLBACK_SCOPE));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -558,6 +571,13 @@ async function ensurePortfolioRecord(user: Pick<User, "id" | "email">) {
     };
   }
 
+  if (!canUseFileFallback()) {
+    return {
+      record: buildDefaultRecord(user),
+      storageMode: "supabase_private_beta" as const,
+    };
+  }
+
   const store = await readStore();
   const existing = store.accounts.find((item) => item.userKey === userKey);
   const baseRecord = existing ? cloneRecord(existing) : buildDefaultRecord(user);
@@ -578,6 +598,10 @@ async function savePortfolioRecord(record: PortfolioMemoryRecord): Promise<Portf
   if (wroteDurableRecord) {
     await removePortfolioRecordFromFileStore(record.userKey);
     return "supabase_private_beta";
+  }
+
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(PORTFOLIO_MEMORY_FALLBACK_SCOPE));
   }
 
   const store = await readStore();

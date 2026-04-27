@@ -16,6 +16,10 @@ import { getSupportOpsRegistrySummary } from "@/lib/support-ops-registry";
 import { getAccountSupportFollowUpMemory } from "@/lib/support-follow-up-memory-store";
 import { getSubscriberWorkspaceRegistrySummary } from "@/lib/subscriber-workspace-registry";
 import { getSubscriberWorkspaceMemory } from "@/lib/subscriber-workspace-store";
+import {
+  canUseFileFallback,
+  getFileFallbackDisabledMessage,
+} from "@/lib/durable-data-runtime";
 
 export type AccountContinuityLaneId =
   | "workspace"
@@ -92,6 +96,7 @@ const STORE_PATH = path.join(process.cwd(), "data", "account-continuity-memory.j
 const STORE_VERSION = 1;
 const DURABLE_LANE = "account_continuity" as const;
 let accountContinuityMutationQueue = Promise.resolve();
+const ACCOUNT_CONTINUITY_FALLBACK_SCOPE = "Account continuity";
 
 function buildLaneSnapshot(input: Omit<AccountContinuityLaneSnapshot, "storageMode"> & { storageMode?: AccountContinuityLaneSnapshot["storageMode"] }) {
   return {
@@ -117,6 +122,10 @@ function cloneAccountContinuityRecord(record: AccountContinuityRecord): AccountC
 }
 
 async function readStore(): Promise<AccountContinuityStore | null> {
+  if (!canUseFileFallback()) {
+    return null;
+  }
+
   try {
     const content = await readFile(STORE_PATH, "utf8");
     return JSON.parse(content) as AccountContinuityStore;
@@ -126,6 +135,10 @@ async function readStore(): Promise<AccountContinuityStore | null> {
 }
 
 async function writeStore(store: AccountContinuityStore) {
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(ACCOUNT_CONTINUITY_FALLBACK_SCOPE));
+  }
+
   await mkdir(path.dirname(STORE_PATH), { recursive: true });
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
@@ -219,6 +232,10 @@ async function saveAccountContinuityRecord(
     return "supabase_private_beta";
   }
 
+  if (!canUseFileFallback()) {
+    throw new Error(getFileFallbackDisabledMessage(ACCOUNT_CONTINUITY_FALLBACK_SCOPE));
+  }
+
   const store = await ensureStore();
   const nextStore: AccountContinuityStore = {
     ...store,
@@ -239,16 +256,70 @@ export async function syncAccountContinuityRecord(
 ) {
   const mutation = accountContinuityMutationQueue.then(async () => {
     const userKey = buildAccountUserKey(user);
+    const route = options.route?.trim() || "/account";
+    const action = options.action?.trim() || "Synced account continuity";
+    const auth = getAuthContinuityState();
+
+    if (!canUseFileFallback()) {
+      const durableExisting = await readDurableAccountStateLane<AccountContinuityRecord>(
+        userKey,
+        DURABLE_LANE,
+      );
+
+      if (durableExisting) {
+        return toAccountContinuityMemory(durableExisting);
+      }
+
+      const now = new Date().toISOString();
+      return toAccountContinuityMemory({
+        userKey,
+        userId: user.id,
+        email: buildAccountFallbackEmail(user),
+        updatedAt: now,
+        firstSeenAt: now,
+        lastSeenAt: now,
+        lastRoute: route,
+        lastAction: action,
+        storageMode: "supabase_private_beta",
+        auth,
+        preferences: {
+          watchlists: 0,
+          savedScreens: 0,
+          alertPreferences: 0,
+          alertFeedRows: 0,
+          inboxItems: 0,
+          consentItems: 0,
+          consentChannels: 0,
+        },
+        supportAndDelivery: {
+          supportRequests: 0,
+          openSupportRequests: 0,
+          deliveryRoutes: 0,
+          deliveryEvents: 0,
+          emailEvents: 0,
+        },
+        entitlements: {
+          currentPlan: "free",
+          planLabel: "Free",
+          lifecycleState: "Unavailable",
+          syncState: "Unavailable",
+          entitlementCount: 0,
+          placeholderSource: "billing_placeholder_without_razorpay",
+        },
+        lanes: [],
+        blockers: [getFileFallbackDisabledMessage(ACCOUNT_CONTINUITY_FALLBACK_SCOPE)],
+      });
+    }
+
     const durableExisting = await readDurableAccountStateLane<AccountContinuityRecord>(userKey, DURABLE_LANE);
     const store = durableExisting ? null : await readStore();
     const existing =
       durableExisting ??
       store?.accounts.find((item) => item.userKey === userKey) ??
       null;
-    const auth = getAuthContinuityState();
     const now = new Date().toISOString();
-    const route = options.route?.trim() || existing?.lastRoute || "/account";
-    const action = options.action?.trim() || "Synced account continuity";
+    const resolvedRoute = route || existing?.lastRoute || "/account";
+    const resolvedAction = action || "Synced account continuity";
 
     const [
       workspace,
@@ -394,8 +465,8 @@ export async function syncAccountContinuityRecord(
       updatedAt: now,
       firstSeenAt: existing?.firstSeenAt ?? now,
       lastSeenAt: now,
-      lastRoute: route,
-      lastAction: action,
+      lastRoute: resolvedRoute,
+      lastAction: resolvedAction,
       storageMode: "file_backed_private_beta",
       auth,
       preferences: {

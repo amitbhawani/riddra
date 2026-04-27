@@ -1,4 +1,5 @@
 import { getNewsImageForArticle } from "@/lib/market-news/images";
+import { sanitizeMarketNewsEditorialCopy } from "@/lib/market-news/formatting";
 import { createSupabaseAdminClient, createSupabaseReadClient } from "@/lib/supabase/admin";
 import { hasRuntimeSupabaseAdminEnv, hasRuntimeSupabaseEnv } from "@/lib/runtime-launch-config";
 import type {
@@ -253,6 +254,53 @@ const REPETITIVE_MARKET_NEWS_PATTERNS = [
 
 const MAJOR_MACRO_MARKET_NEWS_PATTERNS = [
   /\b(rbi|repo rate|inflation|gdp|fiscal deficit|budget|policy|fomc|tariff|crude oil|bond yields?)\b/i,
+];
+
+const MARKET_NEWS_TOPIC_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "amid",
+  "as",
+  "at",
+  "by",
+  "for",
+  "from",
+  "in",
+  "into",
+  "is",
+  "its",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "with",
+  "after",
+  "before",
+  "despite",
+  "over",
+  "under",
+  "says",
+  "say",
+  "said",
+  "report",
+  "reports",
+  "reported",
+  "update",
+  "updates",
+  "market",
+  "markets",
+  "news",
+]);
+
+const MARKET_NEWS_EVENT_TOKEN_GROUPS = [
+  ["profit", "earning", "result", "ebita", "ebitda", "margin"],
+  ["revenue", "sale", "growth"],
+  ["ipo", "listing", "issue"],
+  ["regulatory", "order", "circular", "appeal", "compliance"],
+  ["acquisition", "merger", "deal", "buyout"],
+  ["funding", "fundraise", "investment"],
 ];
 
 function buildMarketNewsQualityText(
@@ -581,79 +629,262 @@ function comparePublicListingArticles(
   return String(getArticleTimestampValue(right)).localeCompare(String(getArticleTimestampValue(left)));
 }
 
-function getArticleDuplicateGroupKey(
-  article: Pick<MarketNewsArticleRecord, "id" | "duplicate_group_id">,
-) {
-  return normalizeLooseFilterValue(article.duplicate_group_id) || `article:${article.id}`;
-}
-
-function getDuplicateGroupPreferenceScore(
-  article: Pick<
-    MarketNewsArticleWithRelations,
-    | "status"
-    | "published_at"
-    | "source_published_at"
-    | "created_at"
-    | "source_reliability_score"
-    | "display_image_url"
-    | "uses_fallback_image"
-    | "importance_score"
-    | "rewritten_title"
-    | "original_title"
-    | "short_summary"
-    | "summary"
-    | "source_name"
-    | "source_url"
-    | "canonical_url"
-    | "category"
-    | "impact_label"
-    | "entities"
-  >,
-) {
-  const publishedBonus = article.status === "published" ? 100 : 0;
-  const reliabilityBonus = normalizeSourceReliabilityScore(article.source_reliability_score) * 25;
-  const imageBonus = article.display_image_url && !article.uses_fallback_image ? 10 : 0;
-  const importanceBonus = article.importance_score * 0.9;
-  const minorUpdatePenalty = getMarketNewsMinorUpdatePenaltyScore(article);
-  const recencyTimestamp = getArticleRecencyTimestamp(article);
-  const recencyBonus = Number.isFinite(recencyTimestamp)
-    ? recencyTimestamp / (1000 * 60 * 60 * 24)
-    : 0;
-
-  return publishedBonus + reliabilityBonus + imageBonus + importanceBonus + recencyBonus - minorUpdatePenalty;
-}
-
 function dedupeMarketNewsArticlesByDuplicateGroup(
   articles: readonly MarketNewsArticleWithRelations[],
   limit?: number,
 ) {
-  const preferredByGroup = new Map<string, MarketNewsArticleWithRelations>();
+  const deduped: MarketNewsArticleWithRelations[] = [];
+  const safeLimit =
+    typeof limit === "number" && Number.isFinite(limit)
+      ? Math.max(Math.trunc(limit), 0)
+      : null;
 
   for (const article of articles) {
-    const groupKey = getArticleDuplicateGroupKey(article);
-    const existing = preferredByGroup.get(groupKey);
+    const isDuplicate = deduped.some((existing) =>
+      areMarketNewsArticlesNearDuplicates(existing, article),
+    );
 
-    if (!existing) {
-      preferredByGroup.set(groupKey, article);
-      continue;
-    }
+    if (!isDuplicate) {
+      deduped.push(article);
 
-    if (getDuplicateGroupPreferenceScore(article) > getDuplicateGroupPreferenceScore(existing)) {
-      preferredByGroup.set(groupKey, article);
+      if (safeLimit !== null && deduped.length >= safeLimit) {
+        break;
+      }
     }
   }
 
-  const deduped = Array.from(preferredByGroup.values()).sort(comparePublicListingArticles);
-
-  if (typeof limit === "number" && Number.isFinite(limit)) {
-    return deduped.slice(0, Math.max(Math.trunc(limit), 0));
+  if (safeLimit !== null) {
+    return deduped.slice(0, safeLimit);
   }
 
   return deduped;
 }
 
+export function excludeNearDuplicateMarketNewsArticles<
+  T extends Pick<
+    MarketNewsArticleWithRelations,
+    | "duplicate_group_id"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "entities"
+  >,
+>(
+  articles: readonly T[],
+  existingArticles: readonly Pick<
+    MarketNewsArticleWithRelations,
+    | "duplicate_group_id"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "entities"
+  >[],
+) {
+  if (!existingArticles.length) {
+    return [...articles];
+  }
+
+  return articles.filter(
+    (article) => !existingArticles.some((existingArticle) => areMarketNewsArticlesNearDuplicates(existingArticle, article)),
+  );
+}
+
 function normalizeLooseFilterValue(value: string | null | undefined) {
   return String(value ?? "").trim();
+}
+
+function normalizeMarketNewsTopicToken(token: string) {
+  let normalized = token.trim().toLowerCase();
+
+  if (!normalized) {
+    return "";
+  }
+
+  normalized = normalized.replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (/^q[1-4]$/.test(normalized) || /^fy\d{2,4}$/.test(normalized)) {
+    return normalized;
+  }
+
+  if (/^\d+(\.\d+)?%?$/.test(normalized)) {
+    return "";
+  }
+
+  if (normalized.endsWith("ies") && normalized.length > 5) {
+    normalized = `${normalized.slice(0, -3)}y`;
+  } else if (normalized.endsWith("ing") && normalized.length > 5) {
+    normalized = normalized.slice(0, -3);
+  } else if (normalized.endsWith("ed") && normalized.length > 4) {
+    normalized = normalized.slice(0, -2);
+  } else if (normalized.endsWith("es") && normalized.length > 4) {
+    normalized = normalized.slice(0, -2);
+  } else if (normalized.endsWith("s") && normalized.length > 4) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  if (normalized.length < 3) {
+    return "";
+  }
+
+  if (MARKET_NEWS_TOPIC_STOPWORDS.has(normalized)) {
+    return "";
+  }
+
+  return normalized;
+}
+
+function getMarketNewsTopicTokens(
+  article: Pick<
+    MarketNewsArticleWithRelations,
+    "rewritten_title" | "original_title" | "short_summary" | "summary" | "entities"
+  >,
+) {
+  const titleText = [article.rewritten_title, article.original_title]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ");
+  const entityText = article.entities
+    .map((entity) => `${entity.display_name} ${entity.symbol ?? ""} ${entity.entity_slug}`)
+    .join(" ");
+
+  const tokens = `${titleText} ${entityText}`
+    .split(/[^a-zA-Z0-9%]+/)
+    .map(normalizeMarketNewsTopicToken)
+    .filter(Boolean);
+
+  return Array.from(new Set(tokens)).slice(0, 12);
+}
+
+function getMarketNewsPrimaryEntityKey(
+  article: Pick<MarketNewsArticleWithRelations, "entities">,
+) {
+  const preferredEntity =
+    article.entities.find((entity) => entity.entity_type === "stock") ??
+    article.entities.find((entity) => entity.entity_type === "ipo") ??
+    article.entities.find((entity) => entity.entity_type === "sector") ??
+    article.entities[0] ??
+    null;
+
+  if (!preferredEntity) {
+    return "";
+  }
+
+  return `${preferredEntity.entity_type}:${preferredEntity.entity_slug}`.trim();
+}
+
+function getMarketNewsTopicOverlap(
+  leftTokens: readonly string[],
+  rightTokens: readonly string[],
+) {
+  if (!leftTokens.length || !rightTokens.length) {
+    return 0;
+  }
+
+  const rightSet = new Set(rightTokens);
+  let shared = 0;
+
+  for (const token of leftTokens) {
+    if (rightSet.has(token)) {
+      shared += 1;
+    }
+  }
+
+  return shared / Math.min(leftTokens.length, rightTokens.length);
+}
+
+function getMarketNewsSharedTokenCount(
+  leftTokens: readonly string[],
+  rightTokens: readonly string[],
+) {
+  const rightSet = new Set(rightTokens);
+  return leftTokens.reduce((count, token) => count + (rightSet.has(token) ? 1 : 0), 0);
+}
+
+function hasMatchingMarketNewsEventTokens(
+  leftTokens: readonly string[],
+  rightTokens: readonly string[],
+) {
+  const leftSet = new Set(leftTokens);
+  const rightSet = new Set(rightTokens);
+
+  return MARKET_NEWS_EVENT_TOKEN_GROUPS.some((group) => {
+    const leftMatch = group.some((token) => leftSet.has(token));
+    const rightMatch = group.some((token) => rightSet.has(token));
+    return leftMatch && rightMatch;
+  });
+}
+
+function hasMatchingQuarterToken(
+  leftTokens: readonly string[],
+  rightTokens: readonly string[],
+) {
+  const quarterTokenPattern = /^(q[1-4]|fy\d{2,4})$/;
+  const leftQuarterTokens = leftTokens.filter((token) => quarterTokenPattern.test(token));
+
+  if (!leftQuarterTokens.length) {
+    return false;
+  }
+
+  const rightSet = new Set(rightTokens);
+  return leftQuarterTokens.some((token) => rightSet.has(token));
+}
+
+function areMarketNewsArticlesNearDuplicates(
+  left: Pick<
+    MarketNewsArticleWithRelations,
+    | "duplicate_group_id"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "entities"
+  >,
+  right: Pick<
+    MarketNewsArticleWithRelations,
+    | "duplicate_group_id"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "entities"
+  >,
+) {
+  const leftDuplicateGroupId = normalizeLooseFilterValue(left.duplicate_group_id);
+  const rightDuplicateGroupId = normalizeLooseFilterValue(right.duplicate_group_id);
+
+  if (leftDuplicateGroupId && rightDuplicateGroupId && leftDuplicateGroupId === rightDuplicateGroupId) {
+    return true;
+  }
+
+  const leftPrimaryEntityKey = getMarketNewsPrimaryEntityKey(left);
+  const rightPrimaryEntityKey = getMarketNewsPrimaryEntityKey(right);
+  const samePrimaryEntity =
+    leftPrimaryEntityKey.length > 0 && leftPrimaryEntityKey === rightPrimaryEntityKey;
+
+  const leftTokens = getMarketNewsTopicTokens(left);
+  const rightTokens = getMarketNewsTopicTokens(right);
+  const overlap = getMarketNewsTopicOverlap(leftTokens, rightTokens);
+  const sharedTokenCount = getMarketNewsSharedTokenCount(leftTokens, rightTokens);
+
+  if (samePrimaryEntity && overlap >= 0.55 && sharedTokenCount >= 3) {
+    return true;
+  }
+
+  if (
+    samePrimaryEntity &&
+    sharedTokenCount >= 2 &&
+    hasMatchingQuarterToken(leftTokens, rightTokens) &&
+    hasMatchingMarketNewsEventTokens(leftTokens, rightTokens)
+  ) {
+    return true;
+  }
+
+  return overlap >= 0.72 && sharedTokenCount >= 4;
 }
 
 function titleCaseFromSlug(value: string) {
@@ -1434,10 +1665,16 @@ async function hydrateMarketNewsArticles(
 
   if (!supabase) {
     return articles.map((article) => {
+      const sanitizedArticle = {
+        ...article,
+        short_summary: sanitizeMarketNewsEditorialCopy(article.short_summary),
+        summary: sanitizeMarketNewsEditorialCopy(article.summary),
+        impact_note: sanitizeMarketNewsEditorialCopy(article.impact_note),
+      };
       const resolvedImage = getNewsImageForArticle(article, null);
 
       return {
-        ...article,
+        ...sanitizedArticle,
         entities: [],
         image: null,
         display_image_url: resolvedImage.displayImageUrl,
@@ -1445,7 +1682,7 @@ async function hydrateMarketNewsArticles(
         uses_fallback_image: resolvedImage.usesFallback,
         source_reliability_score: null,
         importance_score: getMarketNewsImportanceScore({
-          ...article,
+          ...sanitizedArticle,
           entities: [],
         }),
       };
@@ -1538,6 +1775,12 @@ async function hydrateMarketNewsArticles(
   }
 
   return articles.map((article) => {
+    const sanitizedArticle = {
+      ...article,
+      short_summary: sanitizeMarketNewsEditorialCopy(article.short_summary),
+      summary: sanitizeMarketNewsEditorialCopy(article.summary),
+      impact_note: sanitizeMarketNewsEditorialCopy(article.impact_note),
+    };
     const image = imageMap.get(article.id) ?? null;
     const resolvedImage = getNewsImageForArticle(article, image);
     const rawItemId = normalizeLooseFilterValue(article.raw_item_id);
@@ -1545,7 +1788,7 @@ async function hydrateMarketNewsArticles(
     const sourceReliabilityScore = sourceId ? sourceReliabilityMap.get(sourceId) ?? null : null;
 
     return {
-      ...article,
+      ...sanitizedArticle,
       entities: entityMap.get(article.id) ?? [],
       image,
       display_image_url: resolvedImage.displayImageUrl,
@@ -1553,7 +1796,7 @@ async function hydrateMarketNewsArticles(
       uses_fallback_image: resolvedImage.usesFallback,
       source_reliability_score: sourceReliabilityScore,
       importance_score: getMarketNewsImportanceScore({
-        ...article,
+        ...sanitizedArticle,
         entities: entityMap.get(article.id) ?? [],
       }),
     };
@@ -1587,11 +1830,39 @@ function sortArticlesByRecency<
     | "category"
     | "impact_label"
     | "entities"
+    | "uses_fallback_image"
   >,
 >(
   articles: readonly T[],
 ) {
-  return [...articles].sort(comparePublicListingArticles);
+  return [...articles].sort((left, right) => {
+    const leftTimestamp = getArticleRecencyTimestamp(left);
+    const rightTimestamp = getArticleRecencyTimestamp(right);
+
+    if (Number.isFinite(leftTimestamp) || Number.isFinite(rightTimestamp)) {
+      if (rightTimestamp !== leftTimestamp) {
+        return rightTimestamp - leftTimestamp;
+      }
+    }
+
+    if (right.importance_score !== left.importance_score) {
+      return right.importance_score - left.importance_score;
+    }
+
+    const reliabilityDelta =
+      normalizeSourceReliabilityScore(right.source_reliability_score) -
+      normalizeSourceReliabilityScore(left.source_reliability_score);
+
+    if (reliabilityDelta !== 0) {
+      return reliabilityDelta;
+    }
+
+    if (left.uses_fallback_image !== right.uses_fallback_image) {
+      return left.uses_fallback_image ? 1 : -1;
+    }
+
+    return comparePublicListingArticles(left, right);
+  });
 }
 
 async function listMarketNewsArticleIdsByEntityMatch(input: {
@@ -2058,6 +2329,38 @@ function isMarketNewsArticleWithinLastHours(
   return timestamp >= Date.now() - hours * 60 * 60 * 1000;
 }
 
+function isMarketNewsArticleWithinTimeWindow(
+  article: Pick<MarketNewsArticleRecord, "published_at" | "source_published_at" | "created_at">,
+  input: {
+    fromIso?: string | null;
+    toIso?: string | null;
+    hoursWindow?: number | null;
+  },
+) {
+  const timestamp = getArticleRecencyTimestamp(article);
+
+  if (!Number.isFinite(timestamp)) {
+    return false;
+  }
+
+  const fromTimestamp = input.fromIso ? Date.parse(input.fromIso) : NaN;
+  const toTimestamp = input.toIso ? Date.parse(input.toIso) : NaN;
+
+  if (Number.isFinite(fromTimestamp) && timestamp < fromTimestamp) {
+    return false;
+  }
+
+  if (Number.isFinite(toTimestamp) && timestamp > toTimestamp) {
+    return false;
+  }
+
+  if (!Number.isFinite(fromTimestamp) && !Number.isFinite(toTimestamp)) {
+    return isMarketNewsArticleWithinLastHours(article, input.hoursWindow ?? 24);
+  }
+
+  return true;
+}
+
 export async function getTopMarketNewsArticles(input?: number | MarketNewsArticleFilters) {
   const filters = normalizeMarketNewsArticleFilters(input);
   const safeLimit = Math.min(Math.max(filters.limit || 3, 1), 12);
@@ -2106,13 +2409,20 @@ export async function getTopMarketNewsArticles(input?: number | MarketNewsArticl
   );
 }
 
-export async function getDailyMarketBriefArticles(limit = 5) {
-  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 10) : 5;
+export async function getDailyMarketBriefArticles(
+  limit = 5,
+  input?: {
+    fromIso?: string | null;
+    toIso?: string | null;
+    hoursWindow?: number | null;
+  },
+) {
+  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 40) : 5;
   const candidateArticles = await getMarketNewsArticles({
     limit: Math.max(safeLimit * 10, 40),
   });
   const recentArticles = candidateArticles.filter((article) =>
-    isMarketNewsArticleWithinLastHours(article, 24),
+    isMarketNewsArticleWithinTimeWindow(article, input ?? { hoursWindow: 24 }),
   );
 
   if (!recentArticles.length) {

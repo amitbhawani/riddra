@@ -7,6 +7,7 @@ import {
 import { MarketNewsEntityChips } from "@/components/market-news-entity-chips";
 import { MarketNewsImage } from "@/components/market-news-image";
 import { ProductCard, ProductSectionTitle } from "@/components/product-page-system";
+import { getMarketNewsDisplayFallbackImage } from "@/lib/market-news/images";
 import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
 
 function formatDateLabel(value: string | null | undefined) {
@@ -20,14 +21,6 @@ function formatDateLabel(value: string | null | undefined) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(parsed));
-}
-
-function formatImpactLabel(value: string | null | undefined) {
-  return String(value ?? "")
-    .split("_")
-    .map((part) => (part ? `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}` : ""))
-    .join(" ")
-    .trim();
 }
 
 function formatStockHeadingName(value: string) {
@@ -104,8 +97,7 @@ export function EntityNewsSection({
         <div className="grid gap-3">
           {visibleArticles.map((article) => {
             const publishedLabel = formatDateLabel(article.published_at || article.source_published_at);
-            const fallbackSrc =
-              article.image?.fallback_image_url || article.fallback_image_url || article.display_image_url;
+            const fallbackSrc = getMarketNewsDisplayFallbackImage(article);
             const primaryEntity = article.entities[0] ?? null;
             const trackingEntityType = entityType === "stock" || entityType === "sector" || entityType === "mutual_fund" || entityType === "etf" || entityType === "ipo"
               ? entityType
@@ -173,16 +165,9 @@ export function EntityNewsSection({
                 </div>
 
                 <div className="space-y-2.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {article.impact_label ? (
-                      <span className="rounded-full border border-[rgba(212,133,59,0.22)] bg-[rgba(212,133,59,0.1)] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8E5723]">
-                        {formatImpactLabel(article.impact_label)}
-                      </span>
-                    ) : null}
-                    {publishedLabel ? (
-                      <span className="text-[11px] text-[rgba(107,114,128,0.82)]">{publishedLabel}</span>
-                    ) : null}
-                  </div>
+                  {publishedLabel ? (
+                    <p className="text-[11px] text-[rgba(107,114,128,0.82)]">{publishedLabel}</p>
+                  ) : null}
 
                   <div className="space-y-1.5">
                     <MarketNewsTrackedLink
@@ -197,11 +182,6 @@ export function EntityNewsSection({
                     <p className="line-clamp-2 text-[13px] leading-6 text-[rgba(75,85,99,0.84)]">
                       {article.short_summary || article.summary || "Market news is being prepared."}
                     </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-[rgba(107,114,128,0.86)]">
-                    <span className="font-medium text-[#1B3A6B]">{article.source_name}</span>
-                    {article.category ? <span>• {article.category}</span> : null}
                   </div>
 
                   <MarketNewsEntityChips
@@ -221,14 +201,6 @@ export function EntityNewsSection({
                     >
                       Read more
                     </MarketNewsTrackedLink>
-                    <a
-                      href={article.source_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[12px] font-medium text-[rgba(75,85,99,0.86)] underline underline-offset-4"
-                    >
-                      Source
-                    </a>
                   </div>
                 </div>
               </MarketNewsClickSurface>
