@@ -76,6 +76,10 @@ export async function POST(request: NextRequest) {
         mode: "daily_same_day_only",
         targetDate,
         jobId,
+        totalEligibleStocks: outcome.totalEligibleStocks,
+        seededItemCount: outcome.seededItemCount,
+        remainingUnseededCount: outcome.remainingUnseededCount,
+        nextSeedCursor: outcome.nextSeedCursor,
         processedStocks: outcome.processedStocks,
         jobStatus: outcome.report.status,
         pendingStocks: outcome.report.pendingStocks,
@@ -93,6 +97,10 @@ export async function POST(request: NextRequest) {
       jobId,
       cronWindow,
       targetDate,
+      totalEligibleStocks: outcome.totalEligibleStocks,
+      seededItemCount: outcome.seededItemCount,
+      remainingUnseededCount: outcome.remainingUnseededCount,
+      nextSeedCursor: outcome.nextSeedCursor,
       outcome,
     });
   } catch (error) {

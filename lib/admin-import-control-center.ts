@@ -201,7 +201,10 @@ export type AdminImportControlCenterActiveCronProgress = {
   totalStocks: number;
   processedStocks: number;
   pendingStocks: number;
+  seededItemCount: number;
+  remainingUnseededCount: number;
   nextCursor: number | null;
+  nextSeedCursor: number | null;
   lastProcessedSymbol: string | null;
   nextPendingSymbol: string | null;
   updatedAt: string | null;
@@ -981,7 +984,10 @@ function normalizeActiveCronJobProgress(row: {
   const totalStocks = Number(metadata.requestedStocks ?? metadata.totalStocks ?? 0) || 0;
   const processedStocks = Number(metadata.processedStocks ?? 0) || 0;
   const pendingStocks = Number(metadata.pendingStocks ?? Math.max(totalStocks - processedStocks, 0)) || 0;
+  const seededItemCount = Number(metadata.seededItemCount ?? 0) || 0;
+  const remainingUnseededCount = Number(metadata.remainingUnseededCount ?? 0) || 0;
   const nextCursor = Number(metadata.nextCursor ?? 0);
+  const nextSeedCursor = Number(metadata.nextSeedCursor ?? 0);
 
   if (!["queued", "running"].includes(cleanString(row.status, 120)) && pendingStocks <= 0) {
     return null;
@@ -995,7 +1001,10 @@ function normalizeActiveCronJobProgress(row: {
     totalStocks,
     processedStocks,
     pendingStocks,
+    seededItemCount,
+    remainingUnseededCount,
     nextCursor: Number.isFinite(nextCursor) ? nextCursor : null,
+    nextSeedCursor: Number.isFinite(nextSeedCursor) ? nextSeedCursor : null,
     lastProcessedSymbol: cleanString(metadata.lastProcessedSymbol, 160) || null,
     nextPendingSymbol: cleanString(metadata.nextPendingSymbol, 160) || null,
     updatedAt: row.updatedAt,

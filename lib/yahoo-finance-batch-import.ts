@@ -36,6 +36,8 @@ const DEFAULT_YAHOO_BATCH_IMPORT_MODULES: YahooBatchImportModule[] = [
 ];
 const YAHOO_BATCH_AUTO_PAUSE_AFTER_FAILURES = 2;
 const YAHOO_DAILY_SAME_DAY_CRON_BATCH_SIZE = 25;
+const YAHOO_DAILY_SAME_DAY_CRON_SEED_STOCK_BATCH_SIZE = 25;
+const YAHOO_DAILY_SAME_DAY_CRON_SEED_ITEM_CHUNK_SIZE = 25;
 const YAHOO_DAILY_SAME_DAY_CRON_PRIMARY_PROFILE = "daily_same_day_only_cron_primary";
 const YAHOO_DAILY_SAME_DAY_CRON_RETRY_PROFILE = "daily_same_day_only_cron_retry";
 
@@ -63,6 +65,7 @@ type BatchJobRow = {
   failedItems: number;
   warningItems: number;
   metadata: JsonRecord;
+  rawPayload: JsonRecord;
   requestedBy: string | null;
   startedAt: string | null;
   completedAt: string | null;
@@ -170,6 +173,10 @@ export type YahooDailySameDayCronJobPreparation = {
   requestedCount: number;
   queueWorker: boolean;
   dispatchCursor: number;
+  totalEligibleStocks: number;
+  seededItemCount: number;
+  remainingUnseededCount: number;
+  nextSeedCursor: number;
   lastProcessedSymbol: string | null;
   nextPendingSymbol: string | null;
   report: YahooBatchImportReport | null;
@@ -193,6 +200,10 @@ export type YahooDailySameDayCronWorkerOutcome = {
   warnings: string[];
   shouldQueueFollowUp: boolean;
   dispatchCursor: number;
+  totalEligibleStocks: number;
+  seededItemCount: number;
+  remainingUnseededCount: number;
+  nextSeedCursor: number;
   lastProcessedSymbol: string | null;
   nextPendingSymbol: string | null;
 };
@@ -650,6 +661,145 @@ function buildBatchItemKey(stock: BatchStockTarget, moduleKey: YahooBatchImportM
   return `${stock.stockId}:${moduleKey}`;
 }
 
+function buildCompactRequestedBatchStocks(stocks: BatchStockTarget[]) {
+  return stocks.map((stock) => ({
+    stockId: stock.stockId,
+    slug: stock.slug,
+    symbol: stock.symbol,
+    yahooSymbol: stock.yahooSymbol,
+  }));
+}
+
+function chunkBatchRows<T>(items: T[], size: number) {
+  const safeSize = Math.max(1, Math.floor(size));
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += safeSize) {
+    chunks.push(items.slice(index, index + safeSize));
+  }
+  return chunks;
+}
+
+function normalizeRequestedBatchStocksFromRawPayload(rawPayload: JsonRecord) {
+  const requestedStocks = Array.isArray(rawPayload.requestedStocks)
+    ? rawPayload.requestedStocks
+    : [];
+
+  return requestedStocks
+    .map((value) => normalizeMetadata(value as JsonRecord))
+    .map((stock) => {
+      const stockId = cleanString(stock.stockId, 160);
+      const symbol = cleanString(stock.symbol, 160);
+      const yahooSymbol = cleanString(stock.yahooSymbol, 160).toUpperCase();
+      if (!stockId || !symbol || !yahooSymbol) {
+        return null;
+      }
+      return {
+        stockId,
+        slug: cleanString(stock.slug, 160) || null,
+        symbol,
+        yahooSymbol,
+        companyName: cleanString(stock.companyName, 240) || null,
+      } satisfies BatchStockTarget;
+    })
+    .filter(Boolean) as BatchStockTarget[];
+}
+
+function normalizeRequestedBatchModulesFromRawPayload(rawPayload: JsonRecord) {
+  const requestedModules = Array.isArray(rawPayload.requestedModules)
+    ? rawPayload.requestedModules.map((value) => cleanString(value, 160) as YahooBatchImportModule)
+    : [];
+
+  return normalizeModules(requestedModules);
+}
+
+function readTotalEligibleStocks(metadata: JsonRecord, rawPayload?: JsonRecord) {
+  const requestedStocksFromPayload = rawPayload
+    ? normalizeRequestedBatchStocksFromRawPayload(rawPayload).length
+    : 0;
+  return Math.max(
+    numericOrZero(metadata.totalEligibleStocks),
+    numericOrZero(metadata.requestedStocks),
+    requestedStocksFromPayload,
+  );
+}
+
+function readTotalEligibleItems(metadata: JsonRecord, rawPayload?: JsonRecord, fallbackTotalItems = 0) {
+  const payloadStocks = rawPayload ? normalizeRequestedBatchStocksFromRawPayload(rawPayload).length : 0;
+  const payloadModules = rawPayload ? normalizeRequestedBatchModulesFromRawPayload(rawPayload).length : 0;
+  const derivedFromPayload = payloadStocks > 0 && payloadModules > 0 ? payloadStocks * payloadModules : 0;
+
+  return Math.max(
+    numericOrZero(metadata.totalEligibleItems),
+    derivedFromPayload,
+    fallbackTotalItems,
+  );
+}
+
+function readSeededItemCount(metadata: JsonRecord, seededItemFallback = 0) {
+  return Math.max(numericOrZero(metadata.seededItemCount), seededItemFallback);
+}
+
+function readRemainingUnseededCount(
+  metadata: JsonRecord,
+  totalEligibleItems: number,
+  seededItemCount: number,
+) {
+  return Math.max(
+    numericOrZero(metadata.remainingUnseededCount),
+    totalEligibleItems - seededItemCount,
+    0,
+  );
+}
+
+function readNextSeedCursor(metadata: JsonRecord, totalEligibleStocks: number, seededStockFallback = 0) {
+  const nextSeedCursor = Math.max(
+    numericOrZero(metadata.nextSeedCursor),
+    seededStockFallback,
+    0,
+  );
+  return Math.min(nextSeedCursor, totalEligibleStocks);
+}
+
+function readNextSeedSymbol(metadata: JsonRecord) {
+  return cleanString(metadata.nextSeedSymbol, 160) || null;
+}
+
+function buildQueueRowsForBatchSlice(input: {
+  jobId: string;
+  stocks: BatchStockTarget[];
+  modules: YahooBatchImportModule[];
+  now: string;
+}) {
+  return input.stocks.flatMap((stock) =>
+    input.modules.map((moduleKey) => ({
+      id: randomUUID(),
+      job_id: input.jobId,
+      stock_id: stock.stockId,
+      symbol: stock.symbol,
+      bucket_key: moduleKey,
+      item_key: buildBatchItemKey(stock, moduleKey),
+      trade_date: null,
+      fiscal_date: null,
+      row_status: "pending",
+      source_key: stock.yahooSymbol,
+      target_key: stock.slug,
+      action_taken: "queued",
+      raw_row: {
+        requestedAt: input.now,
+        yahooSymbol: stock.yahooSymbol,
+        stockId: stock.stockId,
+      },
+      normalized_row: {
+        moduleKey,
+      },
+      raw_payload: {},
+      imported_at: input.now,
+      created_at: input.now,
+      updated_at: input.now,
+    })),
+  );
+}
+
 async function insertParentBatchJob(input: {
   stocks: BatchStockTarget[];
   modules: YahooBatchImportModule[];
@@ -658,17 +808,24 @@ async function insertParentBatchJob(input: {
   actorEmail: string;
   actorUserId: string | null;
   metadataOverrides?: JsonRecord;
+  seeding?:
+    | {
+        mode: "incremental";
+        initialSeedStockCount: number;
+        maxSeedItemChunkSize?: number;
+      }
+    | undefined;
 }) {
   const supabase = createSupabaseAdminClient();
   const now = new Date().toISOString();
   const jobId = randomUUID();
+  const compactRequestedStocks = buildCompactRequestedBatchStocks(input.stocks);
+  const incrementalSeeding = input.seeding?.mode === "incremental";
   const metadata = {
     batchType: "yahoo_stock_batch_import",
     createdAt: now,
     totalStocks: input.stocks.length,
     modules: input.modules,
-    stockIds: input.stocks.map((stock) => stock.stockId),
-    yahooSymbols: input.stocks.map((stock) => stock.yahooSymbol),
     importOnlyMissingData: input.importOnlyMissingData,
     duplicateMode: input.duplicateMode,
     controlState: "active",
@@ -689,9 +846,24 @@ async function insertParentBatchJob(input: {
     processedItemDurationsMs: [] as number[],
     processedDurationTotalMs: 0,
     processedDurationCount: 0,
+    totalEligibleStocks: input.stocks.length,
+    totalEligibleItems: input.stocks.length * input.modules.length,
+    seededStockCount: 0,
+    seededItemCount: 0,
+    remainingUnseededStocks: input.stocks.length,
+    remainingUnseededCount: input.stocks.length * input.modules.length,
+    nextSeedCursor: 0,
+    nextSeedSymbol: input.stocks[0]?.yahooSymbol ?? null,
+    incrementalSeeding,
     createdByUserId: input.actorUserId,
     createdByEmail: input.actorEmail,
     latestHeartbeatAt: now,
+    ...(incrementalSeeding
+      ? {}
+      : {
+          stockIds: input.stocks.map((stock) => stock.stockId),
+          yahooSymbols: input.stocks.map((stock) => stock.yahooSymbol),
+        }),
     ...normalizeMetadata(input.metadataOverrides),
   };
 
@@ -717,7 +889,7 @@ async function insertParentBatchJob(input: {
     warning_items: 0,
     metadata,
     raw_payload: {
-      requestedStocks: input.stocks,
+      requestedStocks: compactRequestedStocks,
       requestedModules: input.modules,
     },
     imported_at: now,
@@ -729,38 +901,44 @@ async function insertParentBatchJob(input: {
     throw new Error(`Could not create Yahoo batch stock_import_jobs row. ${error.message}`);
   }
 
-  const queueRows = input.stocks.flatMap((stock) =>
-    input.modules.map((moduleKey) => ({
-      id: randomUUID(),
-      job_id: jobId,
-      stock_id: stock.stockId,
-      symbol: stock.symbol,
-      bucket_key: moduleKey,
-      item_key: buildBatchItemKey(stock, moduleKey),
-      trade_date: null,
-      fiscal_date: null,
-      row_status: "pending",
-      source_key: stock.yahooSymbol,
-      target_key: stock.slug,
-      action_taken: "queued",
-      raw_row: {
-        requestedAt: now,
-        yahooSymbol: stock.yahooSymbol,
-        stockId: stock.stockId,
-      },
-      normalized_row: {
-        moduleKey,
-      },
-      raw_payload: {},
-      imported_at: now,
-      created_at: now,
-      updated_at: now,
-    })),
-  );
+  if (input.seeding?.mode === "incremental") {
+    try {
+      await seedYahooBatchJobItemsSlice(jobId, {
+        maxStocksToSeed: input.seeding.initialSeedStockCount,
+        maxSeedItemChunkSize: input.seeding.maxSeedItemChunkSize,
+      });
+    } catch (queueError) {
+      const message =
+        queueError instanceof Error
+          ? queueError.message
+          : "Unknown incremental seed failure.";
+      await supabase
+        .from("stock_import_jobs")
+        .update({
+          status: "failed",
+          failed_items: input.stocks.length * input.modules.length,
+          completed_at: now,
+          updated_at: now,
+          metadata: {
+            ...metadata,
+            seedError: message,
+            seedFailedAt: now,
+          },
+        })
+        .eq("id", jobId);
+      throw new Error(`Could not seed Yahoo batch job items. ${message}`);
+    }
+    return jobId;
+  }
 
-  const { error: queueError } = await supabase
-    .from("stock_import_job_items")
-    .insert(queueRows);
+  const queueRows = buildQueueRowsForBatchSlice({
+    jobId,
+    stocks: input.stocks,
+    modules: input.modules,
+    now,
+  });
+
+  const { error: queueError } = await supabase.from("stock_import_job_items").insert(queueRows);
 
   if (queueError) {
     await supabase
@@ -780,6 +958,22 @@ async function insertParentBatchJob(input: {
     throw new Error(`Could not seed Yahoo batch job items. ${queueError.message}`);
   }
 
+  await supabase
+    .from("stock_import_jobs")
+    .update({
+      metadata: {
+        ...metadata,
+        seededStockCount: input.stocks.length,
+        seededItemCount: queueRows.length,
+        remainingUnseededStocks: 0,
+        remainingUnseededCount: 0,
+        nextSeedCursor: input.stocks.length,
+        nextSeedSymbol: null,
+      },
+      updated_at: now,
+    })
+    .eq("id", jobId);
+
   return jobId;
 }
 
@@ -794,10 +988,107 @@ function normalizeBatchJobRow(value: JsonRecord): BatchJobRow {
     failedItems: numericOrZero(value.failed_items),
     warningItems: numericOrZero(value.warning_items),
     metadata: normalizeMetadata(value.metadata),
+    rawPayload: normalizeMetadata(value.raw_payload),
     requestedBy: cleanString(value.requested_by, 240) || null,
     startedAt: cleanString(value.started_at, 120) || null,
     completedAt: cleanString(value.completed_at, 120) || null,
     updatedAt: cleanString(value.updated_at, 120) || null,
+  };
+}
+
+async function seedYahooBatchJobItemsSlice(
+  jobId: string,
+  input: {
+    maxStocksToSeed: number;
+    maxSeedItemChunkSize?: number;
+  },
+) {
+  const job = await loadBatchJob(jobId);
+  const supabase = createSupabaseAdminClient();
+  const now = new Date().toISOString();
+  const requestedStocks = normalizeRequestedBatchStocksFromRawPayload(job.rawPayload);
+  const requestedModules = normalizeRequestedBatchModulesFromRawPayload(job.rawPayload);
+  const totalEligibleStocks = readTotalEligibleStocks(job.metadata, job.rawPayload);
+  const totalEligibleItems = readTotalEligibleItems(job.metadata, job.rawPayload, job.totalItems);
+
+  if (!requestedStocks.length || !requestedModules.length || totalEligibleStocks <= 0) {
+    return {
+      job,
+      seededStockCount: 0,
+      seededItemCount: 0,
+      remainingUnseededCount: 0,
+      nextSeedCursor: 0,
+      nextSeedSymbol: null,
+    };
+  }
+
+  const currentSeededStockCount = Math.max(
+    numericOrZero(job.metadata.seededStockCount),
+    0,
+  );
+  const startCursor = readNextSeedCursor(job.metadata, totalEligibleStocks, currentSeededStockCount);
+  const remainingUnseededStocks = Math.max(totalEligibleStocks - startCursor, 0);
+  if (remainingUnseededStocks <= 0) {
+    return {
+      job,
+      seededStockCount: currentSeededStockCount,
+      seededItemCount: readSeededItemCount(job.metadata),
+      remainingUnseededCount: 0,
+      nextSeedCursor: totalEligibleStocks,
+      nextSeedSymbol: null,
+    };
+  }
+
+  const stockCountToSeed = Math.max(1, Math.min(50, Math.floor(input.maxStocksToSeed), remainingUnseededStocks));
+  const stockSlice = requestedStocks.slice(startCursor, startCursor + stockCountToSeed);
+  const queueRows = buildQueueRowsForBatchSlice({
+    jobId,
+    stocks: stockSlice,
+    modules: requestedModules,
+    now,
+  });
+  const seedItemChunkSize = Math.max(
+    1,
+    Math.min(50, Math.floor(input.maxSeedItemChunkSize ?? YAHOO_DAILY_SAME_DAY_CRON_SEED_ITEM_CHUNK_SIZE)),
+  );
+
+  for (const rowChunk of chunkBatchRows(queueRows, seedItemChunkSize)) {
+    const { error } = await supabase.from("stock_import_job_items").insert(rowChunk);
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  const seededStockCount = startCursor + stockSlice.length;
+  const seededItemCount = Math.max(readSeededItemCount(job.metadata), 0) + queueRows.length;
+  const nextSeedCursor = Math.min(seededStockCount, totalEligibleStocks);
+  const nextSeedSymbol = requestedStocks[nextSeedCursor]?.yahooSymbol ?? null;
+  const nextRemainingUnseededCount = Math.max(totalEligibleItems - seededItemCount, 0);
+  const nextRemainingUnseededStocks = Math.max(totalEligibleStocks - nextSeedCursor, 0);
+
+  const updatedJob = await updateBatchJobRow(job, {
+    metadata: {
+      totalEligibleStocks,
+      totalEligibleItems,
+      incrementalSeeding: true,
+      seededStockCount,
+      seededItemCount,
+      remainingUnseededCount: nextRemainingUnseededCount,
+      remainingUnseededStocks: nextRemainingUnseededStocks,
+      nextSeedCursor,
+      nextSeedSymbol,
+      latestHeartbeatAt: now,
+      lastSeededAt: now,
+    },
+  });
+
+  return {
+    job: updatedJob,
+    seededStockCount,
+    seededItemCount,
+    remainingUnseededCount: nextRemainingUnseededCount,
+    nextSeedCursor,
+    nextSeedSymbol,
   };
 }
 
@@ -1360,9 +1651,37 @@ async function buildBatchReportFromState(input: {
     );
   }
 
+  const metadata = normalizeMetadata(input.job.metadata);
+  const totalEligibleStocks = Math.max(
+    readTotalEligibleStocks(metadata, input.job.rawPayload),
+    stockMap.size,
+  );
+  const totalEligibleItems = Math.max(
+    readTotalEligibleItems(metadata, input.job.rawPayload, input.job.totalItems),
+    input.items.length,
+  );
+  const seededStockCount = Math.max(
+    numericOrZero(metadata.seededStockCount),
+    stockMap.size,
+  );
+  const seededItemCount = Math.max(
+    readSeededItemCount(metadata, input.items.length),
+    input.items.length,
+  );
+  const remainingUnseededCount = readRemainingUnseededCount(
+    metadata,
+    totalEligibleItems,
+    seededItemCount,
+  );
+  const remainingUnseededStocks = Math.max(
+    numericOrZero(metadata.remainingUnseededStocks),
+    totalEligibleStocks - seededStockCount,
+    0,
+  );
+
   const terminalItems = input.items.filter((item) => isTerminalItemStatus(item.rowStatus)).length;
-  const processedItems = input.items.filter((item) => item.rowStatus !== "pending" && item.rowStatus !== "validated").length;
-  const pendingItems = input.items.length - terminalItems;
+  const processedItems = Math.max(totalEligibleItems - (Math.max(seededItemCount - terminalItems, 0) + remainingUnseededCount), 0);
+  const pendingItems = Math.max(seededItemCount - terminalItems, 0) + remainingUnseededCount;
   const importedItems = input.items.filter((item) => item.rowStatus === "imported").length;
   const updatedItems = input.items.filter((item) => item.rowStatus === "updated").length;
   const skippedItems = input.items.filter((item) => item.rowStatus === "skipped").length;
@@ -1380,11 +1699,12 @@ async function buildBatchReportFromState(input: {
     (stock) => stock.statuses.length > 0 && stock.skippedModules.length === stock.statuses.length,
   ).length;
   const failedStocks = Array.from(stockMap.values()).filter((stock) => stock.failedModules.length > 0).length;
-  const pendingStocks = Array.from(stockMap.values()).filter(
+  const pendingSeededStocks = Array.from(stockMap.values()).filter(
     (stock) => stock.statuses.some((status) => !isTerminalItemStatus(status)),
   ).length;
+  const pendingStocks = pendingSeededStocks + remainingUnseededStocks;
 
-  const timingMetadata = normalizeMetadata(input.job.metadata);
+  const timingMetadata = metadata;
   const processedDurationCount = numericOrZero(timingMetadata.processedDurationCount);
   const processedDurationTotalMs = numericOrZero(timingMetadata.processedDurationTotalMs);
   const averageDurationMs =
@@ -1455,12 +1775,12 @@ async function buildBatchReportFromState(input: {
   );
 
   const finalReport = {
-    totalStocks: stockMap.size,
+    totalStocks: totalEligibleStocks,
     completedStocks,
     failedStocks,
     skippedStocks,
     pendingStocks,
-    totalItems: input.items.length,
+    totalItems: totalEligibleItems,
     processedItems,
     terminalItems,
     importedItems,
@@ -1491,18 +1811,22 @@ async function buildBatchReportFromState(input: {
         : {
             financial_statements: "manual_single_stock_only",
           },
+    seededItemCount,
+    remainingUnseededCount,
+    nextSeedCursor: readNextSeedCursor(metadata, totalEligibleStocks, seededStockCount),
+    nextSeedSymbol: readNextSeedSymbol(metadata),
   } satisfies JsonRecord;
 
   return {
     jobId: input.job.id,
     status: displayStatus,
     controlState,
-    totalStocks: stockMap.size,
+    totalStocks: totalEligibleStocks,
     completedStocks,
     failedStocks,
     skippedStocks,
     pendingStocks,
-    totalItems: input.items.length,
+    totalItems: totalEligibleItems,
     processedItems,
     terminalItems,
     importedItems,
@@ -1984,36 +2308,64 @@ async function loadRetryStocksForDailySameDayCron(targetDate: string) {
 }
 
 function buildDailySameDayCronProgressMetadata(input: {
+  job: BatchJobRow;
   items: BatchItemRow[];
   targetDate: string;
   cronWindow: YahooDailyCronWindow;
   lastProcessedSymbol?: string | null;
 }) {
-  const totalStocks = input.items.length;
-  const terminalItems = input.items.filter((item) => isTerminalItemStatus(item.rowStatus)).length;
+  const totalStocks = Math.max(
+    readTotalEligibleStocks(input.job.metadata, input.job.rawPayload),
+    input.items.length,
+  );
+  const seededStockCount = Math.max(
+    numericOrZero(input.job.metadata.seededStockCount),
+    input.items.length,
+  );
   const completedStocks = input.items.filter((item) =>
     ["imported", "updated", "warning"].includes(item.rowStatus),
   ).length;
   const failedStocks = input.items.filter((item) => item.rowStatus === "failed").length;
   const skippedStocks = input.items.filter((item) => item.rowStatus === "skipped").length;
+  const remainingUnseededCount = readRemainingUnseededCount(
+    input.job.metadata,
+    readTotalEligibleItems(input.job.metadata, input.job.rawPayload, input.job.totalItems),
+    readSeededItemCount(input.job.metadata, input.items.length),
+  );
+  const remainingUnseededStocks = Math.max(
+    numericOrZero(input.job.metadata.remainingUnseededStocks),
+    totalStocks - seededStockCount,
+    0,
+  );
   const nextPendingItem =
     input.items.find((item) => item.rowStatus === "pending" || item.rowStatus === "validated") ?? null;
-  const nextCursor = nextPendingItem ? input.items.findIndex((item) => item.id === nextPendingItem.id) : totalStocks;
+  const nextSeedCursor = readNextSeedCursor(input.job.metadata, totalStocks, seededStockCount);
+  const nextCursor = nextPendingItem
+    ? input.items.findIndex((item) => item.id === nextPendingItem.id)
+    : remainingUnseededStocks > 0
+      ? nextSeedCursor
+      : totalStocks;
 
   return {
     targetDate: input.targetDate,
     cronWindow: input.cronWindow,
     requestedStocks: totalStocks,
-    processedStocks: terminalItems,
+    processedStocks: totalStocks - Math.max(input.items.filter((item) => !isTerminalItemStatus(item.rowStatus)).length + remainingUnseededStocks, 0),
     completedStocks,
     failedStocks,
     skippedStocks,
-    pendingStocks: Math.max(totalStocks - terminalItems, 0),
+    pendingStocks:
+      input.items.filter((item) => item.rowStatus === "pending" || item.rowStatus === "validated").length +
+      remainingUnseededStocks,
     nextCursor,
+    seededItemCount: readSeededItemCount(input.job.metadata, input.items.length),
+    remainingUnseededCount,
+    nextSeedCursor,
     lastProcessedSymbol: cleanString(input.lastProcessedSymbol, 160) || null,
     nextPendingSymbol:
       cleanString(nextPendingItem?.sourceKey, 160) ||
       cleanString(nextPendingItem?.symbol, 160) ||
+      readNextSeedSymbol(input.job.metadata) ||
       null,
   } satisfies JsonRecord;
 }
@@ -2224,8 +2576,19 @@ export async function prepareYahooDailySameDayCronJob(
 
   const latestJob = await findLatestYahooDailyCronBatchJob(cronWindow, targetDate);
   if (latestJob) {
-    const latestReport = await getYahooStockBatchImportReport(latestJob.id);
     const latestMetadata = normalizeMetadata(latestJob.metadata);
+    const latestTotalEligibleStocks = readTotalEligibleStocks(latestMetadata);
+    const latestSeededItemCount = readSeededItemCount(latestMetadata);
+    const latestRemainingUnseededCount = readRemainingUnseededCount(
+      latestMetadata,
+      readTotalEligibleItems(latestMetadata),
+      latestSeededItemCount,
+    );
+    const latestNextSeedCursor = readNextSeedCursor(
+      latestMetadata,
+      latestTotalEligibleStocks,
+      numericOrZero(latestMetadata.seededStockCount),
+    );
     if (hasFreshActiveWorker(latestMetadata)) {
       return {
         mode: "already_running",
@@ -2234,12 +2597,16 @@ export async function prepareYahooDailySameDayCronJob(
         jobId: latestJob.id,
         created: false,
         reused: true,
-        requestedCount: latestReport.totalStocks,
+        requestedCount: latestTotalEligibleStocks,
         queueWorker: false,
         dispatchCursor: readDailySameDayDispatchCursor(latestMetadata),
+        totalEligibleStocks: latestTotalEligibleStocks,
+        seededItemCount: latestSeededItemCount,
+        remainingUnseededCount: latestRemainingUnseededCount,
+        nextSeedCursor: latestNextSeedCursor,
         lastProcessedSymbol: readDailySameDayLastProcessedSymbol(latestMetadata),
         nextPendingSymbol: readDailySameDayNextPendingSymbol(latestMetadata),
-        report: latestReport,
+        report: null,
       };
     }
 
@@ -2251,12 +2618,16 @@ export async function prepareYahooDailySameDayCronJob(
         jobId: latestJob.id,
         created: false,
         reused: true,
-        requestedCount: latestReport.totalStocks,
+        requestedCount: latestTotalEligibleStocks,
         queueWorker: true,
         dispatchCursor: readDailySameDayDispatchCursor(latestMetadata),
+        totalEligibleStocks: latestTotalEligibleStocks,
+        seededItemCount: latestSeededItemCount,
+        remainingUnseededCount: latestRemainingUnseededCount,
+        nextSeedCursor: latestNextSeedCursor,
         lastProcessedSymbol: readDailySameDayLastProcessedSymbol(latestMetadata),
         nextPendingSymbol: readDailySameDayNextPendingSymbol(latestMetadata),
-        report: latestReport,
+        report: null,
       };
     }
   }
@@ -2277,6 +2648,10 @@ export async function prepareYahooDailySameDayCronJob(
       requestedCount: 0,
       queueWorker: false,
       dispatchCursor: 0,
+      totalEligibleStocks: 0,
+      seededItemCount: 0,
+      remainingUnseededCount: 0,
+      nextSeedCursor: 0,
       lastProcessedSymbol: null,
       nextPendingSymbol: null,
       report: null,
@@ -2327,9 +2702,15 @@ export async function prepareYahooDailySameDayCronJob(
           ? "Retry-only strict same-day Yahoo cron lane for missing, stale, or failed remainder."
           : "Primary strict same-day Yahoo cron lane for active NSE stocks missing the expected trading-date row or snapshot.",
     },
+    seeding: {
+      mode: "incremental",
+      initialSeedStockCount: YAHOO_DAILY_SAME_DAY_CRON_SEED_STOCK_BATCH_SIZE,
+      maxSeedItemChunkSize: YAHOO_DAILY_SAME_DAY_CRON_SEED_ITEM_CHUNK_SIZE,
+    },
   });
 
-  const report = await getYahooStockBatchImportReport(jobId);
+  const queuedJob = await loadBatchJob(jobId);
+  const queuedMetadata = normalizeMetadata(queuedJob.metadata);
   return {
     mode: "queued_job",
     cronWindow,
@@ -2340,9 +2721,24 @@ export async function prepareYahooDailySameDayCronJob(
     requestedCount: stocks.length,
     queueWorker: true,
     dispatchCursor: 0,
+    totalEligibleStocks: readTotalEligibleStocks(queuedMetadata, queuedJob.rawPayload),
+    seededItemCount: readSeededItemCount(queuedMetadata),
+    remainingUnseededCount: readRemainingUnseededCount(
+      queuedMetadata,
+      readTotalEligibleItems(queuedMetadata, queuedJob.rawPayload, queuedJob.totalItems),
+      readSeededItemCount(queuedMetadata),
+    ),
+    nextSeedCursor: readNextSeedCursor(
+      queuedMetadata,
+      readTotalEligibleStocks(queuedMetadata, queuedJob.rawPayload),
+      numericOrZero(queuedMetadata.seededStockCount),
+    ),
     lastProcessedSymbol: null,
-    nextPendingSymbol: stocks[0]?.yahooSymbol ?? null,
-    report,
+    nextPendingSymbol:
+      readNextSeedSymbol(queuedMetadata) ||
+      stocks[0]?.yahooSymbol ||
+      null,
+    report: null,
   };
 }
 
@@ -2417,6 +2813,18 @@ export async function runYahooDailySameDayCronWorker(
 
   const initialStatus = computeDisplayedBatchStatus(job);
   const existingActiveWorkerIsFresh = job.status === "running" && hasFreshActiveWorker(job.metadata);
+  const totalEligibleStocks = readTotalEligibleStocks(job.metadata, job.rawPayload);
+  const seededItemCount = readSeededItemCount(job.metadata);
+  const remainingUnseededCount = readRemainingUnseededCount(
+    job.metadata,
+    readTotalEligibleItems(job.metadata, job.rawPayload, job.totalItems),
+    seededItemCount,
+  );
+  const nextSeedCursor = readNextSeedCursor(
+    job.metadata,
+    totalEligibleStocks,
+    numericOrZero(job.metadata.seededStockCount),
+  );
   if (["completed", "failed", "stopped"].includes(initialStatus)) {
     return {
       jobId: input.jobId,
@@ -2427,6 +2835,10 @@ export async function runYahooDailySameDayCronWorker(
       warnings: [],
       shouldQueueFollowUp: false,
       dispatchCursor: readDailySameDayDispatchCursor(job.metadata),
+      totalEligibleStocks,
+      seededItemCount,
+      remainingUnseededCount,
+      nextSeedCursor,
       lastProcessedSymbol: readDailySameDayLastProcessedSymbol(job.metadata),
       nextPendingSymbol: readDailySameDayNextPendingSymbol(job.metadata),
     };
@@ -2446,6 +2858,10 @@ export async function runYahooDailySameDayCronWorker(
       ],
       shouldQueueFollowUp: false,
       dispatchCursor: readDailySameDayDispatchCursor(job.metadata),
+      totalEligibleStocks,
+      seededItemCount,
+      remainingUnseededCount,
+      nextSeedCursor,
       lastProcessedSymbol: readDailySameDayLastProcessedSymbol(job.metadata),
       nextPendingSymbol: readDailySameDayNextPendingSymbol(job.metadata),
     };
@@ -2463,6 +2879,10 @@ export async function runYahooDailySameDayCronWorker(
       ],
       shouldQueueFollowUp: false,
       dispatchCursor: readDailySameDayDispatchCursor(job.metadata),
+      totalEligibleStocks,
+      seededItemCount,
+      remainingUnseededCount,
+      nextSeedCursor,
       lastProcessedSymbol: readDailySameDayLastProcessedSymbol(job.metadata),
       nextPendingSymbol: readDailySameDayNextPendingSymbol(job.metadata),
     };
@@ -2481,6 +2901,10 @@ export async function runYahooDailySameDayCronWorker(
       ],
       shouldQueueFollowUp: false,
       dispatchCursor: readDailySameDayDispatchCursor(job.metadata),
+      totalEligibleStocks,
+      seededItemCount,
+      remainingUnseededCount,
+      nextSeedCursor,
       lastProcessedSymbol: readDailySameDayLastProcessedSymbol(job.metadata),
       nextPendingSymbol: readDailySameDayNextPendingSymbol(job.metadata),
     };
@@ -2506,7 +2930,21 @@ export async function runYahooDailySameDayCronWorker(
   let processedStocks = 0;
   let lastProcessedSymbol: string | null = null;
   let stopReason: string | null = null;
-  const items = await loadBatchItems(input.jobId);
+  let items = await loadBatchItems(input.jobId);
+  const currentPendingSeededItems = items.filter(
+    (item) => item.rowStatus === "pending" || item.rowStatus === "validated",
+  ).length;
+
+  if (readRemainingUnseededCount(job.metadata, readTotalEligibleItems(job.metadata, job.rawPayload, job.totalItems), readSeededItemCount(job.metadata, items.length)) > 0 && currentPendingSeededItems < maxItemsPerRun) {
+    const stocksToSeed = Math.max(1, Math.min(maxItemsPerRun - currentPendingSeededItems, YAHOO_DAILY_SAME_DAY_CRON_SEED_STOCK_BATCH_SIZE));
+    await seedYahooBatchJobItemsSlice(input.jobId, {
+      maxStocksToSeed: stocksToSeed,
+      maxSeedItemChunkSize: YAHOO_DAILY_SAME_DAY_CRON_SEED_ITEM_CHUNK_SIZE,
+    });
+    job = await loadBatchJob(input.jobId);
+    items = await loadBatchItems(input.jobId);
+  }
+
   const pendingItems = items
     .filter((item) => item.rowStatus === "pending" || item.rowStatus === "validated")
     .slice(0, maxItemsPerRun);
@@ -2524,6 +2962,18 @@ export async function runYahooDailySameDayCronWorker(
         warnings,
         shouldQueueFollowUp: false,
         dispatchCursor: readDailySameDayDispatchCursor(cancelledJob.metadata),
+        totalEligibleStocks: readTotalEligibleStocks(cancelledJob.metadata, cancelledJob.rawPayload),
+        seededItemCount: readSeededItemCount(cancelledJob.metadata),
+        remainingUnseededCount: readRemainingUnseededCount(
+          cancelledJob.metadata,
+          readTotalEligibleItems(cancelledJob.metadata, cancelledJob.rawPayload, cancelledJob.totalItems),
+          readSeededItemCount(cancelledJob.metadata),
+        ),
+        nextSeedCursor: readNextSeedCursor(
+          cancelledJob.metadata,
+          readTotalEligibleStocks(cancelledJob.metadata, cancelledJob.rawPayload),
+          numericOrZero(cancelledJob.metadata.seededStockCount),
+        ),
         lastProcessedSymbol,
         nextPendingSymbol: readDailySameDayNextPendingSymbol(cancelledJob.metadata),
       };
@@ -2541,6 +2991,18 @@ export async function runYahooDailySameDayCronWorker(
         warnings,
         shouldQueueFollowUp: false,
         dispatchCursor: readDailySameDayDispatchCursor(pausedJob.metadata),
+        totalEligibleStocks: readTotalEligibleStocks(pausedJob.metadata, pausedJob.rawPayload),
+        seededItemCount: readSeededItemCount(pausedJob.metadata),
+        remainingUnseededCount: readRemainingUnseededCount(
+          pausedJob.metadata,
+          readTotalEligibleItems(pausedJob.metadata, pausedJob.rawPayload, pausedJob.totalItems),
+          readSeededItemCount(pausedJob.metadata),
+        ),
+        nextSeedCursor: readNextSeedCursor(
+          pausedJob.metadata,
+          readTotalEligibleStocks(pausedJob.metadata, pausedJob.rawPayload),
+          numericOrZero(pausedJob.metadata.seededStockCount),
+        ),
         lastProcessedSymbol,
         nextPendingSymbol: readDailySameDayNextPendingSymbol(pausedJob.metadata),
       };
@@ -2744,6 +3206,7 @@ export async function runYahooDailySameDayCronWorker(
   const refreshedJob = await loadBatchJob(input.jobId);
   const refreshedItems = await loadBatchItems(input.jobId);
   const progressMetadata = buildDailySameDayCronProgressMetadata({
+    job: refreshedJob,
     items: refreshedItems,
     targetDate,
     cronWindow,
@@ -2828,6 +3291,18 @@ export async function runYahooDailySameDayCronWorker(
     warnings,
     shouldQueueFollowUp,
     dispatchCursor: readDailySameDayDispatchCursor(finalJob.metadata),
+    totalEligibleStocks: readTotalEligibleStocks(finalJob.metadata, finalJob.rawPayload),
+    seededItemCount: readSeededItemCount(finalJob.metadata),
+    remainingUnseededCount: readRemainingUnseededCount(
+      finalJob.metadata,
+      readTotalEligibleItems(finalJob.metadata, finalJob.rawPayload, finalJob.totalItems),
+      readSeededItemCount(finalJob.metadata),
+    ),
+    nextSeedCursor: readNextSeedCursor(
+      finalJob.metadata,
+      readTotalEligibleStocks(finalJob.metadata, finalJob.rawPayload),
+      numericOrZero(finalJob.metadata.seededStockCount),
+    ),
     lastProcessedSymbol: readDailySameDayLastProcessedSymbol(finalJob.metadata),
     nextPendingSymbol: readDailySameDayNextPendingSymbol(finalJob.metadata),
   };

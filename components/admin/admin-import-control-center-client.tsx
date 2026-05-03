@@ -830,7 +830,7 @@ export function AdminImportControlCenterClient({
         ? `${formatInteger(data.productionReadiness.activeCronJobProgress.processedStocks)} / ${formatInteger(data.productionReadiness.activeCronJobProgress.totalStocks)}`
         : "No active cron job",
       note: data.productionReadiness.activeCronJobProgress
-        ? `Job ${data.productionReadiness.activeCronJobProgress.jobId.slice(0, 8)} · next ${data.productionReadiness.activeCronJobProgress.nextPendingSymbol ?? "none"}`
+        ? `Job ${data.productionReadiness.activeCronJobProgress.jobId.slice(0, 8)} · next ${data.productionReadiness.activeCronJobProgress.nextPendingSymbol ?? "none"} · seeded ${formatInteger(data.productionReadiness.activeCronJobProgress.seededItemCount)}`
         : "No queued or running same-day cron batch is currently in progress.",
     },
     {
@@ -1037,6 +1037,11 @@ export function AdminImportControlCenterClient({
               Last processed symbol {data.productionReadiness.activeCronJobProgress.lastProcessedSymbol ?? "Not available"}.
               {` `}
               Next pending symbol {data.productionReadiness.activeCronJobProgress.nextPendingSymbol ?? "None"}.
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[#4b5563]">
+              Seeded {formatInteger(data.productionReadiness.activeCronJobProgress.seededItemCount)} item rows so far, with {formatInteger(data.productionReadiness.activeCronJobProgress.remainingUnseededCount)} still unseeded.
+              {` `}
+              Next seed cursor {data.productionReadiness.activeCronJobProgress.nextSeedCursor ?? "None"}.
             </p>
           </div>
         ) : null}
