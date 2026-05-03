@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import type { ProductUserProfile } from "@/lib/user-product-store";
@@ -10,6 +11,7 @@ export function UserProfileSettingsCard({
 }: {
   profile: ProductUserProfile;
 }) {
+  const router = useRouter();
   const [name, setName] = useState(profile.name);
   const [username, setUsername] = useState(profile.username);
   const [websiteUrl, setWebsiteUrl] = useState(profile.websiteUrl ?? "");
@@ -65,12 +67,13 @@ export function UserProfileSettingsCard({
       setLinkedinUrl(data.profile.linkedinUrl ?? "");
       setInstagramHandle(data.profile.instagramHandle ?? "");
       setYoutubeUrl(data.profile.youtubeUrl ?? "");
+      router.refresh();
       setBanner({
         tone: "success",
         text: "Profile updated.",
         detail:
           data.storageMode === "durable"
-            ? "Saved through the durable profile path with product extras mirrored locally."
+            ? `Public profile moved to /user/${data.profile.username}`
             : "Saved through the local product profile path.",
       });
     });
@@ -193,7 +196,7 @@ export function UserProfileSettingsCard({
           type="button"
           onClick={saveProfile}
           disabled={isPending}
-          className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-[#1B3A6B] px-5 text-sm font-medium text-white"
+          className="riddra-button-link-primary inline-flex h-11 items-center justify-center rounded-[10px] border border-[rgba(27,58,107,0.14)] bg-[#1B3A6B] px-5 text-sm font-medium text-[white] transition hover:bg-[#264a83] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isPending ? "Saving..." : "Save profile"}
         </button>

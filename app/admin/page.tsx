@@ -92,11 +92,41 @@ export default async function AdminDashboardPage() {
   const staleRows = allRows
     .filter((row) => row.isStale)
     .sort((left, right) => right.lastUpdated.localeCompare(left.lastUpdated));
-  const recentEdits = activityEntries.filter((entry) =>
-    ["content.", "settings.", "membership.", "override.", "user."].some((prefix) =>
-      entry.actionType.startsWith(prefix),
-    ),
-  );
+  const recentEdits = activityEntries
+    .filter((entry) => {
+      if (
+        entry.targetType === "content_record" ||
+        entry.targetType === "content_import_batch"
+      ) {
+        return true;
+      }
+
+      return ["content.", "approval.", "media.", "settings.", "refresh."].some((prefix) =>
+        entry.actionType.startsWith(prefix),
+      );
+    })
+    .sort((left, right) => {
+      const getPriority = (actionType: string) => {
+        if (actionType.startsWith("content.") || actionType.startsWith("approval.")) {
+          return 0;
+        }
+
+        if (actionType.startsWith("media.") || actionType.startsWith("settings.")) {
+          return 1;
+        }
+
+        if (actionType.startsWith("refresh.")) {
+          return 2;
+        }
+
+        return 3;
+      };
+
+      return (
+        getPriority(left.actionType) - getPriority(right.actionType) ||
+        right.createdAt.localeCompare(left.createdAt)
+      );
+    });
 
   const dashboardCanvasClassName =
     "rounded-[28px] bg-[#e9eef4] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:px-5 sm:py-5 xl:px-6 xl:py-6 space-y-[18px]";
@@ -178,7 +208,7 @@ export default async function AdminDashboardPage() {
           },
           {
             label: "Recent edits",
-            value: String(recentEdits.slice(0, 8).length),
+            value: String(recentEdits.length),
             note: "The latest saved changes across content and key admin areas.",
           },
         ]}

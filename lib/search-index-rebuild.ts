@@ -1,9 +1,49 @@
+import { invalidatePublicContentCachesForAdminRecord } from "@/lib/content";
+import { getDurableJobSystemReadiness, queueDurableJob } from "@/lib/durable-jobs";
 import { getSearchIndexMemory, saveSearchIndexLane } from "@/lib/search-index-memory-store";
-import { rebuildSearchEngineIndex } from "@/lib/search-engine/meilisearch";
+import { invalidateLocalSearchCatalogCache } from "@/lib/search-engine/local-catalog-search";
+import { getSearchEngineStatus, rebuildSearchEngineIndex } from "@/lib/search-engine/meilisearch";
 import { getSearchQueryMemory } from "@/lib/search-query-memory-store";
 import { getSearchQueryReviewMemory } from "@/lib/search-query-review-store";
 
+type SearchRefreshFamily = "stocks" | "mutual-funds" | "ipos";
+
+const SEARCH_INDEX_REBUILD_DEBOUNCE_MS = 30_000;
+
+let lastQueuedSearchRebuildAt = 0;
+let lastQueuedSearchRebuildJobId: string | null = null;
+let inlineSearchRebuildStartedAt = 0;
+let inlineSearchRebuildPromise: Promise<Awaited<ReturnType<typeof rebuildSearchIndexMemory>>> | null = null;
+
+function invalidateSearchSourceCaches() {
+  invalidatePublicContentCachesForAdminRecord("stocks");
+  invalidatePublicContentCachesForAdminRecord("mutual-funds");
+  invalidatePublicContentCachesForAdminRecord("ipos");
+  invalidateLocalSearchCatalogCache();
+}
+
+function normalizeTrackedStockSlugs(slugs: string[] | null | undefined) {
+  return Array.from(
+    new Set(
+      (slugs ?? [])
+        .map((slug) => slug.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function logSearchRefresh(
+  stage: string,
+  detail: Record<string, unknown>,
+) {
+  console.info("[search-index-sync]", {
+    stage,
+    ...detail,
+  });
+}
+
 export async function rebuildSearchIndexMemory() {
+  invalidateSearchSourceCaches();
   const [memory, rebuild, queryMemory, reviewMemory] = await Promise.all([
     getSearchIndexMemory(),
     rebuildSearchEngineIndex(),
@@ -58,5 +98,169 @@ export async function rebuildSearchIndexMemory() {
     }),
   );
 
-  return getSearchIndexMemory();
+  return {
+    memory: await getSearchIndexMemory(),
+    rebuild,
+  };
+}
+
+export async function syncSearchIndexForAdminContentChange(input: {
+  family: SearchRefreshFamily;
+  slugs?: string[] | null;
+  requestedBy: string;
+  source: string;
+  force?: boolean;
+  publicStatus?: "draft" | "ready_for_review" | "needs_fix" | "published" | "archived" | null;
+}) {
+  const trackedSlugs = normalizeTrackedStockSlugs(input.slugs);
+  const shouldRebuild =
+    input.force ||
+    input.publicStatus === "published" ||
+    input.publicStatus === "archived";
+
+  invalidatePublicContentCachesForAdminRecord(input.family, trackedSlugs[0] ?? null);
+  invalidateLocalSearchCatalogCache();
+
+  if (!shouldRebuild) {
+    logSearchRefresh("skipped_non_public_stock_change", {
+      family: input.family,
+      requestedBy: input.requestedBy,
+      source: input.source,
+      indexedStockCount: 0,
+      skippedStockCount: trackedSlugs.length || 1,
+      rebuildStatus: "skipped",
+      trackedSlugs,
+      publicStatus: input.publicStatus ?? "draft",
+    });
+    return {
+      status: "skipped" as const,
+      indexedStockCount: 0,
+      skippedStockCount: trackedSlugs.length || 1,
+    };
+  }
+
+  const now = Date.now();
+  const debounceBucket = Math.floor(now / SEARCH_INDEX_REBUILD_DEBOUNCE_MS);
+  const durableJobs = getDurableJobSystemReadiness();
+
+  if (durableJobs.configured) {
+    if (now - lastQueuedSearchRebuildAt < SEARCH_INDEX_REBUILD_DEBOUNCE_MS && lastQueuedSearchRebuildJobId) {
+      logSearchRefresh("debounced_existing_queue", {
+        family: input.family,
+        requestedBy: input.requestedBy,
+        source: input.source,
+        indexedStockCount: 0,
+        skippedStockCount: trackedSlugs.length || 1,
+        rebuildStatus: "debounced_existing_queue",
+        trackedSlugs,
+        jobId: lastQueuedSearchRebuildJobId,
+      });
+
+      return {
+        status: "queued" as const,
+        indexedStockCount: 0,
+        skippedStockCount: trackedSlugs.length || 1,
+        jobId: lastQueuedSearchRebuildJobId,
+      };
+    }
+
+    const handle = await queueDurableJob({
+      taskId: "search-index-rebuild",
+      payload: {
+        requestedBy: input.requestedBy,
+        source: input.source,
+      },
+      idempotencyKey: `search-index-rebuild:${debounceBucket}`,
+      tags: ["durable-job", "search", "index-rebuild", input.family],
+      metadata: {
+        routeTarget: "/api/admin/search-index/rebuild",
+        requestedBy: input.requestedBy,
+        family: input.family,
+        stockSlugs: trackedSlugs,
+      },
+    });
+
+    lastQueuedSearchRebuildAt = now;
+    lastQueuedSearchRebuildJobId = handle.id;
+
+    logSearchRefresh("queued", {
+      family: input.family,
+      requestedBy: input.requestedBy,
+      source: input.source,
+      indexedStockCount: trackedSlugs.length,
+      skippedStockCount: 0,
+      rebuildStatus: "queued",
+      trackedSlugs,
+      jobId: handle.id,
+    });
+
+    return {
+      status: "queued" as const,
+      indexedStockCount: trackedSlugs.length,
+      skippedStockCount: 0,
+      jobId: handle.id,
+    };
+  }
+
+  const searchStatus = await getSearchEngineStatus();
+  if (!searchStatus.configured) {
+    logSearchRefresh("skipped_unconfigured_engine", {
+      family: input.family,
+      requestedBy: input.requestedBy,
+      source: input.source,
+      indexedStockCount: 0,
+      skippedStockCount: trackedSlugs.length || 1,
+      rebuildStatus: "skipped_unconfigured_engine",
+      trackedSlugs,
+      reason: searchStatus.message,
+    });
+    return {
+      status: "skipped_unconfigured_engine" as const,
+      indexedStockCount: 0,
+      skippedStockCount: trackedSlugs.length || 1,
+    };
+  }
+
+  if (inlineSearchRebuildPromise && now - inlineSearchRebuildStartedAt < SEARCH_INDEX_REBUILD_DEBOUNCE_MS) {
+    const rebuildResult = await inlineSearchRebuildPromise;
+    logSearchRefresh("debounced_existing_inline_rebuild", {
+      family: input.family,
+      requestedBy: input.requestedBy,
+      source: input.source,
+      indexedStockCount: rebuildResult.rebuild.summary.stockDocuments,
+      skippedStockCount: trackedSlugs.length || 1,
+      rebuildStatus: "debounced_existing_inline_rebuild",
+      trackedSlugs,
+      totalIndexedDocuments: rebuildResult.rebuild.indexedDocuments,
+    });
+
+    return {
+      status: "rebuilt_inline" as const,
+      indexedStockCount: rebuildResult.rebuild.summary.stockDocuments,
+      skippedStockCount: trackedSlugs.length || 1,
+    };
+  }
+
+  inlineSearchRebuildStartedAt = now;
+  inlineSearchRebuildPromise = rebuildSearchIndexMemory().finally(() => {
+    inlineSearchRebuildPromise = null;
+  });
+
+  const rebuildResult = await inlineSearchRebuildPromise;
+  logSearchRefresh("rebuilt_inline", {
+    family: input.family,
+    requestedBy: input.requestedBy,
+    source: input.source,
+    indexedStockCount: rebuildResult.rebuild.summary.stockDocuments,
+    skippedStockCount: 0,
+    rebuildStatus: "rebuilt_inline",
+    trackedSlugs,
+    totalIndexedDocuments: rebuildResult.rebuild.indexedDocuments,
+  });
+
+  return {
+    status: "rebuilt_inline" as const,
+    indexedStockCount: rebuildResult.rebuild.summary.stockDocuments,
+    skippedStockCount: 0,
+  };
 }

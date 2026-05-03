@@ -72,6 +72,7 @@ export function AdminContentImportClient({
   const [csvText, setCsvText] = useState("");
   const [fieldMapping, setFieldMapping] = useState<Record<string, AdminImportFieldKey>>({});
   const [preview, setPreview] = useState<AdminImportPreview | null>(null);
+  const [selectedPreviewRowId, setSelectedPreviewRowId] = useState<string | null>(null);
   const [batchDetails, setBatchDetails] = useState(initialBatchDetails);
   const [banner, setBanner] = useState<{
     tone: "success" | "danger";
@@ -105,13 +106,14 @@ export function AdminContentImportClient({
 
     setBanner(null);
     setPreview(null);
+    setSelectedPreviewRowId(null);
     setFieldMapping({});
     setFileName(file.name);
     setCsvText(await file.text());
   }
 
-  function runPreview(nextMapping = fieldMapping) {
-    if (!csvText.trim()) {
+  function runPreview(nextMapping = fieldMapping, nextRows?: AdminImportBatchRow[]) {
+    if (!csvText.trim() && (!nextRows || nextRows.length === 0)) {
       setBanner({
         tone: "danger",
         text: "Choose a CSV file before checking it.",
@@ -132,6 +134,7 @@ export function AdminContentImportClient({
           fileName,
           importMode,
           fieldMapping: nextMapping,
+          rows: nextRows,
         }),
       });
       const data = (await response.json().catch(() => null)) as
@@ -147,6 +150,9 @@ export function AdminContentImportClient({
       }
 
       setPreview(data);
+      setSelectedPreviewRowId((current) =>
+        data.rows.some((row) => row.id === current) ? current : data.rows[0]?.id ?? null,
+      );
       setFieldMapping(data.fieldMapping ?? nextMapping);
       setBanner({
         tone: "success",
@@ -180,6 +186,7 @@ export function AdminContentImportClient({
           fileName,
           importMode,
           fieldMapping,
+          rows: preview.rows,
         }),
       });
       const data = (await response.json().catch(() => null)) as
@@ -217,6 +224,59 @@ export function AdminContentImportClient({
 
   const recentFailedRows = preview?.rows.filter((row) => row.status === "failed").slice(0, 5) ?? [];
   const recentWarningRows = preview?.rows.filter((row) => row.status === "warning").slice(0, 5) ?? [];
+  const selectedPreviewRow =
+    preview?.rows.find((row) => row.id === selectedPreviewRowId) ?? preview?.rows[0] ?? null;
+  const selectedPreviewGroups = useMemo(() => {
+    if (!selectedTemplate || !selectedPreviewRow) {
+      return [];
+    }
+
+    return selectedTemplate.groups
+      .map((group) => ({
+        ...group,
+        fields: group.fieldKeys
+          .map((fieldKey) => selectedFieldMap.get(fieldKey))
+          .filter((field): field is NonNullable<typeof field> => Boolean(field))
+          .filter((field) => field.required || Boolean(selectedPreviewRow.payload[field.key])),
+      }))
+      .filter((group) => group.fields.length > 0);
+  }, [selectedFieldMap, selectedPreviewRow, selectedTemplate]);
+
+  function updatePreviewRowField(rowId: string, fieldKey: AdminImportFieldKey, value: string) {
+    setPreview((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        rows: current.rows.map((row) => {
+          if (row.id !== rowId) {
+            return row;
+          }
+
+          const nextPayload = {
+            ...row.payload,
+            [fieldKey]: value,
+          };
+
+          return {
+            ...row,
+            payload: nextPayload,
+            title:
+              fieldKey === "companyName" ||
+              fieldKey === "fundName" ||
+              fieldKey === "name" ||
+              fieldKey === "title"
+                ? value || row.title
+                : row.title,
+            slug: fieldKey === "slug" ? value || null : row.slug,
+            updatedAt: new Date().toISOString(),
+          };
+        }),
+      };
+    });
+  }
 
   return (
     <div className="space-y-4">
@@ -398,51 +458,166 @@ export function AdminContentImportClient({
             </div>
           </div>
 
-          <AdminSectionCard
-            title="Template fields"
-            description="Use these grouped editor-aligned column names if you want the easiest upload. Required columns are marked clearly."
-            collapsible
-            defaultOpen={false}
-          >
-            <div className="space-y-3">
-              {selectedTemplate?.groups.map((group) => (
-                <div key={group.key} className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] p-3">
-                  <p className="font-semibold text-[#111827]">{group.label}</p>
-                  <p className="mt-1 text-sm leading-6 text-[#4b5563]">{group.description}</p>
-                  <div className="mt-3 space-y-3">
-                    {group.fieldKeys.map((fieldKey) => {
-                      const field = selectedFieldMap.get(fieldKey);
-                      if (!field) {
-                        return null;
-                      }
+          <div className="space-y-4">
+            {preview && selectedPreviewRow ? (
+              <AdminSectionCard
+                title="Imported row review"
+                description="Review and edit the uploaded values here before you import or submit them for approval."
+              >
+                <div className="space-y-4">
+                  <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                    <label className="space-y-2">
+                      <span className="text-xs font-medium uppercase tracking-[0.16em] text-[#6b7280]">
+                        Preview row
+                      </span>
+                      <select
+                        value={selectedPreviewRow.id}
+                        onChange={(event) => setSelectedPreviewRowId(event.target.value)}
+                        className="h-11 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-sm text-[#111827]"
+                      >
+                        {preview.rows.map((row) => (
+                          <option key={row.id} value={row.id}>
+                            Row {row.rowNumber} · {getRowLabel(row)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => runPreview(fieldMapping, preview.rows)}
+                      disabled={isPending}
+                      className="inline-flex h-10 items-center rounded-lg border border-[#0f172a] bg-[#0f172a] px-4 text-sm font-medium text-white"
+                    >
+                      {isPending ? "Refreshing..." : "Re-check edited preview"}
+                    </button>
+                  </div>
 
-                      return (
-                        <div key={field.key} className="rounded-lg border border-[#dbe4ee] bg-white p-3">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold text-[#111827]">{field.label}</p>
-                            <code className="rounded bg-[#eef2ff] px-2 py-1 text-[12px] text-[#312e81]">
-                              {field.key}
-                            </code>
-                            <AdminBadge
-                              label={field.required ? "Required" : "Optional"}
-                              tone={field.required ? "warning" : "default"}
-                            />
-                          </div>
-                          <p className="mt-1 text-sm leading-6 text-[#4b5563]">{field.description}</p>
-                          <p className="mt-1 text-xs leading-5 text-[#6b7280]">Example: {field.example}</p>
-                          {field.repeatedFieldFormat ? (
-                            <p className="mt-1 text-xs leading-5 text-[#6b7280]">
-                              Repeated field format: {field.repeatedFieldFormat}
-                            </p>
-                          ) : null}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AdminBadge
+                      label={selectedPreviewRow.status.replaceAll("_", " ")}
+                      tone={getStatusTone(selectedPreviewRow.status)}
+                    />
+                    <p className="text-sm leading-6 text-[#4b5563]">{selectedPreviewRow.resultNote}</p>
+                  </div>
+
+                  {(selectedPreviewRow.errors.length || selectedPreviewRow.warnings.length) ? (
+                    <div className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] p-3">
+                      {[...selectedPreviewRow.errors, ...selectedPreviewRow.warnings].map((item) => (
+                        <p key={item} className="text-sm leading-6 text-[#4b5563]">
+                          {item}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <div className="space-y-3">
+                    {selectedPreviewGroups.map((group) => (
+                      <div key={group.key} className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] p-3">
+                        <p className="font-semibold text-[#111827]">{group.label}</p>
+                        <p className="mt-1 text-sm leading-6 text-[#4b5563]">{group.description}</p>
+                        <div className="mt-3 space-y-3">
+                          {group.fields.map((field) => {
+                            const value = selectedPreviewRow.payload[field.key] ?? "";
+                            const useTextarea =
+                              Boolean(field.repeatedFieldFormat) || value.length > 120;
+
+                            return (
+                              <div key={field.key} className="rounded-lg border border-[#dbe4ee] bg-white p-3">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-semibold text-[#111827]">{field.label}</p>
+                                    <code className="rounded bg-[#eef2ff] px-2 py-1 text-[12px] text-[#312e81]">
+                                      {field.key}
+                                    </code>
+                                    <AdminBadge
+                                      label={field.required ? "Required" : "Imported"}
+                                      tone={field.required ? "warning" : "default"}
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => updatePreviewRowField(selectedPreviewRow.id, field.key, "")}
+                                    className="text-xs font-medium text-[#1f4b99]"
+                                  >
+                                    Clear value
+                                  </button>
+                                </div>
+                                <p className="mt-1 text-sm leading-6 text-[#4b5563]">{field.description}</p>
+                                {useTextarea ? (
+                                  <textarea
+                                    value={value}
+                                    onChange={(event) =>
+                                      updatePreviewRowField(selectedPreviewRow.id, field.key, event.target.value)
+                                    }
+                                    rows={field.repeatedFieldFormat ? 4 : 3}
+                                    className="mt-3 w-full rounded-lg border border-[#d1d5db] bg-white px-3 py-2 text-sm text-[#111827]"
+                                  />
+                                ) : (
+                                  <input
+                                    value={value}
+                                    onChange={(event) =>
+                                      updatePreviewRowField(selectedPreviewRow.id, field.key, event.target.value)
+                                    }
+                                    className="mt-3 h-11 w-full rounded-lg border border-[#d1d5db] bg-white px-3 text-sm text-[#111827]"
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </AdminSectionCard>
+              </AdminSectionCard>
+            ) : null}
+
+            <AdminSectionCard
+              title={preview ? "Template field guide" : "Template fields"}
+              description="Use these grouped editor-aligned column names if you want the easiest upload. Required columns are marked clearly."
+              collapsible
+              defaultOpen={false}
+            >
+              <div className="space-y-3">
+                {selectedTemplate?.groups.map((group) => (
+                  <div key={group.key} className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] p-3">
+                    <p className="font-semibold text-[#111827]">{group.label}</p>
+                    <p className="mt-1 text-sm leading-6 text-[#4b5563]">{group.description}</p>
+                    <div className="mt-3 space-y-3">
+                      {group.fieldKeys.map((fieldKey) => {
+                        const field = selectedFieldMap.get(fieldKey);
+                        if (!field) {
+                          return null;
+                        }
+
+                        return (
+                          <div key={field.key} className="rounded-lg border border-[#dbe4ee] bg-white p-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold text-[#111827]">{field.label}</p>
+                              <code className="rounded bg-[#eef2ff] px-2 py-1 text-[12px] text-[#312e81]">
+                                {field.key}
+                              </code>
+                              <AdminBadge
+                                label={field.required ? "Required" : "Optional"}
+                                tone={field.required ? "warning" : "default"}
+                              />
+                            </div>
+                            <p className="mt-1 text-sm leading-6 text-[#4b5563]">{field.description}</p>
+                            <p className="mt-1 text-xs leading-5 text-[#6b7280]">Example: {field.example}</p>
+                            {field.repeatedFieldFormat ? (
+                              <p className="mt-1 text-xs leading-5 text-[#6b7280]">
+                                Repeated field format: {field.repeatedFieldFormat}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </AdminSectionCard>
+          </div>
         </div>
       </AdminCard>
 

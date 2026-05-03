@@ -49,6 +49,11 @@ const launchConfigSectionMeta: Record<
     helper: "Fill metadata, docs, and OG fields that shape public route trust and discoverability.",
     routeTarget: "/admin/content-rollout",
   },
+  seo: {
+    label: "SEO control policy",
+    helper: "Keep index, noindex, follow, and sitemap discipline controlled from one explicit route-family policy layer.",
+    routeTarget: "/admin/seo",
+  },
   experience: {
     label: "Site chrome and page layouts",
     helper: "Manage header, footer, and route-family sidebar presets without code edits.",
@@ -361,4 +366,3 @@ export default async function LaunchConfigConsolePage() {
     </AdminPageFrame>
   );
 }
-

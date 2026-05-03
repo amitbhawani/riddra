@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AccountSetupRecoveryCard } from "@/components/account-setup-recovery-card";
 import { signoutAction } from "@/app/(auth)/actions";
 import { UserBookmarkPanel } from "@/components/user-bookmark-panel";
 import { UserPortfolioPanel } from "@/components/user-portfolio-panel";
@@ -23,7 +24,7 @@ import {
   getMembershipFeatureSummaryForProfile,
   getUserBookmarks,
   getUserPortfolioHoldings,
-  getUserProductProfile,
+  getUserProductProfileState,
   getUserRecentlyViewed,
   getUserWatchlist,
 } from "@/lib/user-product-store";
@@ -196,10 +197,35 @@ function getLockedContentMessage(row: AdminListRow, currentTierName: string) {
 
 export default async function AccountPage() {
   const user = await requireUser();
-  const [subscription, profile, watchlistItems, portfolioHoldings, bookmarks, recentlyViewed, store, tiers] =
+  const profileState = await getUserProductProfileState(user);
+
+  if (!profileState.storageAvailable || !profileState.profile) {
+    return (
+      <div className="py-16 sm:py-24">
+        <Container className="space-y-8">
+          <div className="space-y-5">
+            <Eyebrow>Your account</Eyebrow>
+            <SectionHeading
+              title="Riddra could not finish loading your account"
+              description="You are signed in, but the durable profile bootstrap did not complete. Retry setup below, or sign out safely and try again."
+            />
+          </div>
+
+          <GlowCard className="space-y-5">
+            <AccountSetupRecoveryCard
+              email={user.email ?? "Authenticated member"}
+              initialError={profileState.error?.message ?? null}
+            />
+          </GlowCard>
+        </Container>
+      </div>
+    );
+  }
+
+  const profile = profileState.profile;
+  const [subscription, watchlistItems, portfolioHoldings, bookmarks, recentlyViewed, store, tiers] =
     await Promise.all([
       getUserSubscriptionSummary(user),
-      getUserProductProfile(user),
       getUserWatchlist(user),
       getUserPortfolioHoldings(user),
       getUserBookmarks(user),

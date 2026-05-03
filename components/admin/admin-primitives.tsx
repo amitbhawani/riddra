@@ -2,6 +2,8 @@ import Link from "next/link";
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
 
+import { getExternalLinkProps, getInternalLinkProps, isExternalHref } from "@/lib/link-utils";
+
 export function AdminPageFrame({
   children,
   className,
@@ -66,7 +68,13 @@ export function AdminPageHeader({
           {breadcrumbs.map((item, index) => (
             <span key={item.href} className="flex items-center gap-2">
               {index > 0 ? <span className="text-[#c4c9d4]">/</span> : null}
-              <Link href={item.href} className="transition hover:text-[#111827]">
+              <Link
+                href={item.href}
+                {...(isExternalHref(item.href)
+                  ? getExternalLinkProps()
+                  : getInternalLinkProps())}
+                className="transition hover:text-[#111827]"
+              >
                 {item.label}
               </Link>
             </span>
@@ -231,6 +239,7 @@ export function AdminActionLink({
   return (
     <Link
       href={href}
+      {...(isExternalHref(href) ? getExternalLinkProps() : getInternalLinkProps())}
       className={clsx(
         "inline-flex h-8 shrink-0 items-center rounded-lg border px-3 text-[13px] font-medium whitespace-nowrap transition",
         toneClass,

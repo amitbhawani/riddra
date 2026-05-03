@@ -11,6 +11,7 @@ import {
   AdminSimpleTable,
   AdminStatGrid,
 } from "@/components/admin/admin-primitives";
+import { getExternalLinkProps, getInternalLinkProps } from "@/lib/link-utils";
 import { formatAdminDateTime } from "@/lib/admin-time";
 import type {
   MarketNewsAdminArticleRecord,
@@ -227,13 +228,16 @@ function ArticleTable({
             formatAdminDateTime(article.created_at),
             <EntityPills key={`${article.id}-entities`} article={article} />,
             <div key={`${article.id}-links`} className="flex flex-col gap-2">
-              <Link href={article.internal_url} className="text-[12px] font-medium text-[#1d4ed8] hover:underline">
+              <Link
+                href={article.internal_url}
+                {...getInternalLinkProps()}
+                className="text-[12px] font-medium text-[#1d4ed8] hover:underline"
+              >
                 {article.internal_url}
               </Link>
               <a
                 href={article.source_url}
-                target="_blank"
-                rel="noreferrer"
+                {...getExternalLinkProps()}
                 className="text-[12px] font-medium text-[#1d4ed8] hover:underline"
               >
                 Open source URL
@@ -315,8 +319,7 @@ function FailedRewriteTable({
             <a
               key={`${item.id}-source-url`}
               href={item.source_url}
-              target="_blank"
-              rel="noreferrer"
+              {...getExternalLinkProps()}
               className="text-[12px] font-medium text-[#1d4ed8] hover:underline"
             >
               Open source URL

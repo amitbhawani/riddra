@@ -403,7 +403,14 @@ export function getHostedRuntimeRequirements(): HostedRuntimeRequirements {
     missingSupabasePublic: config.supabaseUrl && config.supabaseAnonKey ? [] : ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
     missingSupabaseAdmin: config.supabaseUrl && config.supabaseServiceRoleKey ? [] : ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"],
     missingTrigger: env.triggerSecretKey && env.triggerProjectRef ? [] : ["TRIGGER_SECRET_KEY", "TRIGGER_PROJECT_REF"],
-    missingMeilisearch: env.meilisearchHost && env.meilisearchApiKey ? [] : ["MEILISEARCH_HOST", "MEILISEARCH_API_KEY"],
+    missingMeilisearch:
+      env.meilisearchHost && env.meilisearchApiKey && env.meilisearchIndexPrefixExplicit
+        ? []
+        : [
+            ...(!env.meilisearchHost ? ["MEILISEARCH_HOST"] : []),
+            ...(!env.meilisearchApiKey ? ["MEILISEARCH_API_KEY"] : []),
+            ...(!env.meilisearchIndexPrefixExplicit ? ["MEILISEARCH_INDEX_PREFIX"] : []),
+          ],
     missingMarketData:
       config.marketDataRefreshSecret &&
       (providerPayloadReady || segmentedMarketDataReady)

@@ -10,6 +10,7 @@ import {
   AdminEmptyState,
   AdminSectionCard,
 } from "@/components/admin/admin-primitives";
+import { getExternalLinkProps } from "@/lib/link-utils";
 
 const imageCategoryOptions = [
   { label: "Content image", value: "content" },
@@ -571,8 +572,7 @@ export function AdminMediaLibraryClient({
                       </button>
                       <a
                         href={asset.url}
-                        target="_blank"
-                        rel="noreferrer"
+                        {...getExternalLinkProps()}
                         className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
                       >
                         Open asset

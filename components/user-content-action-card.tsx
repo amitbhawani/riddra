@@ -5,10 +5,12 @@ import { useEffect, useState, useTransition } from "react";
 
 import { ProductCard } from "@/components/product-page-system";
 import type { ProductPageType } from "@/lib/user-product-store";
+import type { MembershipFeatureAccess, MembershipFeatureKey } from "@/lib/membership-product-features";
 
 type FeatureGate = {
   label: string;
-  enabled: boolean;
+  enabled?: boolean;
+  featureKey?: MembershipFeatureKey;
   lockedReason: string;
   ctaHref: string;
   ctaLabel: string;
@@ -30,13 +32,15 @@ export function UserContentActionCard({
   slug: string;
   title: string;
   href: string;
-  isSignedIn: boolean;
+  isSignedIn?: boolean | null;
   allowWatchlist?: boolean;
   watchlistPageType?: "stock" | "mutual_fund";
   watchlistQuery?: string;
   featureGate?: FeatureGate | null;
   variant?: "default" | "compact";
 }) {
+  const [resolvedIsSignedIn, setResolvedIsSignedIn] = useState<boolean | null>(isSignedIn ?? null);
+  const [featureAccess, setFeatureAccess] = useState<MembershipFeatureAccess | null>(null);
   const [banner, setBanner] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isTracked, setIsTracked] = useState(false);
@@ -44,7 +48,40 @@ export function UserContentActionCard({
   const watchlistTarget = watchlistQuery?.trim() || slug;
 
   useEffect(() => {
-    if (!isSignedIn) {
+    let cancelled = false;
+
+    fetch("/api/account/client-state", {
+      cache: "no-store",
+    })
+      .then((response) => response.json())
+      .then(
+        (data: {
+          ok?: boolean;
+          isSignedIn?: boolean;
+          featureAccess?: MembershipFeatureAccess | null;
+        }) => {
+          if (cancelled) {
+            return;
+          }
+
+          setResolvedIsSignedIn(Boolean(data?.isSignedIn));
+          setFeatureAccess(data?.featureAccess ?? null);
+        },
+      )
+      .catch(() => {
+        if (!cancelled) {
+          setResolvedIsSignedIn((current) => current ?? false);
+          setFeatureAccess(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!resolvedIsSignedIn) {
       return;
     }
 
@@ -81,7 +118,7 @@ export function UserContentActionCard({
       },
       body: JSON.stringify({ pageType, slug, title, href }),
     }).catch(() => undefined);
-  }, [allowWatchlist, href, isSignedIn, pageType, slug, title, watchlistPageType, watchlistTarget]);
+  }, [allowWatchlist, href, resolvedIsSignedIn, pageType, slug, title, watchlistPageType, watchlistTarget]);
 
   function toggleBookmark() {
     startTransition(async () => {
@@ -157,7 +194,12 @@ export function UserContentActionCard({
     </div>
   ) : null;
 
-  const actionNode = isSignedIn ? (
+  const featureGateEnabled =
+    featureGate?.featureKey && featureAccess
+      ? Boolean(featureAccess[featureGate.featureKey])
+      : (featureGate?.enabled ?? false);
+
+  const actionNode = resolvedIsSignedIn ? (
     variant === "compact" ? (
       <div className="grid gap-2">
         <Link
@@ -213,7 +255,7 @@ export function UserContentActionCard({
         </Link>
       </div>
     )
-  ) : (
+  ) : resolvedIsSignedIn === false ? (
     <div className="space-y-2">
       <p className="riddra-product-body text-sm leading-6 text-[rgba(107,114,128,0.88)]">
         Sign in to bookmark this page, track it in your watchlist, and keep it in your recently viewed history.
@@ -225,6 +267,13 @@ export function UserContentActionCard({
         Sign in to save
       </Link>
     </div>
+  ) : (
+    <div className="space-y-2">
+      <p className="riddra-product-body text-sm leading-6 text-[rgba(107,114,128,0.88)]">
+        Loading your saved actions and membership access.
+      </p>
+      <div className="h-11 rounded-[10px] border border-[rgba(221,215,207,0.96)] bg-[rgba(27,58,107,0.03)]" />
+    </div>
   );
 
   const featureGateNode = featureGate ? (
@@ -233,11 +282,11 @@ export function UserContentActionCard({
         {featureGate.label}
       </p>
       <p className="riddra-product-body mt-2 text-sm leading-6 text-[#1B3A6B]">
-        {featureGate.enabled
+        {featureGateEnabled
           ? "Unlocked on your current membership."
           : featureGate.lockedReason}
       </p>
-      {!featureGate.enabled ? (
+      {!featureGateEnabled ? (
         <Link
           href={featureGate.ctaHref}
           className="riddra-product-body mt-3 inline-flex text-sm font-medium text-[#1B3A6B] underline"

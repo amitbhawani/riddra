@@ -237,7 +237,7 @@ export async function buildMarketSnapshotGroups(
 
 export const getMarketSnapshotGroups = cache(async (): Promise<MarketSnapshotGroup[]> => {
   const [indexSnapshots, commodityQuotes] = await Promise.all([
-    getIndexSnapshots(),
+    getIndexSnapshots().catch(() => []),
     getCommodityQuotes(),
   ]);
 

@@ -19,18 +19,21 @@ import {
 import { TimelineBarStrip } from "@/components/timeline-bar-strip";
 import type { IndexSnapshot } from "@/lib/index-intelligence";
 import { getIndexSnapshots, getIndexWeightRosters, type IndexWeightRoster } from "@/lib/index-content";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Index Intelligence",
-  description:
-    "Track Nifty 50, Bank Nifty, Fin Nifty, and Sensex using weighted component contribution, pullers, draggers, and market mood.",
-};
-
-export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    policyKey: "indices_hub",
+    title: "Index Intelligence | Riddra",
+    description:
+      "Track Nifty 50, Bank Nifty, Fin Nifty, and Sensex using weighted component contribution, pullers, draggers, and market mood.",
+    publicHref: "/indices",
+  });
+}
 
 export default async function IndicesPage() {
-  const sidebar = await getGlobalSidebarRail("indices");
+  const sidebarPromise = getGlobalSidebarRail("indices");
   let snapshots: IndexSnapshot[] = [];
   let rosters: IndexWeightRoster[] = [];
   let readFailureDetail: string | null = null;
@@ -55,6 +58,9 @@ export default async function IndicesPage() {
     { name: "Home", href: "/" },
     { name: "Indices", href: "/indices" },
   ];
+  const liveRefreshFallbackState =
+    snapshots.length > 0 ? null : readFailureDetail ? "read_failed" : "unavailable";
+  const sidebar = await sidebarPromise;
 
   return (
     <div className="py-16 sm:py-24">
@@ -79,7 +85,10 @@ export default async function IndicesPage() {
             description="Follow Nifty 50, Sensex, Bank Nifty, and Fin Nifty through component weightage, pullers, draggers, and breadth so the move behind the headline becomes easier to read."
           />
           <IndexSubnav currentPath="/indices" />
-          <IndexLiveRefreshCard />
+          <IndexLiveRefreshCard
+            initialSnapshot={snapshots[0] ?? null}
+            fallbackState={liveRefreshFallbackState}
+          />
         </div>
 
         <ProductCard tone="primary" className="grid gap-4 p-4 lg:grid-cols-3">

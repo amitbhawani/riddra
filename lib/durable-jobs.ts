@@ -78,6 +78,13 @@ export const durableJobTaskDefinitions: DurableJobTaskDefinition[] = [
     note: "Refreshes the first-wave market snapshot coverage through the durable worker lane.",
   },
   {
+    family: "market_data",
+    taskId: "yahoo-daily-update-cron-worker",
+    label: "Yahoo daily update cron worker",
+    routeTarget: "/api/cron/yahoo-daily-update",
+    note: "Processes a bounded strict same-day Yahoo update slice for the queued cron batch job, then requeues the next slice if work remains.",
+  },
+  {
     family: "reconciliation",
     taskId: "portfolio-reconciliation-checkpoint",
     label: "Portfolio reconciliation checkpoint",

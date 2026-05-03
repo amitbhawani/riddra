@@ -12,7 +12,7 @@ import { getAdminRecordEditorData } from "@/lib/admin-content-registry";
 import type { SaveAdminRecordInput } from "@/lib/admin-operator-store";
 import { getAdminManagedRecord } from "@/lib/admin-operator-store";
 import { canEditAdminFamily } from "@/lib/product-permissions";
-import { createCmsPreviewSession, getSystemSettings } from "@/lib/user-product-store";
+import { createCmsPreviewSession, getAdminSystemSettings } from "@/lib/user-product-store";
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
@@ -21,7 +21,7 @@ function badRequest(message: string) {
 export async function POST(request: NextRequest) {
   try {
     const { user, role, capabilities } = await requireOperator();
-    const settings = await getSystemSettings();
+    const settings = await getAdminSystemSettings();
 
     if (!settings.previewEnabled) {
       return NextResponse.json({ error: "Draft preview is currently disabled in system settings." }, { status: 403 });

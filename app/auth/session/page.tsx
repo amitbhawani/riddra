@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { Container, Eyebrow, GlowCard } from "@/components/ui";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -15,8 +14,6 @@ function normalizeNextPath(value: string | null) {
 }
 
 export default function AuthSessionPage() {
-  const searchParams = useSearchParams();
-  const nextPath = useMemo(() => normalizeNextPath(searchParams.get("next")), [searchParams]);
   const [message, setMessage] = useState("Completing your sign-in session...");
 
   useEffect(() => {
@@ -53,6 +50,7 @@ export default function AuthSessionPage() {
         setMessage("Sign-in complete. Redirecting to your account...");
       }
 
+      const nextPath = normalizeNextPath(new URLSearchParams(window.location.search).get("next"));
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
       window.location.replace(nextPath);
     }
@@ -62,7 +60,7 @@ export default function AuthSessionPage() {
     return () => {
       cancelled = true;
     };
-  }, [nextPath]);
+  }, []);
 
   return (
     <div className="py-16 sm:py-24">

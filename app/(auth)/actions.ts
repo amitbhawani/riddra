@@ -116,11 +116,6 @@ export async function googleAuthAction() {
 }
 
 export async function signoutAction() {
-  if (hasRuntimeSupabaseEnv()) {
-    const supabase = await createSupabaseServerClient();
-    await supabase.auth.signOut();
-  }
-
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/logout");
 }

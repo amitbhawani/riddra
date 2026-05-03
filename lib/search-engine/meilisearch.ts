@@ -7,6 +7,17 @@ import { getHostedRuntimeRequirements } from "@/lib/runtime-launch-config";
 
 const SEARCH_WAIT_TIMEOUT_MS = 60_000;
 const SEARCH_WAIT_INTERVAL_MS = 250;
+const SEARCH_STATUS_CACHE_TTL_MS = 15_000;
+const SEARCH_ENGINE_CALL_TIMEOUT_MS = 1_200;
+
+let lastSearchError: string | null = null;
+
+let cachedSearchEngineStatus:
+  | {
+      expiresAt: number;
+      value: SearchEngineStatus;
+    }
+  | null = null;
 
 const searchIndexSynonyms: Record<string, string[]> = {
   mf: ["mutual fund", "mutual funds"],
@@ -69,11 +80,14 @@ export type SearchEngineStatus = {
   configured: boolean;
   host: string | null;
   indexUid: string;
+  indexPrefix: string;
   healthy: boolean;
   indexPresent: boolean;
   indexedDocuments: number;
   lastUpdate: string | null;
   message: string | null;
+  fallbackActive: boolean;
+  lastSearchError: string | null;
 };
 
 export type SearchEngineRebuildResult = {
@@ -101,6 +115,29 @@ function getSearchEngineClient() {
   });
 }
 
+function updateLastSearchError(message: string | null) {
+  lastSearchError = message && message.trim().length > 0 ? message.trim() : null;
+}
+
+async function withSearchTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Meilisearch ${label} timed out after ${SEARCH_ENGINE_CALL_TIMEOUT_MS}ms.`));
+        }, SEARCH_ENGINE_CALL_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 async function waitForTask(client: Meilisearch, taskUid: number) {
   const task = await client.tasks.waitForTask(taskUid, {
     timeout: SEARCH_WAIT_TIMEOUT_MS,
@@ -121,7 +158,7 @@ async function waitForTask(client: Meilisearch, taskUid: number) {
 
 async function indexExists(index: ReturnType<Meilisearch["index"]>) {
   try {
-    await index.getRawInfo();
+    await withSearchTimeout(index.getRawInfo(), "index info lookup");
     return true;
   } catch {
     return false;
@@ -156,6 +193,10 @@ export function getSearchEngineReadiness() {
 }
 
 export async function getSearchEngineStatus(): Promise<SearchEngineStatus> {
+  if (cachedSearchEngineStatus && cachedSearchEngineStatus.expiresAt > Date.now()) {
+    return cachedSearchEngineStatus.value;
+  }
+
   const readiness = getSearchEngineReadiness();
 
   if (!readiness.configured || !readiness.host) {
@@ -165,55 +206,86 @@ export async function getSearchEngineStatus(): Promise<SearchEngineStatus> {
         ? `Hosted search requires ${hostedRequirements.missingMeilisearch.join(", ")}.`
         : "Meilisearch environment variables are missing.";
 
-    return {
+    const status = {
       configured: false,
       host: readiness.host,
       indexUid: readiness.indexUid,
+      indexPrefix: env.meilisearchIndexPrefix,
       healthy: false,
       indexPresent: false,
       indexedDocuments: 0,
       lastUpdate: null,
       message: missingMessage,
+      fallbackActive: true,
+      lastSearchError: missingMessage,
     };
+    updateLastSearchError(missingMessage);
+    cachedSearchEngineStatus = {
+      value: status,
+      expiresAt: Date.now() + SEARCH_STATUS_CACHE_TTL_MS,
+    };
+    return status;
   }
 
   try {
     const client = getSearchEngineClient();
     const index = client.index<SearchIndexDocument>(readiness.indexUid);
-    const healthy = await client.isHealthy();
+    const healthy = await withSearchTimeout(client.isHealthy(), "health check");
 
     if (!healthy) {
-      return {
+      const status = {
         configured: true,
         host: readiness.host,
         indexUid: readiness.indexUid,
+        indexPrefix: env.meilisearchIndexPrefix,
         healthy: false,
         indexPresent: false,
         indexedDocuments: 0,
         lastUpdate: null,
         message: "Meilisearch is configured but not responding as healthy.",
+        fallbackActive: true,
+        lastSearchError: "Meilisearch is configured but not responding as healthy.",
       };
+      updateLastSearchError(status.message);
+      cachedSearchEngineStatus = {
+        value: status,
+        expiresAt: Date.now() + SEARCH_STATUS_CACHE_TTL_MS,
+      };
+      return status;
     }
 
     if (!(await indexExists(index))) {
-      return {
+      const status = {
         configured: true,
         host: readiness.host,
         indexUid: readiness.indexUid,
+        indexPrefix: env.meilisearchIndexPrefix,
         healthy: true,
         indexPresent: false,
         indexedDocuments: 0,
         lastUpdate: null,
         message: "Meilisearch is healthy, but the search index has not been created or rebuilt yet.",
+        fallbackActive: true,
+        lastSearchError: "Meilisearch is healthy, but the search index has not been created or rebuilt yet.",
       };
+      updateLastSearchError(status.message);
+      cachedSearchEngineStatus = {
+        value: status,
+        expiresAt: Date.now() + SEARCH_STATUS_CACHE_TTL_MS,
+      };
+      return status;
     }
 
-    const [info, stats] = await Promise.all([index.getRawInfo(), index.getStats()]);
+    const [info, stats] = await Promise.all([
+      withSearchTimeout(index.getRawInfo(), "index info read"),
+      withSearchTimeout(index.getStats(), "stats read"),
+    ]);
 
-    return {
+    const status = {
       configured: true,
       host: readiness.host,
       indexUid: readiness.indexUid,
+      indexPrefix: env.meilisearchIndexPrefix,
       healthy: true,
       indexPresent: true,
       indexedDocuments: stats.numberOfDocuments,
@@ -222,18 +294,35 @@ export async function getSearchEngineStatus(): Promise<SearchEngineStatus> {
         stats.numberOfDocuments > 0
           ? null
           : "Meilisearch is healthy, but the index is empty. Run a rebuild before using public search.",
+      fallbackActive: stats.numberOfDocuments <= 0,
+      lastSearchError: null,
     };
+    updateLastSearchError(status.message);
+    cachedSearchEngineStatus = {
+      value: status,
+      expiresAt: Date.now() + SEARCH_STATUS_CACHE_TTL_MS,
+    };
+    return status;
   } catch (error) {
-    return {
+    const status = {
       configured: true,
       host: readiness.host,
       indexUid: readiness.indexUid,
+      indexPrefix: env.meilisearchIndexPrefix,
       healthy: false,
       indexPresent: false,
       indexedDocuments: 0,
       lastUpdate: null,
       message: error instanceof Error ? error.message : "Unable to reach Meilisearch.",
+      fallbackActive: true,
+      lastSearchError: error instanceof Error ? error.message : "Unable to reach Meilisearch.",
     };
+    updateLastSearchError(status.message);
+    cachedSearchEngineStatus = {
+      value: status,
+      expiresAt: Date.now() + SEARCH_STATUS_CACHE_TTL_MS,
+    };
+    return status;
   }
 }
 
@@ -243,7 +332,7 @@ export function getSearchEnginePublicState(status: SearchEngineStatus): SearchEn
       available: false,
       statusLabel: "Search engine unavailable",
       detail: isHostedAppRuntime()
-        ? "Hosted search requires explicit MEILISEARCH_HOST and MEILISEARCH_API_KEY configuration. It no longer falls back to local-only defaults."
+        ? "Hosted search requires explicit MEILISEARCH_HOST, MEILISEARCH_API_KEY, and MEILISEARCH_INDEX_PREFIX configuration. It no longer falls back to local-only defaults."
         : "Meilisearch environment variables are missing, so public search remains in a degraded state.",
     };
   }
@@ -302,11 +391,16 @@ export async function searchCatalogIndex(query: string, limit = 12) {
   const index = client.index<SearchIndexDocument>(status.indexUid);
 
   try {
-    const response = await index.search<SearchIndexDocument>(query, {
-      limit,
-      showRankingScore: true,
-      attributesToRetrieve: ["title", "href", "category", "query", "reasonBase"],
-    });
+    const response = await withSearchTimeout(
+      index.search<SearchIndexDocument>(query, {
+        limit,
+        showRankingScore: true,
+        attributesToRetrieve: ["title", "href", "category", "query", "reasonBase"],
+      }),
+      "search query",
+    );
+
+    updateLastSearchError(null);
 
     return {
       configured: true,
@@ -321,6 +415,9 @@ export async function searchCatalogIndex(query: string, limit = 12) {
       })),
     };
   } catch (error) {
+    updateLastSearchError(
+      error instanceof Error ? error.message : "The live search index could not be read right now.",
+    );
     return {
       configured: true,
       available: false,

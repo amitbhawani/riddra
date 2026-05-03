@@ -2,8 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/market-data/provider-sync",
+      "path": "/api/cron/yahoo-daily-update",
       "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/yahoo-daily-update-retry",
+      "schedule": "0 13 * * *"
     },
     {
       "path": "/api/jobs/market-news/run",

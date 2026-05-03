@@ -16,6 +16,7 @@ import {
   isOperatorSurfacePath,
 } from "@/lib/route-access";
 import { createSupabaseTimedFetch, hasSupabaseAuthCookies, logSupabaseServerWarning } from "@/lib/supabase/shared";
+import { USER_ACTIVITY_TRACK_HEADER, shouldTrackUserActivityRequest } from "@/lib/user-activity-tracking";
 
 const DEFAULT_SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "DENY",
@@ -23,7 +24,38 @@ const DEFAULT_SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), browsing-topics=()",
   "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "Origin-Agent-Cluster": "?1",
+  "X-DNS-Prefetch-Control": "off",
 };
+
+function buildContentSecurityPolicy(request: NextRequest) {
+  const scriptSrc =
+    process.env.NODE_ENV === "development"
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:"
+      : "script-src 'self' 'unsafe-inline' https:";
+  const directives = [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https: ws: wss:",
+    "frame-src 'self' https:",
+    "manifest-src 'self'",
+    "worker-src 'self' blob:",
+  ];
+
+  if (request.nextUrl.protocol === "https:") {
+    directives.push("upgrade-insecure-requests");
+  }
+
+  return directives.join("; ");
+}
 
 function isAdminEmail(email: string | null | undefined) {
   return isAdminEmailFromEnv(email);
@@ -33,6 +65,7 @@ function applySecurityHeaders(request: NextRequest, response: NextResponse) {
   for (const [key, value] of Object.entries(DEFAULT_SECURITY_HEADERS)) {
     response.headers.set(key, value);
   }
+  response.headers.set("Content-Security-Policy", buildContentSecurityPolicy(request));
 
   if (isOperatorSurfacePath(request.nextUrl.pathname)) {
     response.headers.set("Cache-Control", "no-store");
@@ -53,6 +86,15 @@ function withHeaders(request: NextRequest, response: NextResponse) {
 function buildRequestHeaders(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(REQUEST_PATH_HEADER, request.nextUrl.pathname);
+  requestHeaders.set(
+    USER_ACTIVITY_TRACK_HEADER,
+    shouldTrackUserActivityRequest({
+      pathname: request.nextUrl.pathname,
+      userAgent: request.headers.get("user-agent"),
+    })
+      ? "1"
+      : "0",
+  );
 
   if (
     isOpenAdminAccessEnabled() &&

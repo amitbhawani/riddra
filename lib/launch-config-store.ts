@@ -31,6 +31,26 @@ export type LaunchConfigStore = {
     schemaOrganizationName: string;
     editorialCalendarUrl: string;
   };
+  seo: {
+    indexHomepage: boolean;
+    includeHomepageInSitemap: boolean;
+    indexStockPages: boolean;
+    includeStockPagesInSitemap: boolean;
+    indexMutualFundPages: boolean;
+    includeMutualFundPagesInSitemap: boolean;
+    indexWealthPages: boolean;
+    includeWealthPagesInSitemap: boolean;
+    indexNewsDetailPages: boolean;
+    includeNewsDetailPagesInSitemap: boolean;
+    indexNewsListingPage: boolean;
+    includeNewsListingPageInSitemap: boolean;
+    indexMarketsPages: boolean;
+    includeMarketsPagesInSitemap: boolean;
+    indexSearchPages: boolean;
+    includeSearchPagesInSitemap: boolean;
+    indexIndexPages: boolean;
+    includeIndexPagesInSitemap: boolean;
+  };
   experience: {
     headerAnnouncement: string;
     headerBrandMark: string;
@@ -213,6 +233,7 @@ export type LaunchConfigStore = {
 export const launchConfigSectionKeys: Array<keyof Omit<LaunchConfigStore, "updatedAt">> = [
   "basic",
   "content",
+  "seo",
   "experience",
   "supabase",
   "marketData",
@@ -230,6 +251,14 @@ export const launchConfigSectionKeys: Array<keyof Omit<LaunchConfigStore, "updat
 ];
 
 const STORE_PATH = path.join(process.cwd(), "data", "launch-config.json");
+const LAUNCH_CONFIG_CACHE_TTL_MS = 30_000;
+
+let cachedMergedLaunchConfig:
+  | {
+      expiresAt: number;
+      value: LaunchConfigStore;
+    }
+  | null = null;
 
 const emptyStore: LaunchConfigStore = {
   basic: {
@@ -256,6 +285,26 @@ const emptyStore: LaunchConfigStore = {
     ogImageBaseUrl: "",
     schemaOrganizationName: "Riddra",
     editorialCalendarUrl: "",
+  },
+  seo: {
+    indexHomepage: true,
+    includeHomepageInSitemap: true,
+    indexStockPages: true,
+    includeStockPagesInSitemap: true,
+    indexMutualFundPages: false,
+    includeMutualFundPagesInSitemap: false,
+    indexWealthPages: false,
+    includeWealthPagesInSitemap: false,
+    indexNewsDetailPages: false,
+    includeNewsDetailPagesInSitemap: false,
+    indexNewsListingPage: true,
+    includeNewsListingPageInSitemap: true,
+    indexMarketsPages: true,
+    includeMarketsPagesInSitemap: true,
+    indexSearchPages: true,
+    includeSearchPagesInSitemap: false,
+    indexIndexPages: true,
+    includeIndexPagesInSitemap: true,
   },
   experience: {
     headerAnnouncement: "",
@@ -457,6 +506,7 @@ async function readStore(): Promise<LaunchConfigStore> {
     return {
       basic: { ...emptyStore.basic, ...(parsed.basic ?? {}) },
       content: { ...emptyStore.content, ...(parsed.content ?? {}) },
+      seo: { ...emptyStore.seo, ...(parsed.seo ?? {}) },
       experience: { ...emptyStore.experience, ...(parsed.experience ?? {}) },
       supabase: { ...emptyStore.supabase, ...(parsed.supabase ?? {}) },
       marketData: { ...emptyStore.marketData, ...(parsed.marketData ?? {}) },
@@ -487,16 +537,44 @@ async function writeStore(store: LaunchConfigStore) {
   await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf8");
 }
 
+function readCachedLaunchConfigStore() {
+  if (!cachedMergedLaunchConfig) {
+    return null;
+  }
+
+  if (cachedMergedLaunchConfig.expiresAt <= Date.now()) {
+    cachedMergedLaunchConfig = null;
+    return null;
+  }
+
+  return cachedMergedLaunchConfig.value;
+}
+
+function writeCachedLaunchConfigStore(value: LaunchConfigStore) {
+  cachedMergedLaunchConfig = {
+    value,
+    expiresAt: Date.now() + LAUNCH_CONFIG_CACHE_TTL_MS,
+  };
+
+  return value;
+}
+
 export async function getLaunchConfigStore() {
+  const cached = readCachedLaunchConfigStore();
+
+  if (cached) {
+    return cached;
+  }
+
   const fallbackStore = await readStore();
 
   if (!hasDurableCmsStateStore()) {
-    return fallbackStore;
+    return writeCachedLaunchConfigStore(fallbackStore);
   }
 
   const durableSections = await listDurableLaunchConfigSections();
   if (!durableSections) {
-    return fallbackStore;
+    return writeCachedLaunchConfigStore(fallbackStore);
   }
 
   if (!durableSections.length) {
@@ -505,25 +583,27 @@ export async function getLaunchConfigStore() {
         await saveDurableLaunchConfigSection(section, fallbackStore[section]);
       }),
     );
-    return fallbackStore;
+    return writeCachedLaunchConfigStore(fallbackStore);
   }
 
-  return durableSections.reduce<LaunchConfigStore>(
-    (result, item) => ({
-      ...result,
-      [item.section]: {
-        ...result[item.section],
-        ...item.data,
+  return writeCachedLaunchConfigStore(
+    durableSections.reduce<LaunchConfigStore>(
+      (result, item) => ({
+        ...result,
+        [item.section]: {
+          ...result[item.section],
+          ...item.data,
+        },
+        updatedAt:
+          item.updatedAt && (!result.updatedAt || item.updatedAt > result.updatedAt)
+            ? item.updatedAt
+            : result.updatedAt,
+      }),
+      {
+        ...emptyStore,
+        ...fallbackStore,
       },
-      updatedAt:
-        item.updatedAt && (!result.updatedAt || item.updatedAt > result.updatedAt)
-          ? item.updatedAt
-          : result.updatedAt,
-    }),
-    {
-      ...emptyStore,
-      ...fallbackStore,
-    },
+    ),
   );
 }
 
@@ -554,6 +634,7 @@ export async function saveLaunchConfigSection<
   if (canUseFileFallback()) {
     await writeStore(nextStore);
   }
+  writeCachedLaunchConfigStore(nextStore);
   return nextStore;
 }
 

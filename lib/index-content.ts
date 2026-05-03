@@ -1,5 +1,3 @@
-import { unstable_noStore as noStore } from "next/cache";
-
 import {
   type IndexComponent,
   type IndexSnapshot,
@@ -10,8 +8,7 @@ import { getDurableIndexComponentSnapshots } from "@/lib/index-component-store";
 import { getIndexSnapshotPresentation } from "@/lib/market-session";
 import { hasRuntimeSupabaseAdminEnv, hasRuntimeSupabaseEnv } from "@/lib/runtime-launch-config";
 import { getSourceEntryStore } from "@/lib/source-entry-store";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient, createSupabaseReadClient } from "@/lib/supabase/admin";
 
 export const TRACKED_INDEX_SLUGS = ["nifty50", "sensex", "banknifty", "finnifty"] as const;
 const INDEX_READ_CACHE_TTL_MS = 30_000;
@@ -244,7 +241,7 @@ async function createSupabaseIndexReadClient() {
     return createSupabaseAdminClient();
   }
 
-  return createSupabaseServerClient();
+  return createSupabaseReadClient();
 }
 
 function buildIndexReadError(message: string, error?: unknown) {
@@ -745,6 +742,7 @@ async function getPersistedIndexWeightRostersForSlugs(slugs: readonly string[]) 
     .select("tracked_index_id, component_symbol, component_name, weight, effective_from, effective_to, source_code")
     .in("tracked_index_id", trackedIndexIds)
     .lte("effective_from", today)
+    .or(`effective_to.is.null,effective_to.gte.${today}`)
     .order("effective_from", { ascending: false })
     .order("weight", { ascending: false });
 
@@ -771,16 +769,14 @@ async function getPersistedIndexWeightRostersForSlugs(slugs: readonly string[]) 
 
   for (const trackedIndex of trackedIndexes as Array<IndexRow & { id?: string | null }>) {
     const grouped = groupedWeights.get(trackedIndex.id ?? "") ?? [];
-    const activeRows = grouped.filter((row) => !row.effective_to || row.effective_to >= today);
-
-    if (!activeRows.length) {
+    if (!grouped.length) {
       continue;
     }
 
     const dedupedRows: WeightRow[] = [];
     const seenSymbols = new Set<string>();
 
-    for (const row of activeRows) {
+    for (const row of grouped) {
       if (seenSymbols.has(row.component_symbol)) {
         continue;
       }
@@ -826,7 +822,6 @@ async function getPersistedIndexWeightRoster(slug: string): Promise<IndexWeightR
 }
 
 export async function getIndexSnapshot(slug: string): Promise<IndexSnapshot | null> {
-  noStore();
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) {
     return null;
@@ -855,7 +850,6 @@ export async function getIndexSnapshot(slug: string): Promise<IndexSnapshot | nu
 }
 
 export async function getIndexSnapshots(): Promise<IndexSnapshot[]> {
-  noStore();
   const cached = readTimedCache(indexSnapshotsCache, "all");
   if (cached.hit) {
     return cached.value;
@@ -884,7 +878,6 @@ export async function getIndexSnapshots(): Promise<IndexSnapshot[]> {
 }
 
 export async function getIndexWeightRoster(slug: string): Promise<IndexWeightRoster | null> {
-  noStore();
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) {
     return null;
@@ -907,7 +900,6 @@ export async function getIndexWeightRoster(slug: string): Promise<IndexWeightRos
 }
 
 export async function getIndexWeightRosters(): Promise<IndexWeightRoster[]> {
-  noStore();
   const cached = readTimedCache(indexWeightRostersCache, "all");
   if (cached.hit) {
     return cached.value;

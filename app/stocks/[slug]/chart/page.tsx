@@ -13,6 +13,7 @@ import { getStockChartSnapshot } from "@/lib/chart-content";
 import { getStock, getStocks } from "@/lib/content";
 import { getChartSnapshotPresentation } from "@/lib/market-session";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { getTradingviewStockSymbol } from "@/lib/tradingview-symbols";
 
 type PageProps = {
@@ -38,10 +39,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Chart not found" };
   }
 
-  return {
-    title: `${stock.name} Chart`,
+  return buildSeoMetadata({
+    policyKey: "stock_chart",
+    title: `${stock.name} Chart | Riddra`,
     description: `${stock.name} chart page for Riddra with a dedicated chart-first route.`,
-  };
+    publicHref: `/stocks/${stock.slug}/chart`,
+  });
 }
 
 export default async function StockChartPage({ params }: PageProps) {

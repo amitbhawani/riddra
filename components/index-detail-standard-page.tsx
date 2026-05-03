@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getGlobalSidebarRail } from "@/components/global-sidebar-rail-server";
+import { MarketDataUnavailableState } from "@/components/market-data-unavailable-state";
 import {
   HeroPriceBlock,
   MainChartContainer,
@@ -29,6 +30,13 @@ const indexPaths: Record<IndexSlug, string> = {
   sensex: "/sensex",
   banknifty: "/banknifty",
   finnifty: "/finnifty",
+};
+
+const indexTitles: Record<IndexSlug, string> = {
+  nifty50: "Nifty 50",
+  sensex: "Sensex",
+  banknifty: "Bank Nifty",
+  finnifty: "Fin Nifty",
 };
 
 function getIndexTruthState(snapshot: IndexSnapshot): ProductTruthState {
@@ -124,16 +132,64 @@ function IndexMetaGrid({ items }: { items: MarketSnapshotMetaItem[] }) {
 }
 
 export async function IndexDetailStandardPage({ slug }: { slug: IndexSlug }) {
-  const snapshot = await getIndexSnapshot(slug);
+  const sidebarPromise = getGlobalSidebarRail("indices");
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: "Indices", href: "/indices" },
+    { label: indexTitles[slug], href: indexPaths[slug] },
+  ];
+  let snapshot: IndexSnapshot | null = null;
+  let readFailureDetail: string | null = null;
+
+  try {
+    snapshot = await getIndexSnapshot(slug);
+  } catch (error) {
+    readFailureDetail =
+      error instanceof Error ? error.message : "Unknown index snapshot read failure.";
+  }
+
+  const sidebar = await sidebarPromise;
+
+  if (readFailureDetail) {
+    return (
+      <ProductPageShell
+        breadcrumbs={breadcrumbs}
+        hero={
+          <HeroPriceBlock
+            title={indexTitles[slug]}
+            categoryBadge="Index"
+            subtitle="Index route temporarily unavailable"
+            metaLine="Retained benchmark snapshot read failed"
+            price="Data pending"
+            change="Retry pending"
+            asOf="Awaiting reconnect"
+            truthState="read_failed"
+            supportingNote="This route is staying explicit about the read failure instead of rendering an implied benchmark move."
+          />
+        }
+        stickyTabs={null}
+        summary={
+          <MarketDataUnavailableState
+            state="read_failed"
+            eyebrow="Index route availability"
+            title={`${indexTitles[slug]} data could not be read`}
+            description="The retained benchmark snapshot is temporarily unavailable, so this page is withholding the index detail view until the source recovers."
+            items={[
+              "Retry the route after the retained index snapshot source reconnects.",
+              `Technical detail: ${readFailureDetail}`,
+            ]}
+          />
+        }
+        sidebar={sidebar}
+      />
+    );
+  }
 
   if (!snapshot) {
     notFound();
   }
 
-  const [sidebar, source] = await Promise.all([
-    getGlobalSidebarRail("indices"),
-    getSourceByCode(snapshot.sourceCode),
-  ]);
+  const source = await getSourceByCode(snapshot.sourceCode);
 
   const path = indexPaths[slug];
   const truthState = getIndexTruthState(snapshot);
@@ -158,6 +214,7 @@ export async function IndexDetailStandardPage({ slug }: { slug: IndexSlug }) {
           supportingNote={snapshot.narrative}
         />
       }
+      breadcrumbs={breadcrumbs}
       stickyTabs={
         <StickyTabBar
           tabs={[

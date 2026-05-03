@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AdminRecordEditorClient } from "@/components/admin/admin-record-editor-client";
+import { StockFieldMapCard } from "@/components/stock-field-map-card";
 import {
   AdminActionLink,
   AdminPageFrame,
@@ -82,6 +83,14 @@ export default async function AdminNewRecordPage({
           </>
         }
       />
+
+      {typedFamily === "stocks" ? (
+        <StockFieldMapCard
+          record={editor}
+          title="Stock field parity map"
+          description="Use this before manual entry so the frontend stock labels and the backend editor keys stay in the same order and naming."
+        />
+      ) : null}
 
       <AdminRecordEditorClient
         record={editor}

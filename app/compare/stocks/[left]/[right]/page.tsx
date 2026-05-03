@@ -15,9 +15,10 @@ import { ShowcaseRouteStrip } from "@/components/showcase-route-strip";
 import { Eyebrow, GlowCard } from "@/components/ui";
 import { getStockCompareCandidates, getStockComparePair } from "@/lib/asset-insights";
 import { getCanonicalStockCompareHref } from "@/lib/compare-routing";
-import { getStocks } from "@/lib/content";
+import { getPublicStocks } from "@/lib/content";
 import { getStockCompareTrustCards } from "@/lib/market-truth";
 import type { StockSnapshot } from "@/lib/mock-data";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { getStockOwnershipLens } from "@/lib/stock-research";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
@@ -42,19 +43,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pair = await getStockComparePair(left, right);
 
   if (!pair) {
-    return { title: "Compare stocks" };
+    return buildSeoMetadata({
+      policyKey: "compare",
+      title: "Compare Stocks | Riddra",
+      description: "Side-by-side stock comparison routes on Riddra.",
+      publicHref: `/compare/stocks/${left}/${right}`,
+    });
   }
 
-  return {
-    title: `${pair.left.name} vs ${pair.right.name}`,
+  return buildSeoMetadata({
+    policyKey: "compare",
+    title: `${pair.left.name} vs ${pair.right.name} | Riddra`,
     description: `Compare ${pair.left.name} and ${pair.right.name} with side-by-side price, quality, and research context.`,
-  };
+    publicHref: `/compare/stocks/${left}/${right}`,
+  });
 }
 
 export default async function StockComparePage({ params }: PageProps) {
   const { left, right } = await params;
   const [stocks, pair, leftCandidates, rightCandidates, sidebar] = await Promise.all([
-    getStocks(),
+    getPublicStocks(),
     getStockComparePair(left, right),
     getStockCompareCandidates(left, { excludeSlug: right, limit: 3 }),
     getStockCompareCandidates(right, { excludeSlug: left, limit: 3 }),

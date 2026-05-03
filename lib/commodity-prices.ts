@@ -10,6 +10,7 @@ export type CommodityQuote = {
 };
 
 const COMMODITY_QUOTES_CACHE_TTL_MS = 60_000;
+const COMMODITY_QUOTES_REVALIDATE_SECONDS = 300;
 
 type CommodityQuotesCacheEntry = {
   expiresAt: number;
@@ -19,7 +20,12 @@ type CommodityQuotesCacheEntry = {
 let commodityQuotesCache: CommodityQuotesCacheEntry | null = null;
 
 async function fetchJson(url: string) {
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, {
+    next: {
+      revalidate: COMMODITY_QUOTES_REVALIDATE_SECONDS,
+      tags: ["commodity-quotes"],
+    },
+  });
 
   if (!response.ok) {
     throw new Error(`Request failed: ${url}`);

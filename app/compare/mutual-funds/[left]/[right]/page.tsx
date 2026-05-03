@@ -20,6 +20,7 @@ import { getFundOverlapLens, getFundPortfolioLens, getFundReturnValue } from "@/
 import { getFundCompareTrustCards } from "@/lib/market-truth";
 import type { FundSnapshot } from "@/lib/mock-data";
 import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 
@@ -44,13 +45,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pair = await getFundComparePair(left, right);
 
   if (!pair) {
-    return { title: "Compare mutual funds" };
+    return buildSeoMetadata({
+      policyKey: "compare",
+      title: "Compare Mutual Funds | Riddra",
+      description: "Side-by-side mutual fund comparison routes on Riddra.",
+      publicHref: `/compare/mutual-funds/${left}/${right}`,
+    });
   }
 
-  return {
-    title: `${pair.left.name} vs ${pair.right.name}`,
+  return buildSeoMetadata({
+    policyKey: "compare",
+    title: `${pair.left.name} vs ${pair.right.name} | Riddra`,
     description: `Compare ${pair.left.name} and ${pair.right.name} on category fit, cost, returns, and portfolio posture.`,
-  };
+    publicHref: `/compare/mutual-funds/${left}/${right}`,
+  });
 }
 
 export default async function FundComparePage({ params }: PageProps) {

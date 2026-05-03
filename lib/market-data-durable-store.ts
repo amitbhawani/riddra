@@ -1,10 +1,14 @@
 import type { CandlePoint } from "@/lib/advanced-chart-data";
 import { ensureTrackedIndexFoundationData } from "@/lib/index-tracker-foundation";
 import { hasRuntimeSupabaseAdminEnv, hasRuntimeSupabaseEnv } from "@/lib/runtime-launch-config";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient, createSupabaseReadClient } from "@/lib/supabase/admin";
 
-export type MarketSeriesType = "stock_quote" | "stock_ohlcv" | "fund_nav" | "index_snapshot";
+export type MarketSeriesType =
+  | "stock_quote"
+  | "stock_ohlcv"
+  | "benchmark_ohlcv"
+  | "fund_nav"
+  | "index_snapshot";
 export type MarketIngestMode =
   | "provider_sync"
   | "refresh_pipeline"
@@ -203,6 +207,39 @@ type PersistFundNavInput = {
   metadata?: Record<string, unknown>;
 };
 
+type PersistFundNavEntry = {
+  navDate: string;
+  nav: number;
+  returns1Y?: number | null;
+};
+
+type PersistFundNavSeriesInput = {
+  slug: string;
+  sourceLabel: string;
+  sourceCode?: string | null;
+  entries: PersistFundNavEntry[];
+  lastUpdated: string;
+  ingestMode: MarketIngestMode;
+  triggerSource: string;
+  requestedBy?: string | null;
+  taskIdentifier?: string | null;
+  metadata?: Record<string, unknown>;
+};
+
+type PersistBenchmarkChartInput = {
+  slug: string;
+  sourceLabel: string;
+  sourceCode?: string | null;
+  timeframe?: string;
+  bars: Array<CandlePoint & { volume?: number | null }>;
+  lastUpdated: string;
+  ingestMode: MarketIngestMode;
+  triggerSource: string;
+  requestedBy?: string | null;
+  taskIdentifier?: string | null;
+  metadata?: Record<string, unknown>;
+};
+
 type PersistIndexComponentInput = {
   symbol: string;
   name: string;
@@ -246,7 +283,7 @@ async function createSupabaseMarketReadClient() {
     return createSupabaseAdminClient();
   }
 
-  return createSupabaseServerClient();
+  return createSupabaseReadClient();
 }
 
 function isMissingSupabaseTableError(error: unknown, table: string) {
@@ -463,7 +500,11 @@ async function insertAuditSnapshot(snapshotKey: string, payload: Record<string, 
 }
 
 async function countRows(
-  table: "stock_quote_history" | "stock_ohlcv_history" | "fund_nav_history",
+  table:
+    | "stock_quote_history"
+    | "stock_ohlcv_history"
+    | "benchmark_ohlcv_history"
+    | "fund_nav_history",
   filters: Record<string, string>,
 ) {
   ensureAdminMarketDataReady();
@@ -481,6 +522,145 @@ async function countRows(
     );
   }
   return count ?? 0;
+}
+
+function normalizeOptionalNumber(value: number | null | undefined) {
+  return Number.isFinite(value) ? Number(value) : null;
+}
+
+function dedupeRowsByKey<T>(rows: readonly T[], getKey: (row: T) => string) {
+  const deduped = new Map<string, T>();
+  for (const row of rows) {
+    const key = getKey(row);
+    if (!key) continue;
+    deduped.set(key, row);
+  }
+  return {
+    rows: [...deduped.values()],
+    duplicateDetectedCount: Math.max(0, rows.length - deduped.size),
+  };
+}
+
+async function loadExistingStockOhlcvRows(input: {
+  slug: string;
+  timeframe: string;
+  sourceLabel: string;
+  barTimes: readonly string[];
+}) {
+  if (!input.barTimes.length) {
+    return new Map<string, { open: number; high: number; low: number; close: number; volume: number | null }>();
+  }
+
+  ensureAdminMarketDataReady();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("stock_ohlcv_history")
+    .select("bar_time, open, high, low, close, volume")
+    .eq("slug", input.slug)
+    .eq("timeframe", input.timeframe)
+    .eq("source_label", input.sourceLabel)
+    .in("bar_time", [...input.barTimes]);
+
+  if (error) {
+    throw wrapSupabaseTableError(
+      "stock_ohlcv_history",
+      `Failed to load existing OHLCV history for "${input.slug}"`,
+      error,
+    );
+  }
+
+  const lookup = new Map<string, { open: number; high: number; low: number; close: number; volume: number | null }>();
+  for (const row of data ?? []) {
+    const key = coerceText(row.bar_time, "");
+    if (!key) continue;
+    lookup.set(key, {
+      open: Number(row.open),
+      high: Number(row.high),
+      low: Number(row.low),
+      close: Number(row.close),
+      volume: normalizeOptionalNumber(row.volume),
+    });
+  }
+  return lookup;
+}
+
+async function loadExistingBenchmarkRows(input: {
+  slug: string;
+  sourceLabel: string;
+  dates: readonly string[];
+}) {
+  if (!input.dates.length) {
+    return new Map<string, { open: number; high: number; low: number; close: number; volume: number | null }>();
+  }
+
+  ensureAdminMarketDataReady();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("benchmark_ohlcv_history")
+    .select("date, open, high, low, close, volume")
+    .eq("index_slug", input.slug)
+    .eq("source_label", input.sourceLabel)
+    .in("date", [...input.dates]);
+
+  if (error) {
+    throw wrapSupabaseTableError(
+      "benchmark_ohlcv_history",
+      `Failed to load existing benchmark OHLCV history for "${input.slug}"`,
+      error,
+    );
+  }
+
+  const lookup = new Map<string, { open: number; high: number; low: number; close: number; volume: number | null }>();
+  for (const row of data ?? []) {
+    const key = coerceText(row.date, "");
+    if (!key) continue;
+    lookup.set(key, {
+      open: Number(row.open),
+      high: Number(row.high),
+      low: Number(row.low),
+      close: Number(row.close),
+      volume: normalizeOptionalNumber(row.volume),
+    });
+  }
+  return lookup;
+}
+
+async function loadExistingFundNavRows(input: {
+  slug: string;
+  sourceLabel: string;
+  navDates: readonly string[];
+}) {
+  if (!input.navDates.length) {
+    return new Map<string, { nav: number; returns1Y: number | null }>();
+  }
+
+  ensureAdminMarketDataReady();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("fund_nav_history")
+    .select("nav_date, nav, returns_1y")
+    .eq("slug", input.slug)
+    .eq("source_label", input.sourceLabel)
+    .in("nav_date", [...input.navDates]);
+
+  if (error) {
+    throw wrapSupabaseTableError(
+      "fund_nav_history",
+      `Failed to load existing fund NAV history for "${input.slug}"`,
+      error,
+    );
+  }
+
+  const lookup = new Map<string, { nav: number; returns1Y: number | null }>();
+  for (const row of data ?? []) {
+    const key = coerceText(row.nav_date, "");
+    if (!key) continue;
+    lookup.set(key, {
+      nav: Number(row.nav),
+      returns1Y: normalizeOptionalNumber(row.returns_1y),
+    });
+  }
+  return lookup;
 }
 
 export async function persistStockQuoteHistory(input: PersistStockQuoteInput) {
@@ -601,7 +781,42 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
   try {
     ensureAdminMarketDataReady();
     const supabase = createSupabaseAdminClient();
-    const rows = input.bars.map((bar) => ({
+    const dedupedBars = dedupeRowsByKey(input.bars, (bar) => coerceText(bar.time, ""));
+    const existingRows = await loadExistingStockOhlcvRows({
+      slug: input.slug,
+      timeframe,
+      sourceLabel: input.sourceLabel,
+      barTimes: dedupedBars.rows.map((bar) => coerceText(bar.time, "")),
+    });
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+    let skippedExistingCount = 0;
+
+    const rows = dedupedBars.rows
+      .filter((bar) => {
+        const existing = existingRows.get(coerceText(bar.time, ""));
+        if (!existing) {
+          insertedCount += 1;
+          return true;
+        }
+
+        const changed =
+          existing.open !== bar.open ||
+          existing.high !== bar.high ||
+          existing.low !== bar.low ||
+          existing.close !== bar.close ||
+          normalizeOptionalNumber(existing.volume) !== normalizeOptionalNumber(bar.volume);
+
+        if (changed) {
+          updatedCount += 1;
+          return true;
+        }
+
+        skippedExistingCount += 1;
+        return false;
+      })
+      .map((bar) => ({
       slug: input.slug,
       timeframe,
       source_label: input.sourceLabel,
@@ -624,23 +839,25 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
       updated_at: new Date().toISOString(),
     }));
 
-    const { error } = await supabase
-      .from("stock_ohlcv_history")
-      .upsert(rows, { onConflict: "slug,timeframe,bar_time,source_label" });
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from("stock_ohlcv_history")
+        .upsert(rows, { onConflict: "slug,timeframe,bar_time,source_label" });
 
-    if (error) {
-      throw wrapSupabaseTableError(
-        "stock_ohlcv_history",
-        `Failed to persist OHLCV history for "${input.slug}"`,
-        error,
-      );
+      if (error) {
+        throw wrapSupabaseTableError(
+          "stock_ohlcv_history",
+          `Failed to persist OHLCV history for "${input.slug}"`,
+          error,
+        );
+      }
     }
 
-    const sortedTimes = [...input.bars.map((bar) => bar.time)].sort((left, right) =>
+    const sortedTimes = [...dedupedBars.rows.map((bar) => bar.time)].sort((left, right) =>
       left.localeCompare(right),
     );
     const latestPointAt = sortedTimes[sortedTimes.length - 1] ?? input.lastUpdated;
-    const latestBar = [...input.bars].sort((left, right) => left.time.localeCompare(right.time)).at(-1);
+    const latestBar = [...dedupedBars.rows].sort((left, right) => left.time.localeCompare(right.time)).at(-1);
     const retained = await countRows("stock_ohlcv_history", {
       slug: input.slug,
       timeframe,
@@ -651,7 +868,13 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
       recordsWritten: rows.length,
       recordsRetained: retained,
       latestPointAt,
-      metadata: input.metadata,
+      metadata: {
+        ...(input.metadata ?? {}),
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
+      },
     });
     await upsertSeriesStatus({
       seriesType: "stock_ohlcv",
@@ -671,6 +894,10 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
       metadata: {
         ...(input.metadata ?? {}),
         lastUpdated: normalizeTimestamp(input.lastUpdated),
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
       },
     });
     await insertAuditSnapshot(
@@ -681,11 +908,15 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
         isDemo: false,
         scope: "stock-chart",
         timeframe,
-        bars: input.bars,
+        bars: dedupedBars.rows,
         lastUpdated: normalizeTimestamp(input.lastUpdated),
         durable: true,
         ingestMode: input.ingestMode,
         refreshRunId: runId,
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
       },
       new Date().toISOString(),
     );
@@ -698,7 +929,174 @@ export async function persistStockOhlcvHistory(input: PersistStockChartInput) {
   }
 }
 
-export async function persistFundNavHistory(input: PersistFundNavInput) {
+export async function persistBenchmarkOhlcvHistory(input: PersistBenchmarkChartInput) {
+  const timeframe = normalizeTimeframe(input.timeframe || "1D");
+  const runId = await startMarketRefreshRun({
+    seriesType: "benchmark_ohlcv",
+    assetSlug: input.slug,
+    timeframe,
+    triggerSource: input.triggerSource,
+    sourceLabel: input.sourceLabel,
+    sourceCode: input.sourceCode ?? null,
+    ingestMode: input.ingestMode,
+    requestedBy: input.requestedBy ?? null,
+    taskIdentifier: input.taskIdentifier ?? null,
+    metadata: input.metadata,
+  });
+
+  try {
+    ensureAdminMarketDataReady();
+    const supabase = createSupabaseAdminClient();
+    const dedupedBars = dedupeRowsByKey(
+      input.bars.map((bar) => ({ ...bar, normalizedDate: normalizeDate(bar.time, input.lastUpdated) })),
+      (bar) => coerceText(bar.normalizedDate, ""),
+    );
+    const existingRows = await loadExistingBenchmarkRows({
+      slug: input.slug,
+      sourceLabel: input.sourceLabel,
+      dates: dedupedBars.rows.map((bar) => coerceText(bar.normalizedDate, "")),
+    });
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+    let skippedExistingCount = 0;
+
+    const rows = dedupedBars.rows
+      .filter((bar) => {
+        const existing = existingRows.get(coerceText(bar.normalizedDate, ""));
+        if (!existing) {
+          insertedCount += 1;
+          return true;
+        }
+
+        const changed =
+          existing.open !== bar.open ||
+          existing.high !== bar.high ||
+          existing.low !== bar.low ||
+          existing.close !== bar.close ||
+          normalizeOptionalNumber(existing.volume) !== normalizeOptionalNumber(bar.volume);
+
+        if (changed) {
+          updatedCount += 1;
+          return true;
+        }
+
+        skippedExistingCount += 1;
+        return false;
+      })
+      .map((bar) => ({
+      index_slug: input.slug,
+      date: bar.normalizedDate,
+      open: bar.open,
+      high: bar.high,
+      low: bar.low,
+      close: bar.close,
+      volume: bar.volume ?? null,
+      source_label: input.sourceLabel,
+      source_code: input.sourceCode ?? null,
+      refresh_run_id: runId,
+      payload: {
+        time: bar.time,
+        open: bar.open,
+        high: bar.high,
+        low: bar.low,
+        close: bar.close,
+        volume: bar.volume ?? null,
+      },
+      updated_at: new Date().toISOString(),
+    }));
+
+    if (rows.length > 0) {
+      const { error } = await supabase
+        .from("benchmark_ohlcv_history")
+        .upsert(rows, { onConflict: "index_slug,date,source_label" });
+
+      if (error) {
+        throw wrapSupabaseTableError(
+          "benchmark_ohlcv_history",
+          `Failed to persist benchmark OHLCV history for "${input.slug}"`,
+          error,
+        );
+      }
+    }
+
+    const sortedTimes = [...dedupedBars.rows.map((bar) => bar.normalizedDate)].sort(
+      (left, right) => left.localeCompare(right),
+    );
+    const latestPointAt = sortedTimes[sortedTimes.length - 1] ?? normalizeDate(input.lastUpdated, input.lastUpdated);
+    const latestBar = [...dedupedBars.rows].sort((left, right) => left.time.localeCompare(right.time)).at(-1);
+    const retained = await countRows("benchmark_ohlcv_history", {
+      index_slug: input.slug,
+      source_label: input.sourceLabel,
+    });
+
+    await finishMarketRefreshRun(runId, {
+      recordsWritten: rows.length,
+      recordsRetained: retained,
+      latestPointAt,
+      metadata: {
+        ...(input.metadata ?? {}),
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
+      },
+    });
+    await upsertSeriesStatus({
+      seriesType: "benchmark_ohlcv",
+      assetSlug: input.slug,
+      timeframe,
+      sourceLabel: input.sourceLabel,
+      sourceCode: input.sourceCode ?? null,
+      ingestMode: input.ingestMode,
+      refreshStatus: "live",
+      lastRefreshRunId: runId,
+      lastSuccessfulRunId: runId,
+      latestPointAt,
+      coverageStart: sortedTimes[0] ?? latestPointAt,
+      coverageEnd: latestPointAt,
+      recordsRetained: retained,
+      latestValue: latestBar?.close ?? null,
+      metadata: {
+        ...(input.metadata ?? {}),
+        lastUpdated: normalizeTimestamp(input.lastUpdated),
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
+      },
+    });
+    await insertAuditSnapshot(
+      `benchmark:${input.slug}:ohlcv:${timeframe.toLowerCase()}`,
+      {
+        source: input.sourceLabel,
+        sourceCode: input.sourceCode ?? null,
+        isDemo: false,
+        scope: "benchmark-chart",
+        timeframe,
+        bars: dedupedBars.rows.map(({ normalizedDate, ...bar }) => bar),
+        lastUpdated: normalizeTimestamp(input.lastUpdated),
+        durable: true,
+        ingestMode: input.ingestMode,
+        refreshRunId: runId,
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedBars.duplicateDetectedCount,
+      },
+      new Date().toISOString(),
+    );
+
+    return { runId, recordsRetained: retained, latestPointAt };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : `Unknown benchmark OHLCV failure for "${input.slug}".`;
+    await failMarketRefreshRun(runId, message, input.metadata);
+    throw error;
+  }
+}
+
+export async function persistFundNavSeriesHistory(input: PersistFundNavSeriesInput) {
   const runId = await startMarketRefreshRun({
     seriesType: "fund_nav",
     assetSlug: input.slug,
@@ -711,52 +1109,108 @@ export async function persistFundNavHistory(input: PersistFundNavInput) {
     metadata: input.metadata,
   });
 
-  const navDate = normalizeDate(input.navDate, input.lastUpdated);
   const lastUpdated = normalizeTimestamp(input.lastUpdated);
 
   try {
     ensureAdminMarketDataReady();
     const supabase = createSupabaseAdminClient();
-    const { error } = await supabase.from("fund_nav_history").upsert(
-      {
+    const dedupedEntries = dedupeRowsByKey(
+      input.entries.map((entry) => ({
+        ...entry,
+        normalizedNavDate: normalizeDate(entry.navDate, input.lastUpdated),
+      })),
+      (entry) => coerceText(entry.normalizedNavDate, ""),
+    );
+    const existingRows = await loadExistingFundNavRows({
+      slug: input.slug,
+      sourceLabel: input.sourceLabel,
+      navDates: dedupedEntries.rows.map((entry) => coerceText(entry.normalizedNavDate, "")),
+    });
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+    let skippedExistingCount = 0;
+
+    const rows = dedupedEntries.rows
+      .filter((entry) => {
+        const existing = existingRows.get(coerceText(entry.normalizedNavDate, ""));
+        if (!existing) {
+          insertedCount += 1;
+          return true;
+        }
+
+        const changed =
+          existing.nav !== entry.nav ||
+          normalizeOptionalNumber(existing.returns1Y) !== normalizeOptionalNumber(entry.returns1Y);
+
+        if (changed) {
+          updatedCount += 1;
+          return true;
+        }
+
+        skippedExistingCount += 1;
+        return false;
+      })
+      .map((entry) => {
+      const navDate = entry.normalizedNavDate;
+      return {
         slug: input.slug,
         source_label: input.sourceLabel,
         source_code: input.sourceCode ?? null,
         nav_date: navDate,
-        nav: input.nav,
-        returns_1y: input.returns1Y ?? null,
+        nav: entry.nav,
+        returns_1y: entry.returns1Y ?? null,
         refresh_run_id: runId,
         payload: {
           source: input.sourceLabel,
           sourceCode: input.sourceCode ?? null,
-          nav: input.nav,
-          returns1Y: input.returns1Y ?? null,
+          nav: entry.nav,
+          returns1Y: entry.returns1Y ?? null,
           navDate,
           lastUpdated,
           ingestMode: input.ingestMode,
         },
         updated_at: new Date().toISOString(),
-      },
-      { onConflict: "slug,nav_date,source_label" },
-    );
+      };
+    });
 
-    if (error) {
-      throw wrapSupabaseTableError(
-        "fund_nav_history",
-        `Failed to persist fund NAV history for "${input.slug}"`,
-        error,
-      );
+    if (rows.length > 0) {
+      const { error } = await supabase.from("fund_nav_history").upsert(rows, {
+        onConflict: "slug,nav_date,source_label",
+      });
+
+      if (error) {
+        throw wrapSupabaseTableError(
+          "fund_nav_history",
+          `Failed to persist fund NAV history for "${input.slug}"`,
+          error,
+        );
+      }
     }
 
+    const sortedDates = dedupedEntries.rows
+      .map((entry) => entry.normalizedNavDate)
+      .sort((left, right) => left.localeCompare(right));
+    const latestNavDate =
+      sortedDates[sortedDates.length - 1] ?? normalizeDate(input.lastUpdated, input.lastUpdated);
+    const latestEntry = [...dedupedEntries.rows]
+      .sort((left, right) => left.navDate.localeCompare(right.navDate))
+      .at(-1);
     const retained = await countRows("fund_nav_history", {
       slug: input.slug,
       source_label: input.sourceLabel,
     });
     await finishMarketRefreshRun(runId, {
-      recordsWritten: 1,
+      recordsWritten: rows.length,
       recordsRetained: retained,
-      latestPointAt: navDate,
-      metadata: input.metadata,
+      latestPointAt: latestNavDate,
+      metadata: {
+        ...(input.metadata ?? {}),
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedEntries.duplicateDetectedCount,
+      },
     });
     await upsertSeriesStatus({
       seriesType: "fund_nav",
@@ -767,14 +1221,18 @@ export async function persistFundNavHistory(input: PersistFundNavInput) {
       refreshStatus: "live",
       lastRefreshRunId: runId,
       lastSuccessfulRunId: runId,
-      latestPointAt: navDate,
-      coverageStart: navDate,
-      coverageEnd: navDate,
+      latestPointAt: latestNavDate,
+      coverageStart: sortedDates[0] ?? latestNavDate,
+      coverageEnd: latestNavDate,
       recordsRetained: retained,
-      latestValue: input.nav,
+      latestValue: latestEntry?.nav ?? null,
       metadata: {
         ...(input.metadata ?? {}),
         lastUpdated,
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedEntries.duplicateDetectedCount,
       },
     });
     await insertAuditSnapshot(
@@ -784,23 +1242,115 @@ export async function persistFundNavHistory(input: PersistFundNavInput) {
         sourceCode: input.sourceCode ?? null,
         isDemo: false,
         scope: "fund-nav",
-        nav: input.nav,
-        returns1Y: input.returns1Y ?? null,
-        navDate,
+        nav: latestEntry?.nav ?? null,
+        returns1Y: latestEntry?.returns1Y ?? null,
+        navDate: latestNavDate,
         lastUpdated,
         durable: true,
         ingestMode: input.ingestMode,
         refreshRunId: runId,
+        inserted_count: insertedCount,
+        updated_count: updatedCount,
+        skipped_existing_count: skippedExistingCount,
+        duplicate_detected_count: dedupedEntries.duplicateDetectedCount,
       },
       new Date().toISOString(),
     );
 
-    return { runId, recordsRetained: retained, navDate };
+    return { runId, recordsRetained: retained, navDate: latestNavDate };
   } catch (error) {
     const message = error instanceof Error ? error.message : `Unknown fund NAV failure for "${input.slug}".`;
     await failMarketRefreshRun(runId, message, input.metadata);
     throw error;
   }
+}
+
+export async function persistFundNavHistory(input: PersistFundNavInput) {
+  return persistFundNavSeriesHistory({
+    slug: input.slug,
+    sourceLabel: input.sourceLabel,
+    sourceCode: input.sourceCode ?? null,
+    entries: [
+      {
+        navDate: input.navDate,
+        nav: input.nav,
+        returns1Y: input.returns1Y ?? null,
+      },
+    ],
+    lastUpdated: input.lastUpdated,
+    ingestMode: input.ingestMode,
+    triggerSource: input.triggerSource,
+    requestedBy: input.requestedBy ?? null,
+    taskIdentifier: input.taskIdentifier ?? null,
+    metadata: input.metadata,
+  });
+}
+
+export async function refreshLatestStockQuoteFromOhlcvHistory(input: {
+  slug: string;
+  sourceLabel: string;
+  sourceCode?: string | null;
+  ingestMode: MarketIngestMode;
+  triggerSource: string;
+  requestedBy?: string | null;
+  taskIdentifier?: string | null;
+  metadata?: Record<string, unknown>;
+}) {
+  ensureAdminMarketDataReady();
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("stock_ohlcv_history")
+    .select("bar_time, close")
+    .eq("slug", input.slug)
+    .eq("timeframe", "1D")
+    .eq("source_label", input.sourceLabel)
+    .order("bar_time", { ascending: false })
+    .limit(2);
+
+  if (error) {
+    throw wrapSupabaseTableError(
+      "stock_ohlcv_history",
+      `Failed to refresh latest stock quote from OHLCV for "${input.slug}"`,
+      error,
+    );
+  }
+
+  const latestRow = data?.[0];
+  if (!latestRow) {
+    return null;
+  }
+
+  const previousClose =
+    typeof data?.[1]?.close === "number" && Number.isFinite(data[1].close) ? data[1].close : null;
+  const latestClose =
+    typeof latestRow.close === "number" && Number.isFinite(latestRow.close) ? latestRow.close : null;
+
+  if (latestClose === null) {
+    return null;
+  }
+
+  const changePercent =
+    previousClose && previousClose !== 0 ? ((latestClose - previousClose) / previousClose) * 100 : 0;
+  const quotedAt = latestRow.bar_time.includes("T")
+    ? latestRow.bar_time
+    : `${latestRow.bar_time}T15:30:00+05:30`;
+
+  return persistStockQuoteHistory({
+    slug: input.slug,
+    sourceLabel: input.sourceLabel,
+    sourceCode: input.sourceCode ?? null,
+    price: latestClose,
+    changePercent,
+    quotedAt,
+    ingestMode: input.ingestMode,
+    triggerSource: input.triggerSource,
+    requestedBy: input.requestedBy ?? null,
+    taskIdentifier: input.taskIdentifier ?? null,
+    metadata: {
+      ...(input.metadata ?? {}),
+      refreshedFrom: "stock_ohlcv_history",
+    },
+  });
 }
 
 export async function persistIndexSnapshotHistory(input: PersistIndexSnapshotInput) {

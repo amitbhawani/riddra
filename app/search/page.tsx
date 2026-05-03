@@ -15,16 +15,21 @@ import { getSmartSearchResults, sanitizeSearchQuery, suggestedQueries } from "@/
 import { env, isRealAiEnabled } from "@/lib/env";
 import { getSearchIndexMemory } from "@/lib/search-index-memory-store";
 import { getSearchQueryMemory, recordSearchQueryEvent } from "@/lib/search-query-memory-store";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 
 type PageProps = {
   searchParams: Promise<{ query?: string }>;
 };
 
-export const metadata: Metadata = {
-  title: "Smart Search",
-  description: "Search across stocks, IPOs, funds, tools, courses, and learning pages with intent-aware structured results.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    policyKey: "search_hub",
+    title: "Smart Search | Riddra",
+    description: "Search across stocks, IPOs, funds, tools, courses, and learning pages with intent-aware structured results.",
+    publicHref: "/search",
+  });
+}
 
 export default async function SearchPage({ searchParams }: PageProps) {
   const { query = "" } = await searchParams;
@@ -45,9 +50,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
         }).catch(() => getSearchQueryMemory())
       : getSearchQueryMemory(),
     getSearchIndexMemory(),
-    getSharedSidebarRailData({ pageCategory: "search" }),
+    engine.degraded ? Promise.resolve(null) : getSharedSidebarRailData({ pageCategory: "search" }),
   ]);
-  const showSharedSidebar = sharedSidebarRailData.enabledOnPageType;
+  const showSharedSidebar = Boolean(sharedSidebarRailData?.enabledOnPageType);
   const explanation =
     safeQuery && engine.available && results.length
       ? `Formula-first answer mode is active right now, so Riddra is grounding this search in trusted structured results${isRealAiEnabled() ? " with optional live AI enabled." : " while live AI stays selective so structured results remain the primary guide."}`
@@ -118,15 +123,15 @@ export default async function SearchPage({ searchParams }: PageProps) {
               hrefLabel="Open launch readiness"
             />
 
-            {safeQuery && !engine.available ? (
+            {safeQuery && engine.degraded ? (
               <ProductCard tone="secondary" className="space-y-3 p-4 sm:p-5">
                 <p className="riddra-product-body text-xs uppercase tracking-[0.2em] text-[#8E5723]">{engine.statusLabel}</p>
                 <h2 className="riddra-product-body text-2xl font-semibold text-[#1B3A6B]">
-                  Live search suggestions are still warming up
+                  Search is running in fallback mode
                 </h2>
                 <p className="riddra-product-body text-sm leading-7 text-[rgba(107,114,128,0.84)]">{engine.detail}</p>
                 <div className="rounded-[18px] border border-[rgba(212,133,59,0.24)] bg-[rgba(250,246,240,0.9)] px-4 py-3 text-sm leading-7 text-[#8E5723]">
-                  Enter still works, and this route stays part of the regular search surface. The live indexed answer layer will show stronger matches once Meilisearch is healthy again.
+                  Search still works from stored route data, and the live indexed answer layer will return once Meilisearch is healthy again.
                 </div>
               </ProductCard>
             ) : null}
@@ -306,7 +311,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {showSharedSidebar ? (
+          {showSharedSidebar && sharedSidebarRailData ? (
             <aside className="space-y-4 xl:sticky xl:top-24">
               <SharedMarketSidebarRail
                 visibleBlocks={sharedSidebarRailData.visibleBlocks}

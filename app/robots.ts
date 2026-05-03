@@ -1,24 +1,17 @@
 import type { MetadataRoute } from "next";
 
 import { getPublicSiteUrl } from "@/lib/public-site-url";
+import { seoRobotsAllowPaths, seoRobotsDisallowPaths } from "@/lib/seo-config";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
   const siteUrl = getPublicSiteUrl();
 
   return {
-    rules: {
+      rules: {
       userAgent: "*",
-      allow: "/",
-      disallow: [
-        "/admin/",
-        "/account/",
-        "/auth/callback",
-        "/api/",
-        "/build-tracker",
-        "/launch-readiness",
-        "/source-readiness",
-      ],
+      allow: [...seoRobotsAllowPaths],
+      disallow: [...seoRobotsDisallowPaths, "/auth/callback", "/build-tracker", "/launch-readiness", "/source-readiness"],
     },
-    sitemap: [`${siteUrl}/sitemap.xml`, `${siteUrl}/sitemap-news.xml`],
+    sitemap: `${siteUrl}/sitemap.xml`,
   };
 }

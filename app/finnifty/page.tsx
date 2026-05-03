@@ -4,10 +4,8 @@ import { IndexDetailStandardPage } from "@/components/index-detail-standard-page
 import { getIndexSnapshot } from "@/lib/index-content";
 import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata(): Promise<Metadata> {
-  const index = await getIndexSnapshot("finnifty");
+  const index = await getIndexSnapshot("finnifty").catch(() => null);
 
   return buildManagedRouteMetadata({
     family: "indices",

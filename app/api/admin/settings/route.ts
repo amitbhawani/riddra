@@ -8,7 +8,7 @@ import {
   sanitizeAdminSystemSettingsInput,
 } from "@/lib/admin-operator-guards";
 import { hasProductUserCapability } from "@/lib/product-permissions";
-import { getSystemSettings, saveSystemSettings } from "@/lib/user-product-store";
+import { getAdminSystemSettings, saveSystemSettings } from "@/lib/user-product-store";
 
 export async function GET() {
   try {
@@ -19,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({
       ok: true,
-      settings: await getSystemSettings(),
+      settings: await getAdminSystemSettings(),
     });
   } catch (error) {
     const safeError = sanitizeAdminFailureMessage(error);

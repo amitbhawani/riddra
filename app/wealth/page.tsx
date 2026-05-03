@@ -6,12 +6,17 @@ import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { getWealthFamilyOverviews, wealthFamilyMeta, wealthProducts } from "@/lib/wealth-products";
 
-export const metadata: Metadata = {
-  title: "Wealth Products",
-  description: "Riddra wealth hub for ETFs, PMS, AIF, SIF, and investor-first product discovery.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    policyKey: "wealth_hub",
+    title: "Wealth Products | Riddra",
+    description: "Riddra wealth hub for ETFs, PMS, AIF, SIF, and investor-first product discovery.",
+    publicHref: "/wealth",
+  });
+}
 
 export default function WealthHubPage() {
   if (isStockFirstLaunchPlaceholderFamily("wealth")) {

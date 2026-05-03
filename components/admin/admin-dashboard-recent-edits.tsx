@@ -1,14 +1,63 @@
 "use client";
 
 import { clsx } from "clsx";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { AdminBadge, AdminEmptyState } from "@/components/admin/admin-primitives";
 import type { AdminActivityLogEntry } from "@/lib/admin-activity-log";
-import { getAdminActivityActorLabel } from "@/lib/admin-activity-presentation";
+import {
+  formatAdminActivityTarget,
+  getAdminActivityActionTone,
+  getAdminActivityActorLabel,
+  getAdminActivityTargetHref,
+} from "@/lib/admin-activity-presentation";
 import { formatAdminDateTime } from "@/lib/admin-time";
 
 const PAGE_SIZE = 5;
+
+function humanizeAction(actionType: string) {
+  return actionType.replaceAll(".", " · ").replaceAll("_", " ");
+}
+
+function getChangedFieldSummary(entry: AdminActivityLogEntry) {
+  const changedFields = Array.isArray(entry.metadata.changedFields)
+    ? entry.metadata.changedFields.filter((field): field is string => typeof field === "string")
+    : [];
+
+  if (!changedFields.length) {
+    return null;
+  }
+
+  return changedFields.slice(0, 6).join(", ");
+}
+
+function getImportSummary(entry: AdminActivityLogEntry) {
+  const fileName =
+    typeof entry.metadata.fileName === "string" ? entry.metadata.fileName : null;
+  const createdCount =
+    typeof entry.metadata.createdCount === "number" ? entry.metadata.createdCount : null;
+  const updatedCount =
+    typeof entry.metadata.updatedCount === "number" ? entry.metadata.updatedCount : null;
+  const queuedCount =
+    typeof entry.metadata.queuedCount === "number" ? entry.metadata.queuedCount : null;
+  const failedCount =
+    typeof entry.metadata.failedCount === "number" ? entry.metadata.failedCount : null;
+
+  if (!fileName && createdCount === null && updatedCount === null && queuedCount === null && failedCount === null) {
+    return null;
+  }
+
+  return [
+    fileName ? `File: ${fileName}` : null,
+    createdCount !== null ? `Created: ${createdCount}` : null,
+    updatedCount !== null ? `Updated: ${updatedCount}` : null,
+    queuedCount !== null ? `Queued: ${queuedCount}` : null,
+    failedCount !== null ? `Failed: ${failedCount}` : null,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
 
 export function AdminDashboardRecentEdits({
   entries,
@@ -20,6 +69,7 @@ export function AdminDashboardRecentEdits({
   entryClassName?: string;
 }) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
 
   const visibleEntries = useMemo(
     () => entries.slice(0, visibleCount),
@@ -40,32 +90,81 @@ export function AdminDashboardRecentEdits({
 
   return (
     <div className={clsx("space-y-2.5", className)}>
-      {visibleEntries.map((entry) => (
-        <div
-          key={entry.id}
-          className={clsx(
-            "rounded-lg border border-[#d1d5db] bg-[#f8fafc] p-[14px] shadow-sm",
-            entryClassName,
-          )}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-semibold text-[#111827]">{entry.summary}</p>
-            <AdminBadge
-              label={entry.actionType.replaceAll(".", " · ").replaceAll("_", " ")}
-              tone={
-                entry.actionType.includes("publish")
-                  ? "success"
-                  : entry.actionType.includes("archive")
-                    ? "danger"
-                    : "info"
-              }
-            />
+      {visibleEntries.map((entry) => {
+        const isExpanded = expandedIds.includes(entry.id);
+        const changedFieldSummary = getChangedFieldSummary(entry);
+        const importSummary = getImportSummary(entry);
+        const targetHref = getAdminActivityTargetHref(entry);
+
+        return (
+          <div
+            key={entry.id}
+            className={clsx(
+              "rounded-lg border border-[#d1d5db] bg-[#f8fafc] p-[14px] shadow-sm",
+              entryClassName,
+            )}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1.5">
+                <p className="font-semibold text-[#111827]">{entry.summary}</p>
+                <p className="text-sm leading-5 text-[#4b5563]">
+                  {getAdminActivityActorLabel(entry)} • {formatAdminDateTime(entry.createdAt)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <AdminBadge
+                  label={humanizeAction(entry.actionType)}
+                  tone={getAdminActivityActionTone(entry.actionType)}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedIds((current) =>
+                      isExpanded
+                        ? current.filter((id) => id !== entry.id)
+                        : [...current, entry.id],
+                    )
+                  }
+                  className="text-sm font-medium text-[#2e4a7d] transition hover:text-[#1f3760]"
+                >
+                  {isExpanded ? "Hide details" : "Show details"}
+                </button>
+              </div>
+            </div>
+
+            {isExpanded ? (
+              <div className="mt-3 space-y-2 border-t border-[#e5e7eb] pt-3 text-sm leading-5 text-[#4b5563]">
+                <p>
+                  Target:{" "}
+                  <span className="font-medium text-[#111827]">
+                    {formatAdminActivityTarget(entry)}
+                  </span>
+                </p>
+
+                {changedFieldSummary ? (
+                  <p>
+                    Changed fields:{" "}
+                    <span className="text-[#111827]">{changedFieldSummary}</span>
+                  </p>
+                ) : null}
+
+                {importSummary ? <p>{importSummary}</p> : null}
+
+                {targetHref ? (
+                  <div className="pt-0.5">
+                    <Link
+                      href={targetHref}
+                      className="text-sm font-medium text-[#2e4a7d] transition hover:text-[#1f3760]"
+                    >
+                      Open affected page
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
-          <p className="mt-1.5 text-sm leading-5 text-[#4b5563]">
-            {getAdminActivityActorLabel(entry)} • {formatAdminDateTime(entry.createdAt)}
-          </p>
-        </div>
-      ))}
+        );
+      })}
 
       {hasMore || canCollapse ? (
         <div className="flex flex-wrap items-center gap-3 pt-1">

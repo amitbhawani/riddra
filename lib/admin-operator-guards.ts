@@ -77,6 +77,33 @@ const allowedImageMimeTypes = new Set([
 ]);
 const maxMediaUploadBytes = 5 * 1024 * 1024;
 
+function slugifyAdminContentTitle(value: string) {
+  return cleanAdminString(value, 240)
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function getCanonicalAdminPublicRoute(family: AdminFamilyKey, slug: string) {
+  return family === "indices" ? `/${slug}` : `${adminFamilyMeta[family].routeBase}/${slug}`;
+}
+
+function shouldReplaceTemplateImportSlug(slug: string, title: string) {
+  return slug.startsWith("import-test-") && !title.toLowerCase().startsWith("import test ");
+}
+
+function shouldNormalizeCanonicalUrlToManagedRoute(value: string | null | undefined) {
+  const normalized = cleanAdminString(value, 800).toLowerCase();
+  if (!normalized) {
+    return true;
+  }
+
+  return normalized.includes("/import-test-") || /^https?:\/\/(?:www\.)?riddra\.com\//i.test(normalized);
+}
+
 function isUnsafeProductionHost(hostname: string) {
   const normalized = hostname.trim().toLowerCase();
 
@@ -364,8 +391,13 @@ export function sanitizeAdminRecordPayload(
   existingRecord?: AdminManagedRecord | null,
 ) {
   const status = assertAdminPublishState(payload.status);
-  const slug = assertAdminSlug(payload.slug);
   const title = cleanAdminString(payload.title, 200);
+  const rawSlug = cleanAdminString(payload.slug, 160).toLowerCase();
+  const slugCandidate =
+    rawSlug && !shouldReplaceTemplateImportSlug(rawSlug, title)
+      ? rawSlug
+      : slugifyAdminContentTitle(title) || rawSlug;
+  const slug = assertAdminSlug(slugCandidate || payload.slug);
   const nextSourceLabel = cleanOptionalAdminString(payload.sourceLabel, 120);
   const nextSourceDate = cleanOptionalAdminString(payload.sourceDate, 120);
   const nextSourceUrl = sanitizeAdminHttpUrl(payload.sourceUrl, "Primary source URL");
@@ -376,8 +408,8 @@ export function sanitizeAdminRecordPayload(
     throw new AdminOperatorValidationError("Title is required.");
   }
 
-  const publicHref = sanitizeAdminRoute(payload.publicHref, "Public route");
-  const canonicalRoute = sanitizeAdminRoute(payload.canonicalRoute, "Canonical route");
+  const publicHref = getCanonicalAdminPublicRoute(family, slug);
+  const canonicalRoute = publicHref;
   const scheduledPublishAt = cleanAdminIsoOrNull(payload.scheduledPublishAt);
   const scheduledUnpublishAt = cleanAdminIsoOrNull(payload.scheduledUnpublishAt);
 
@@ -393,6 +425,17 @@ export function sanitizeAdminRecordPayload(
     throw new AdminOperatorValidationError(
       "Scheduled unpublish must be later than scheduled publish.",
     );
+  }
+
+  const sections = sanitizeAdminRecordSections(payload.sections, editorRecord);
+  if (sections.publishing) {
+    sections.publishing.values.publicRoute = publicHref;
+  }
+  if (
+    sections.seo &&
+    shouldNormalizeCanonicalUrlToManagedRoute(sections.seo.values.canonicalUrl)
+  ) {
+    sections.seo.values.canonicalUrl = `https://www.riddra.com${publicHref}`;
   }
 
   return {
@@ -416,7 +459,7 @@ export function sanitizeAdminRecordPayload(
               ? "public"
               : "private",
     publicHref,
-    canonicalRoute: canonicalRoute ?? publicHref,
+    canonicalRoute,
     sourceTable: cleanOptionalAdminString(payload.sourceTable, 160),
     sourceRowId: cleanOptionalAdminString(payload.sourceRowId, 160),
     sourceLabel: nextSourceLabel,
@@ -453,7 +496,7 @@ export function sanitizeAdminRecordPayload(
     dueDate: cleanAdminIsoOrNull(payload.dueDate),
     scheduledPublishAt,
     scheduledUnpublishAt,
-    sections: sanitizeAdminRecordSections(payload.sections, editorRecord),
+    sections,
     documents: sanitizeAdminDocuments(payload.documents),
     imports: sanitizeAdminImports(payload.imports),
   } satisfies SaveAdminRecordInput;

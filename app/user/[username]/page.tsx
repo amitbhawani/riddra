@@ -6,6 +6,8 @@ import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { getAccountBillingMemory } from "@/lib/billing-ledger-memory-store";
 import { getEntitlementSyncMemory } from "@/lib/entitlement-sync-memory-store";
+import { getExternalLinkProps } from "@/lib/link-utils";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 import { getPublicUserProfileByUsername, type ProductUserProfile } from "@/lib/user-product-store";
 
@@ -37,10 +39,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  return {
+  return buildSeoMetadata({
+    policyKey: "user_profile",
     title: `${data.profile.name} (@${data.profile.username})`,
     description: `${data.profile.name}'s public Riddra profile with membership tier, watchlist, portfolio summary, and saved pages.`,
-  };
+    publicHref: `/user/${data.profile.username}`,
+  });
 }
 
 function formatCurrency(value: number) {
@@ -390,8 +394,7 @@ export default async function PublicUserProfilePage({ params }: PageProps) {
                         <Link
                           key={item.label}
                           href={item.href}
-                          target="_blank"
-                          rel="noreferrer"
+                          {...getExternalLinkProps()}
                           className="inline-flex items-center rounded-full border border-[rgba(27,58,107,0.14)] bg-[rgba(27,58,107,0.03)] px-3 py-1.5 text-[12px] font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.22)] hover:bg-[rgba(27,58,107,0.06)]"
                         >
                           {item.label}

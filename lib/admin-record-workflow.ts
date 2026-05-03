@@ -8,6 +8,7 @@ import {
 } from "@/lib/admin-operator-store";
 import { appendCmsRecordVersion } from "@/lib/user-product-store";
 import { invalidatePublicContentCachesForAdminRecord } from "@/lib/content";
+import { syncSearchIndexForAdminContentChange } from "@/lib/search-index-rebuild";
 
 export async function persistApprovedAdminRecordChange(input: {
   actorUserId: string;
@@ -141,6 +142,25 @@ export async function persistApprovedAdminRecordChange(input: {
   }
   if (saved.canonicalRoute && saved.canonicalRoute !== saved.publicHref) {
     revalidatePath(saved.canonicalRoute);
+  }
+
+  if (saved.family === "stocks") {
+    try {
+      await syncSearchIndexForAdminContentChange({
+        family: "stocks",
+        slugs: [saved.slug],
+        requestedBy: input.actorEmail,
+        source: "admin_record_workflow",
+        publicStatus: saved.status,
+      });
+    } catch (error) {
+      console.error("[search-index-sync] stock workflow refresh failed", {
+        family: saved.family,
+        slug: saved.slug,
+        requestedBy: input.actorEmail,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   return {

@@ -7,17 +7,17 @@ import {
   getRankedFundCompareCandidates,
   getRankedStockCompareCandidates,
 } from "@/lib/compare-routing";
-import { getFunds, getIpos, getStocks } from "@/lib/content";
+import { getFunds, getIpos, getPublicStockDiscoveryStocks } from "@/lib/content";
 import { getIndexSnapshot } from "@/lib/index-content";
 import { getFundTruthLabel, getStockTruthLabel } from "@/lib/market-truth";
-import { filterEntriesToPublishableCms } from "@/lib/publishable-content";
+import { filterEntriesToPublicSearchRoutes } from "@/lib/public-search-routes";
+import { searchPublicCatalogFallback } from "@/lib/public-search-fallback";
 import { buildSearchEntryPresentation } from "@/lib/search-entry-presentation";
 import {
   getSearchEnginePublicState,
   getSearchEngineStatus,
   searchCatalogIndex,
 } from "@/lib/search-engine/meilisearch";
-import { searchCatalogLocally } from "@/lib/search-engine/local-catalog-search";
 import { getCompareIntentEntry, getDirectIntentEntries } from "@/lib/search-intent";
 import { buildScreenerQueryPrefill } from "@/lib/screener-search";
 import { wealthFamilyMeta, wealthProducts } from "@/lib/wealth-products";
@@ -188,86 +188,153 @@ export async function getSmartSearchResults(query: string): Promise<SmartSearchE
       };
     }
 
-    const [stocks, ipos, funds] = await Promise.all([getStocks(), getIpos(), getFunds()]);
+    if (!liveEngine.available) {
+      const fallbackEntries = await searchPublicCatalogFallback(normalized, 12);
+      const results = fallbackEntries.map<SmartSearchResult>((entry) => ({
+        title: entry.title,
+        href: entry.href,
+        category: entry.category,
+        reason: `Matched ${entry.reasonBase} while the live search engine is unavailable.`,
+        context: entry.context,
+        truthLabel: entry.truthLabel,
+      }));
+      const bestMatch = results[0] ?? null;
+
+      return {
+        results,
+        groups: buildGroups(results),
+        actions: bestMatch
+          ? [
+              {
+                title: "Open best match",
+                summary: `Open ${bestMatch.title} while hosted search is running in degraded mode.`,
+                href: bestMatch.href,
+                label: "Open route",
+                tag: "Fallback",
+              },
+            ]
+          : [],
+        focusCard: bestMatch
+          ? {
+              eyebrow: "Hosted fallback",
+              title: bestMatch.title,
+              summary: `Search is currently using stored route matches because the live engine is unavailable. ${engine.detail}`,
+              href: bestMatch.href,
+              hrefLabel: "Open route",
+              highlights: [
+                { label: "Category", value: bestMatch.category },
+                { label: "Mode", value: "Stored route fallback" },
+              ],
+            }
+          : null,
+        engine,
+      };
+    }
+
+    const [stocks, ipos, funds] = await Promise.all([
+      getPublicStockDiscoveryStocks(),
+      getIpos(),
+      getFunds(),
+    ]);
 
     const rawDirectIntentEntries = getDirectIntentEntries(normalized, { stocks, funds, ipos });
     const rawCompareIntentEntry = getCompareIntentEntry(normalized, { stocks, funds });
     const screenerPrefill = buildScreenerQueryPrefill(normalized);
-    let indexedEntries = liveEngine.available
-      ? await searchCatalogIndex(normalized, 12)
-      : {
-          configured: searchEngineStatus.configured,
-          available: true,
-          reason: null,
-          hits: await searchCatalogLocally(normalized, 12),
-        };
+    let indexedEntries = await searchCatalogIndex(normalized, 12);
 
-    if (liveEngine.available && !indexedEntries.available) {
-      indexedEntries = {
-        configured: searchEngineStatus.configured,
-        available: true,
-        reason: indexedEntries.reason,
-        hits: await searchCatalogLocally(normalized, 12),
-      };
+    if (!indexedEntries.available) {
+      const fallbackEntries = await searchPublicCatalogFallback(normalized, 12);
+      const results = fallbackEntries.map<SmartSearchResult>((entry) => ({
+        title: entry.title,
+        href: entry.href,
+        category: entry.category,
+        reason: `Matched ${entry.reasonBase} while the live search engine recovers.`,
+        context: entry.context,
+        truthLabel: entry.truthLabel,
+      }));
+      const bestMatch = results[0] ?? null;
       engine = {
         available: true,
         degraded: true,
         statusLabel: "Local search fallback",
-        detail: "Search is using the route-backed local catalog while the live engine recovers.",
+        detail: indexedEntries.reason ?? "Search is using the stored route fallback while the live engine recovers.",
+      };
+
+      return {
+        results,
+        groups: buildGroups(results),
+        actions: bestMatch
+          ? [
+              {
+                title: "Open best match",
+                summary: `Open ${bestMatch.title} while the live search engine recovers.`,
+                href: bestMatch.href,
+                label: "Open route",
+                tag: "Fallback",
+              },
+            ]
+          : [],
+        focusCard: bestMatch
+          ? {
+              eyebrow: "Fallback result",
+              title: bestMatch.title,
+              summary: `Search is serving stored route matches because the indexed engine is unavailable. ${engine.detail}`,
+              href: bestMatch.href,
+              hrefLabel: "Open route",
+              highlights: [
+                { label: "Category", value: bestMatch.category },
+                { label: "Mode", value: "Stored route fallback" },
+              ],
+            }
+          : null,
+        engine,
       };
     }
-  const [directIntentEntries, compareIntentEntries, publishableIndexedEntries] =
-    await Promise.all([
-      filterEntriesToPublishableCms(rawDirectIntentEntries),
-      rawCompareIntentEntry
-        ? filterEntriesToPublishableCms([rawCompareIntentEntry])
-        : Promise.resolve([]),
-      indexedEntries.available
-        ? filterEntriesToPublishableCms(indexedEntries.hits)
-        : Promise.resolve([]),
+
+    const directIntentHrefSet = new Set(rawDirectIntentEntries.map((entry) => entry.href));
+    const rankedHrefSet = new Set(
+      indexedEntries.available ? indexedEntries.hits.map((entry) => entry.href) : [],
+    );
+    const filteredEntries = await filterEntriesToPublicSearchRoutes([
+      ...rawDirectIntentEntries,
+      ...(rawCompareIntentEntry ? [rawCompareIntentEntry] : []),
+      ...(indexedEntries.available ? indexedEntries.hits : []),
     ]);
-  const compareIntentEntry = compareIntentEntries[0] ?? null;
-  const rankedEntries = indexedEntries.available
-    ? publishableIndexedEntries.map((entry) => ({
-        entry,
-        score: 0,
-        matchedTerms: [] as string[],
-      }))
-    : [];
-  const combinedEntries = [
-    ...directIntentEntries,
-    ...(compareIntentEntry ? [compareIntentEntry] : []),
-    ...rankedEntries.map((item) => item.entry),
-  ].filter((entry, index, allEntries) => allEntries.findIndex((item) => item.href === entry.href) === index);
+    const directIntentEntries = filteredEntries.filter((entry) =>
+      directIntentHrefSet.has(entry.href),
+    );
+    const compareIntentEntry =
+      rawCompareIntentEntry && filteredEntries.some((entry) => entry.href === rawCompareIntentEntry.href)
+        ? rawCompareIntentEntry
+        : null;
+    const combinedEntries = filteredEntries.filter(
+      (entry, index, allEntries) =>
+        allEntries.findIndex((item) => item.href === entry.href) === index,
+    );
+    const presentationOptions = {
+      stocks,
+      funds,
+      ipos,
+    };
 
-  const results = combinedEntries.slice(0, 12).map<SmartSearchResult>((entry, index) => {
-    const rankedMatch = rankedEntries.find((item) => item.entry.href === entry.href);
-    const matchedTerms = rankedMatch?.matchedTerms ?? [];
-    const isDirectIntent = directIntentEntries.some((item) => item.href === entry.href);
-
-    return {
-      ...buildSearchEntryPresentation(entry, {
-        stocks,
-        funds,
-        ipos,
-      }),
+    const results = combinedEntries.slice(0, 12).map<SmartSearchResult>((entry, index) => ({
+      ...buildSearchEntryPresentation(entry, presentationOptions),
       title: entry.title,
       href: entry.href,
       category: entry.category,
       reason:
-        isDirectIntent
+        directIntentHrefSet.has(entry.href)
           ? `Matched ${entry.reasonBase} before the broader ranked catalog.`
           : index === 0 && compareIntentEntry?.href === entry.href
-          ? `Matched ${entry.reasonBase} from your compare-style query.`
-          : matchedTerms.length
-          ? `Matched ${entry.reasonBase} via ${matchedTerms.join(", ")}.`
-          : indexedEntries.available
-          ? `Matched ${entry.reasonBase} through the Meilisearch-backed index.`
-          : `Matched ${entry.reasonBase} for "${query}".`,
-    };
-  });
+            ? `Matched ${entry.reasonBase} from your compare-style query.`
+            : rankedHrefSet.has(entry.href)
+              ? indexedEntries.available
+                ? `Matched ${entry.reasonBase} through the Meilisearch-backed index.`
+                : `Matched ${entry.reasonBase} for "${query}".`
+              : `Matched ${entry.reasonBase} in the public route catalog.`,
+    }));
 
-  const directStockEntry = directIntentEntries.find(
+    const directStockEntry = directIntentEntries.find(
     (entry) => entry.category === "Stock" && entry.href.startsWith("/stocks/") && !entry.href.endsWith("/chart"),
   );
   const directFundEntry = directIntentEntries.find((entry) => entry.category === "Mutual Fund");

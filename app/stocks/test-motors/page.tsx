@@ -9,7 +9,6 @@ import { getStock, getFund } from "@/lib/content";
 import { getDurableFundHoldingSnapshots } from "@/lib/fund-holding-store";
 import { getIndexSnapshot } from "@/lib/index-content";
 import { parseDesignNumericValue, formatProductPercent } from "@/lib/product-page-design";
-import { getCurrentUser } from "@/lib/auth";
 import type { BenchmarkHistoryEntry } from "@/lib/benchmark-history-store";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 
@@ -71,7 +70,7 @@ function computePeerOneYearReturn(
 
 export default async function TestMotorsPage() {
   const slug = "tata-motors";
-  const [stock, chartSnapshot, benchmark, benchmarkReturns, comparableStocks, sharedSidebarRailData, fundHoldingSnapshots, viewer] =
+  const [stock, chartSnapshot, benchmark, benchmarkReturns, comparableStocks, sharedSidebarRailData, fundHoldingSnapshots] =
     await Promise.all([
       getStock(slug),
       getStockChartSnapshot(slug),
@@ -80,7 +79,6 @@ export default async function TestMotorsPage() {
       getComparableStocks(slug),
       getSharedSidebarRailData({ pageCategory: "stocks" }),
       getDurableFundHoldingSnapshots(),
-      getCurrentUser(),
     ]);
 
   if (!stock) {
@@ -281,10 +279,8 @@ export default async function TestMotorsPage() {
       similarAssets={similarAssets}
       mutualFundOwners={mutualFundOwners}
       demoData={demoData}
-      marketNews={[]}
-      marketNewsUsedSectorFallback={false}
-      marketNewsFallbackSectorLabel={null}
-      viewerSignedIn={Boolean(viewer)}
+      normalizedData={null}
+      viewerSignedIn={false}
       sharedSidebarRailData={sharedSidebarRailData}
     />
   );

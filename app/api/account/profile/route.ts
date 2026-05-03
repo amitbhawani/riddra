@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import {
   getUserProductProfile,
+  isUserProductStorageUnavailableError,
   saveUserProductProfile,
-  validateUsernameAvailability,
 } from "@/lib/user-product-store";
 
 function badRequest(message: string) {
@@ -12,11 +12,25 @@ function badRequest(message: string) {
 }
 
 export async function GET() {
-  const user = await requireUser();
-  return NextResponse.json({
-    ok: true,
-    profile: await getUserProductProfile(user),
-  });
+  try {
+    const user = await requireUser();
+    return NextResponse.json({
+      ok: true,
+      profile: await getUserProductProfile(user),
+    });
+  } catch (error) {
+    if (isUserProductStorageUnavailableError(error)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Account profile storage is temporarily unavailable.",
+        },
+        { status: 503 },
+      );
+    }
+
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -40,18 +54,11 @@ export async function POST(request: NextRequest) {
       return badRequest("Name is required.");
     }
 
-    const username = await validateUsernameAvailability(
-      requestedUsername || currentProfile.username || nextName || currentProfile.email.split("@")[0],
-      {
-        excludeUserKey: currentProfile.userKey,
-        allowAutoSuffix: !requestedUsername,
-      },
-    );
-
     const result = await saveUserProductProfile({
+      authUserId: user.id,
       email: currentProfile.email,
       name: nextName,
-      username,
+      username: requestedUsername || currentProfile.username || nextName || currentProfile.email.split("@")[0],
       websiteUrl: payload.websiteUrl,
       xHandle: payload.xHandle,
       linkedinUrl: payload.linkedinUrl,
@@ -70,8 +77,16 @@ export async function POST(request: NextRequest) {
       storageMode: result.storageMode,
     });
   } catch (error) {
-    return badRequest(
-      error instanceof Error ? error.message : "Could not update this profile right now.",
-    );
+    if (isUserProductStorageUnavailableError(error)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Account profile storage is temporarily unavailable.",
+        },
+        { status: 503 },
+      );
+    }
+
+    return badRequest(error instanceof Error ? error.message : "Could not update this profile right now.");
   }
 }

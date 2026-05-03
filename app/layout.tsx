@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { DM_Sans, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { SystemHeadScripts } from "@/components/system-head-scripts";
-import { REQUEST_PATH_HEADER } from "@/lib/open-access";
+import { RootRouteShell } from "@/components/root-route-shell";
+import { getLaunchState } from "@/lib/launch-state";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
 import { getRuntimeLaunchConfig } from "@/lib/runtime-launch-config";
 import { siteConfig } from "@/lib/site";
+import { getSiteChromeConfig } from "@/lib/site-experience";
 import { normalizeSystemHeadCode } from "@/lib/system-head-code";
 import { getSystemSettings } from "@/lib/user-product-store";
 
 import "./globals.css";
+
+export const revalidate = 300;
 
 const riddraBodyFont = DM_Sans({
   subsets: ["latin"],
@@ -46,12 +46,6 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${settings.defaultMetaTitleSuffix || siteName}`,
     },
     description,
-    robots: settings.defaultNoIndex
-      ? {
-          index: false,
-          follow: false,
-        }
-      : undefined,
     openGraph: {
       title: siteName,
       description,
@@ -74,33 +68,25 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requestHeaders = await headers();
-  const route = requestHeaders.get(REQUEST_PATH_HEADER) ?? "/";
-  const isAdminRoute = route === "/admin" || route.startsWith("/admin/");
   const settings = await getSystemSettings();
   const runtimeConfig = getRuntimeLaunchConfig();
-  const publicHeadCode = isAdminRoute
-    ? ""
-    : normalizeSystemHeadCode(runtimeConfig.headerHeadCode || settings.publicHeadCode);
+  const publicHeadCode = normalizeSystemHeadCode(
+    runtimeConfig.headerHeadCode || settings.publicHeadCode,
+  );
+  const siteChrome = getSiteChromeConfig();
+  const launchState = getLaunchState();
 
   return (
     <html lang="en">
       <head />
-      <body
-        className={`${riddraBodyFont.variable} ${riddraDisplayFont.variable} ${riddraMonoFont.variable} ${isAdminRoute ? "bg-[#f3f4f6] text-[#111827]" : "bg-ink text-white"} antialiased`}
-      >
-        {!isAdminRoute && publicHeadCode ? <SystemHeadScripts code={publicHeadCode} /> : null}
-        {isAdminRoute ? (
-          <div className="min-h-screen">{children}</div>
-        ) : (
-          <div className="public-site-shell relative min-h-screen overflow-hidden [--site-top-row-height:56px] [--site-ticker-row-height:24px] [--site-header-offset:calc(var(--site-top-row-height)+var(--site-ticker-row-height))]">
-            <div className="pointer-events-none absolute inset-0 bg-grid bg-[size:42px_42px] opacity-[0.08]" />
-            {/* MarketTicker: render once only — do not nest inside page components */}
-            <SiteHeader />
-            <main className="public-site-main relative pt-[var(--site-header-offset)]">{children}</main>
-            <SiteFooter />
-          </div>
-        )}
+      <body className={`${riddraBodyFont.variable} ${riddraDisplayFont.variable} ${riddraMonoFont.variable} antialiased`}>
+        <RootRouteShell
+          publicHeadCode={publicHeadCode}
+          siteChrome={siteChrome}
+          launchLabel={launchState.label}
+        >
+          {children}
+        </RootRouteShell>
       </body>
     </html>
   );

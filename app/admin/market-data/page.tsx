@@ -12,6 +12,7 @@ import { ReadinessRevisionPanel } from "@/components/readiness-revision-panel";
 import { Container, Eyebrow, GlowCard, SectionHeading } from "@/components/ui";
 import { env } from "@/lib/env";
 import { getFunds, getStocks } from "@/lib/content";
+import { getExternalLinkProps } from "@/lib/link-utils";
 import { requireUser } from "@/lib/auth";
 import { listDurableJobRuns } from "@/lib/durable-jobs";
 import { getDerivativesMemory } from "@/lib/derivatives-memory-store";
@@ -160,6 +161,32 @@ export default async function AdminMarketDataPage() {
             title="Market data ops"
             description="This page tracks which market-data surfaces are genuinely provider-backed, which ones are still manual or degraded, and which ones remain blocked or internal-only."
           />
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/market-data/import-control-center"
+              className="inline-flex h-9 items-center rounded-full border border-white/16 bg-white/8 px-4 text-sm font-medium text-white transition hover:bg-white/12"
+            >
+              Open import control center
+            </Link>
+            <Link
+              href="/admin/market-data/stocks"
+              className="inline-flex h-9 items-center rounded-full border border-white/16 bg-white/8 px-4 text-sm font-medium text-white transition hover:bg-white/12"
+            >
+              Open stock import dashboard
+            </Link>
+            <Link
+              href="/admin/market-data/sources"
+              className="inline-flex h-9 items-center rounded-full border border-white/16 bg-white/8 px-4 text-sm font-medium text-white transition hover:bg-white/12"
+            >
+              Open source registry
+            </Link>
+            <Link
+              href="/admin/market-data/yahoo-import-guide"
+              className="inline-flex h-9 items-center rounded-full border border-white/16 bg-white/8 px-4 text-sm font-medium text-white transition hover:bg-white/12"
+            >
+              Yahoo import guide
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-4">
@@ -278,8 +305,7 @@ export default async function AdminMarketDataPage() {
                       {item.url ? (
                         <a
                           href={item.url}
-                          target="_blank"
-                          rel="noreferrer"
+                          {...getExternalLinkProps()}
                           className="mt-3 block break-all text-sm leading-7 text-white underline decoration-white/25 underline-offset-4 transition hover:decoration-white/55"
                         >
                           {item.url}
@@ -317,6 +343,24 @@ export default async function AdminMarketDataPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </GlowCard>
+
+        <GlowCard>
+          <div className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-black/15 p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-sm uppercase tracking-[0.18em] text-mist/56">Historical import lane</p>
+              <h2 className="text-2xl font-semibold text-white">Market Data Import</h2>
+              <p className="max-w-3xl text-sm leading-7 text-mist/74">
+                Upload durable stock OHLCV, benchmark candles, and mutual fund NAV history here. Do not use the stock CMS import for prices, candles, or historical NAV rows.
+              </p>
+            </div>
+            <Link
+              href="/admin/market-data/import"
+              className="inline-flex rounded-full border border-white/12 bg-white/[0.03] px-4 py-2 text-sm text-white transition hover:border-white/18 hover:bg-white/[0.06]"
+            >
+              Open market data import
+            </Link>
           </div>
         </GlowCard>
 

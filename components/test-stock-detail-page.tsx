@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
-import { EntityNewsSection } from "@/components/entity-news-section";
 import {
   MainChartContainer,
   ProductCard,
@@ -11,11 +10,12 @@ import {
   ProductPageTwoColumnLayout,
   ProductSectionTitle,
 } from "@/components/product-page-system";
+import { NativeStockHistoryChart } from "@/components/native-stock-history-chart";
 import { SharedMarketSidebarRail } from "@/components/shared-market-sidebar-rail";
 import { UserContentActionCard } from "@/components/user-content-action-card";
 import type { StockChartSnapshot } from "@/lib/chart-content";
-import type { MarketNewsArticleWithRelations } from "@/lib/market-news/types";
 import type { StockSnapshot } from "@/lib/mock-data";
+import type { NativeStockChartResponse } from "@/lib/native-stock-chart";
 import { formatBenchmarkLabel } from "@/lib/benchmark-labels";
 import {
   formatProductDate,
@@ -26,6 +26,8 @@ import {
 } from "@/lib/product-page-design";
 import type { BenchmarkHistoryEntry } from "@/lib/benchmark-history-store";
 import type { SharedSidebarRailData } from "@/lib/shared-sidebar-config";
+import type { NormalizedStockDetailData } from "@/lib/stock-normalized-detail";
+import { StockNormalizedDataSections } from "@/components/stock-normalized-data-sections";
 
 type SimilarStockCard = {
   name: string;
@@ -98,11 +100,10 @@ type TestStockDetailPageProps = {
   similarAssets: SimilarStockCard[];
   mutualFundOwners: MutualFundOwner[];
   demoData: TestStockDetailDemoData;
-  marketNews: MarketNewsArticleWithRelations[];
-  marketNewsUsedSectorFallback?: boolean;
-  marketNewsFallbackSectorLabel?: string | null;
+  normalizedData: NormalizedStockDetailData | null;
   viewerSignedIn: boolean;
   sharedSidebarRailData: SharedSidebarRailData;
+  nativeChartInitialData?: NativeStockChartResponse | null;
   pageContext?: {
     label: string;
     href: string;
@@ -130,6 +131,7 @@ const timeframeSessions: Record<TimeframeId, number> = {
 };
 
 type TimeframeId = "1W" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "5Y";
+type NativeChartRange = "7D" | "1M" | "6M" | "1Y" | "5Y" | "MAX";
 
 const sectionHeadingClass = "riddra-product-display text-[1.32rem] font-semibold tracking-tight text-[#1F2937]";
 const subSectionHeadingClass = "riddra-product-display text-[0.98rem] font-semibold tracking-tight text-[#4B5563]";
@@ -140,11 +142,8 @@ const calculatorReferencePrices: Record<1 | 3 | 5, number> = {
   3: 481,
   5: 294,
 };
-const heroPriceAnimationDurationMs = 1400;
-const heroScoreAnimationDurationMs = 1100;
 const rScoreRingRadius = 33;
 const rScoreRingCircumference = 2 * Math.PI * rScoreRingRadius;
-
 type PageSectionTab = {
   id: string;
   label: string;
@@ -486,7 +485,7 @@ function buildFaqItems(stock: StockSnapshot, chartSnapshot: StockChartSnapshot, 
   return [
     {
       question: `What is the current ${stock.name} share price?`,
-      answer: `${stock.name} is currently shown at ${stock.price} on this route, with the latest trusted update noted in the header.`,
+      answer: `${stock.name} is currently shown with the latest stored Riddra market snapshot in the header, along with the most recent trusted update timestamp.`,
     },
     {
       question: `How has ${stock.name} performed against ${benchmarkLabel}?`,
@@ -530,6 +529,37 @@ function toRupeeNumber(value: number | null | undefined, digits = 2) {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })}`;
+}
+
+function toCompactRupeeNumber(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Not available";
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    notation: "compact",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function hasFiniteNumber(value: number | null | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function formatSnapshotChangeLabel(changeAbsolute: number | null, changePercent: number | null) {
+  if (typeof changeAbsolute !== "number" || !Number.isFinite(changeAbsolute)) {
+    return "--";
+  }
+
+  const absoluteLabel = `${changeAbsolute >= 0 ? "+" : "-"}${toRupeeNumber(Math.abs(changeAbsolute))}`;
+  const percentLabel =
+    typeof changePercent === "number" && Number.isFinite(changePercent)
+      ? ` (${formatProductPercent(changePercent, 2, "--")})`
+      : "";
+
+  return `${absoluteLabel}${percentLabel}`;
 }
 
 function buildForecastChartData(
@@ -635,6 +665,147 @@ function getInvestorTrendMeta(current: string, previous: string) {
   };
 }
 
+type RiddraSignalCard = {
+  eyebrow: string;
+  title: string;
+  body: string;
+  meta: string;
+  accentClassName: string;
+};
+
+function buildRiddraSignalCards(input: {
+  stockName: string;
+  normalizedData: NormalizedStockDetailData | null;
+  benchmarkReturns?: Partial<Record<"1D" | "1M" | "3M" | "6M" | "1Y" | "3Y" | "5Y", string>> | null;
+  rScore: { score: number; label: string };
+}) {
+  const shortTerm = input.normalizedData?.performance.sevenDay ?? null;
+  const mediumTerm = input.normalizedData?.performance.oneMonth ?? null;
+  const longTerm = input.normalizedData?.performance.oneYear ?? null;
+  const fromWeek52High = input.normalizedData?.performance.fromWeek52High ?? null;
+  const fromWeek52Low = input.normalizedData?.performance.fromWeek52Low ?? null;
+  const benchmarkOneYear = parseDesignNumericValue(input.benchmarkReturns?.["1Y"] ?? "") ?? null;
+  const relativeSpread =
+    hasFiniteNumber(longTerm) && hasFiniteNumber(benchmarkOneYear) ? longTerm - benchmarkOneYear : null;
+  const freshness = input.normalizedData?.dataStatus ?? null;
+
+  const pulseCard: RiddraSignalCard =
+    hasFiniteNumber(shortTerm) && hasFiniteNumber(mediumTerm)
+      ? shortTerm >= 0 && mediumTerm >= 0
+        ? {
+            eyebrow: "Riddra Pulse",
+            title: "Momentum is stacking higher",
+            body: `${input.stockName} is up ${formatProductPercent(shortTerm, 2, "--")} over 7D and ${formatProductPercent(mediumTerm, 2, "--")} over 1M, so near-term direction still looks constructive.`,
+            meta: hasFiniteNumber(longTerm) ? `1Y return ${formatProductPercent(longTerm, 2, "--")}` : `${input.rScore.label} R Score`,
+            accentClassName: "border-[rgba(22,163,74,0.18)] bg-[linear-gradient(180deg,rgba(240,253,244,0.96)_0%,#FFFFFF_100%)]",
+          }
+        : shortTerm < 0 && mediumTerm >= 0
+          ? {
+              eyebrow: "Riddra Pulse",
+              title: "Short-term pullback inside a broader trend",
+              body: `${input.stockName} has softened ${formatProductPercent(shortTerm, 2, "--")} over 7D, but the 1M move is still ${formatProductPercent(mediumTerm, 2, "--")}, so the tape looks like a retracement rather than a full trend break.`,
+              meta: `${input.rScore.label} R Score`,
+              accentClassName: "border-[rgba(245,158,11,0.18)] bg-[linear-gradient(180deg,rgba(255,251,235,0.96)_0%,#FFFFFF_100%)]",
+            }
+          : {
+              eyebrow: "Riddra Pulse",
+              title: "Momentum has cooled",
+              body: `${input.stockName} is under pressure across the most recent windows, with 7D at ${formatProductPercent(shortTerm, 2, "--")} and 1M at ${formatProductPercent(mediumTerm, 2, "--")}.`,
+              meta: `${input.rScore.label} R Score`,
+              accentClassName: "border-[rgba(220,38,38,0.18)] bg-[linear-gradient(180deg,rgba(254,242,242,0.96)_0%,#FFFFFF_100%)]",
+            }
+      : {
+          eyebrow: "Riddra Pulse",
+          title: "Short-term trend is still building",
+          body: "The retained daily history is not yet rich enough to describe the last few weeks confidently, so this card stays conservative.",
+          meta: `${input.rScore.label} R Score`,
+          accentClassName: "border-[rgba(148,163,184,0.18)] bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,#FFFFFF_100%)]",
+        };
+
+  const relativeCard: RiddraSignalCard =
+    hasFiniteNumber(relativeSpread) && hasFiniteNumber(longTerm) && hasFiniteNumber(benchmarkOneYear)
+      ? relativeSpread >= 8
+        ? {
+            eyebrow: "Relative Edge",
+            title: "Decisively outperforming the benchmark",
+            body: `${input.stockName} is up ${formatProductPercent(longTerm, 2, "--")} over 1Y versus benchmark 1Y at ${formatProductPercent(benchmarkOneYear, 2, "--")}, which leaves a strong spread of ${formatProductPercent(relativeSpread, 2, "--")}.`,
+            meta: "Benchmark leadership",
+            accentClassName: "border-[rgba(37,99,235,0.18)] bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,#FFFFFF_100%)]",
+          }
+        : relativeSpread <= -8
+          ? {
+              eyebrow: "Relative Edge",
+              title: "Lagging the benchmark",
+              body: `${input.stockName} is trailing the benchmark over 1Y by ${formatProductPercent(Math.abs(relativeSpread), 2, "--")}, so this route is currently weaker than the broader market baseline.`,
+              meta: "Relative pressure",
+              accentClassName: "border-[rgba(220,38,38,0.18)] bg-[linear-gradient(180deg,rgba(254,242,242,0.96)_0%,#FFFFFF_100%)]",
+            }
+          : {
+              eyebrow: "Relative Edge",
+              title: "Tracking broadly in line with the benchmark",
+              body: `${input.stockName} and the benchmark are moving within a narrow 1Y spread, so the route is behaving more like a market follower than a strong leader right now.`,
+              meta: "Benchmark-linked",
+              accentClassName: "border-[rgba(107,114,128,0.18)] bg-[linear-gradient(180deg,rgba(249,250,251,0.96)_0%,#FFFFFF_100%)]",
+            }
+      : {
+          eyebrow: "Relative Edge",
+          title: "Benchmark comparison is still conservative",
+          body: "The route is missing enough retained relative-return context to call clear outperformance or underperformance yet.",
+          meta: "Awaiting deeper benchmark history",
+          accentClassName: "border-[rgba(148,163,184,0.18)] bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,#FFFFFF_100%)]",
+        };
+
+  const rangeCard: RiddraSignalCard =
+    hasFiniteNumber(fromWeek52High) && hasFiniteNumber(fromWeek52Low)
+      ? fromWeek52High >= -5
+        ? {
+            eyebrow: "Range Watch",
+            title: "Trading close to the top of its 52-week range",
+            body: `${input.stockName} sits only ${formatProductPercent(fromWeek52High, 2, "--")} from the annual high, which keeps breakout risk and follow-through quality in focus.`,
+            meta: `From 52W low ${formatProductPercent(fromWeek52Low, 2, "--")}`,
+            accentClassName: "border-[rgba(16,185,129,0.18)] bg-[linear-gradient(180deg,rgba(236,253,245,0.96)_0%,#FFFFFF_100%)]",
+          }
+        : fromWeek52Low <= 12
+          ? {
+              eyebrow: "Range Watch",
+              title: "Still rebuilding from the lower end of the annual range",
+              body: `${input.stockName} remains close to its 52-week low zone, so the stock needs stronger trend confirmation before the page can frame this as a clean recovery.`,
+              meta: `From 52W high ${formatProductPercent(fromWeek52High, 2, "--")}`,
+              accentClassName: "border-[rgba(245,158,11,0.18)] bg-[linear-gradient(180deg,rgba(255,251,235,0.96)_0%,#FFFFFF_100%)]",
+            }
+          : {
+              eyebrow: "Range Watch",
+              title: "Sitting in the middle of the annual range",
+              body: `${input.stockName} is neither pressing the top of its yearly band nor testing the floor, which usually means the next directional cue matters more than the current level itself.`,
+              meta: `From 52W high ${formatProductPercent(fromWeek52High, 2, "--")}`,
+              accentClassName: "border-[rgba(59,130,246,0.18)] bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,#FFFFFF_100%)]",
+            }
+      : {
+          eyebrow: "Range Watch",
+          title: "Annual range context is still limited",
+          body: "The page does not yet have a stable annual range signal for this route, so it avoids inventing a breakout or mean-reversion story.",
+          meta: "Stored range still building",
+          accentClassName: "border-[rgba(148,163,184,0.18)] bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,#FFFFFF_100%)]",
+        };
+
+  const freshnessReason = freshness?.acceptedProviderException
+    ? "Accepted provider exception"
+    : freshness?.reasonCategory?.replaceAll("_", " ") ?? "Not available";
+  const truthCard: RiddraSignalCard = {
+    eyebrow: "Data Truth",
+    title: freshness?.isStale ? "Freshness needs attention" : "Data freshness is in good shape",
+    body: freshness?.lastSuccessfulImportAt
+      ? `Latest durable import is recorded at ${formatDisplay(freshness.lastSuccessfulImportAt)} with freshness reason ${freshnessReason}.`
+      : `The route is currently classified as ${freshnessReason}, and the page is using retained Riddra market history rather than live provider calls.`,
+    meta: freshness?.expectedTradingDate ? `Expected trading date ${freshness.expectedTradingDate}` : "Stored market history",
+    accentClassName: freshness?.isStale
+      ? "border-[rgba(220,38,38,0.18)] bg-[linear-gradient(180deg,rgba(254,242,242,0.96)_0%,#FFFFFF_100%)]"
+      : "border-[rgba(27,58,107,0.18)] bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,#FFFFFF_100%)]",
+  };
+
+  return [pulseCard, relativeCard, rangeCard, truthCard];
+}
+
 export function TestStockDetailPage({
   stock,
   chartSnapshot,
@@ -646,15 +817,14 @@ export function TestStockDetailPage({
   similarAssets,
   mutualFundOwners,
   demoData,
-  marketNews,
-  marketNewsUsedSectorFallback = false,
-  marketNewsFallbackSectorLabel = null,
+  normalizedData,
   viewerSignedIn,
   sharedSidebarRailData,
+  nativeChartInitialData = null,
   pageContext,
 }: TestStockDetailPageProps) {
   const showSharedSidebar = sharedSidebarRailData.enabledOnPageType;
-  const [activeTimeframe, setActiveTimeframe] = useState<TimeframeId>("1Y");
+  const [activeNativeChartRange, setActiveNativeChartRange] = useState<NativeChartRange>("1Y");
   const [calculatorAmount, setCalculatorAmount] = useState("100000");
   const [calculatorYears, setCalculatorYears] = useState<1 | 3 | 5>(1);
   const [openFaq, setOpenFaq] = useState<string | null>(null);
@@ -664,8 +834,6 @@ export function TestStockDetailPage({
   const [activeSectionId, setActiveSectionId] = useState("summary");
   const [showAllMutualFunds, setShowAllMutualFunds] = useState(false);
   const [showAllShareholders, setShowAllShareholders] = useState(false);
-  const [animatedHeroPriceValue, setAnimatedHeroPriceValue] = useState(0);
-  const [animatedRScoreValue, setAnimatedRScoreValue] = useState(0);
   const stickyPriceBarRef = useRef<HTMLDivElement | null>(null);
   const pendingSectionTargetRef = useRef<string | null>(null);
   const pendingSectionUnlockTimeoutRef = useRef<number | null>(null);
@@ -758,17 +926,6 @@ export function TestStockDetailPage({
   }, []);
 
   useEffect(() => {
-    const hashSectionId = window.location.hash.replace("#", "");
-
-    if (!["summary", "performance", "ownership", "latest-news", "forecast"].includes(hashSectionId)) {
-      return;
-    }
-
-    setActiveSectionId(hashSectionId);
-    window.requestAnimationFrame(() => alignSectionToViewport(hashSectionId, "auto"));
-  }, []);
-
-  useEffect(() => {
     const savedTheme = window.localStorage.getItem("riddra-site-content-theme") ?? window.localStorage.getItem("riddra-test-stock-theme");
     setIsNightMode(savedTheme === "dark");
   }, []);
@@ -829,7 +986,16 @@ export function TestStockDetailPage({
   }, []);
 
   useEffect(() => {
-    const sectionIds = ["summary", "performance", "ownership", "latest-news", "forecast"] as const;
+    const sectionIds = [
+      "summary",
+      "financials",
+      "performance",
+      "corporate-actions",
+      "ownership",
+      "latest-news",
+      "riddra-score",
+      "forecast",
+    ] as const;
     const sectionIdSet = new Set<string>(sectionIds);
 
     const clearPendingAlignment = () => {
@@ -918,44 +1084,94 @@ export function TestStockDetailPage({
   }, []);
 
   const truthState = mapTruthState(stock);
-  const latestPriceValue = parseDesignNumericValue(stock.price);
-  const rScore = useMemo(() => computeRScore(stock, chartSnapshot, benchmarkReturns), [stock, chartSnapshot, benchmarkReturns]);
+  const normalizedLatestSnapshot = normalizedData?.latestSnapshot ?? null;
+  const normalizedPriceHistory = normalizedData?.priceHistory ?? [];
+  const normalizedLatestPriceBar = normalizedPriceHistory[normalizedPriceHistory.length - 1] ?? null;
+  const normalizedPreviousPriceBar = normalizedPriceHistory[normalizedPriceHistory.length - 2] ?? null;
+  const normalizedPreviousClose = normalizedPreviousPriceBar?.close ?? null;
+  const latestBar = chartSnapshot.bars[chartSnapshot.bars.length - 1];
+  const previousBar = chartSnapshot.bars[chartSnapshot.bars.length - 2];
+  const latestPriceValue =
+    normalizedLatestSnapshot?.price ??
+    normalizedLatestPriceBar?.close ??
+    parseDesignNumericValue(stock.price);
+  const normalizedChangeAbsolute =
+    normalizedLatestSnapshot?.changeAbsolute ??
+    (latestPriceValue !== null &&
+    normalizedPreviousClose !== null
+      ? latestPriceValue - normalizedPreviousClose
+      : null);
+  const normalizedChangePercent =
+    normalizedLatestSnapshot?.changePercent ??
+    (latestPriceValue !== null &&
+    normalizedPreviousClose !== null &&
+    normalizedPreviousClose !== 0
+      ? ((latestPriceValue - normalizedPreviousClose) / normalizedPreviousClose) * 100
+      : null);
+  const displayPriceChangeLabel =
+    normalizedChangeAbsolute !== null
+      ? formatSnapshotChangeLabel(normalizedChangeAbsolute, normalizedChangePercent)
+      : stock.change;
+  const latestSnapshotTradeDate =
+    normalizedLatestSnapshot?.tradeDate ??
+    normalizedLatestPriceBar?.tradeDate ??
+    latestBar?.time ??
+    normalizedData?.dataStatus.expectedTradingDate ??
+    null;
+  const latestSnapshotOpen =
+    normalizedLatestSnapshot?.open ??
+    normalizedLatestPriceBar?.open ??
+    latestBar?.open ??
+    null;
+  const latestSnapshotHigh =
+    normalizedLatestSnapshot?.dayHigh ??
+    normalizedLatestPriceBar?.high ??
+    latestBar?.high ??
+    null;
+  const latestSnapshotLow =
+    normalizedLatestSnapshot?.dayLow ??
+    normalizedLatestPriceBar?.low ??
+    latestBar?.low ??
+    null;
+  const latestSnapshotVolume =
+    normalizedLatestSnapshot?.volume ??
+    normalizedLatestPriceBar?.volume ??
+    null;
+  const latestSnapshotPreviousClose =
+    normalizedLatestSnapshot?.previousClose ??
+    normalizedPreviousClose ??
+    previousBar?.close ??
+    null;
+  const normalizedOverallRScore = normalizedData?.riddraScores.overall ?? null;
+  const rScore = useMemo(() => {
+    if (normalizedOverallRScore !== null) {
+      return {
+        score: Math.round(normalizedOverallRScore),
+        label:
+          normalizedOverallRScore >= 75
+            ? "Strong"
+            : normalizedOverallRScore >= 60
+              ? "Constructive"
+              : normalizedOverallRScore >= 45
+                ? "Watchlist"
+                : "Cautious",
+      };
+    }
+
+    return computeRScore(stock, chartSnapshot, benchmarkReturns);
+  }, [benchmarkReturns, chartSnapshot, normalizedOverallRScore, stock]);
   const forecast = useMemo(() => buildForecastValues(chartSnapshot, latestPriceValue), [chartSnapshot, latestPriceValue]);
-  const comparisonSeries = useMemo(
-    () =>
-      buildComparisonSeries(
-        chartSnapshot.bars,
-        benchmarkHistory,
-        sectorBenchmarkHistory,
-        benchmarkSlug,
-        sectorBenchmarkSlug,
-        activeTimeframe,
-      ),
-    [activeTimeframe, benchmarkHistory, benchmarkSlug, chartSnapshot.bars, sectorBenchmarkHistory, sectorBenchmarkSlug],
-  );
-
-  const chartWidth = 760;
-  const chartHeight = 300;
-  const chartPadding = 24;
-  const stockGeometry = buildPathGeometry(comparisonSeries.stockValues, chartWidth, chartHeight, chartPadding);
-  const overlayGeometries = comparisonSeries.overlays.map((line) => ({
-    ...line,
-    geometry: buildPathGeometry(line.values, chartWidth, chartHeight, chartPadding),
-  }));
-
-  const stockReturn = computeSeriesReturn(comparisonSeries.stockValues);
-  const benchmarkReturn = computeSeriesReturn(comparisonSeries.overlays[0]?.values ?? []);
-  const outperformance =
-    stockReturn !== null && benchmarkReturn !== null ? stockReturn - benchmarkReturn : null;
 
   const todayRange = deriveTodayRange(chartSnapshot);
   const week52Range = derive52WeekRange(chartSnapshot);
   const benchmarkLabel = formatBenchmarkLabel(benchmarkSlug);
   const sectorLabel = demoData.sectorLabel ?? (sectorBenchmarkSlug ? formatBenchmarkLabel(sectorBenchmarkSlug) : null);
-  const displaySectorName = demoData.heroSectorLabel ?? stock.sector;
-  const displayIndustryLabel = demoData.industryLabel ?? null;
+  const displaySectorName = normalizedData?.sector ?? demoData.heroSectorLabel ?? stock.sector;
+  const displayIndustryLabel = normalizedData?.industry ?? demoData.industryLabel ?? null;
+  const displayExchangeLabel = normalizedData?.exchange?.trim() || "Exchange not synced yet";
   const heroBadgeLabel = demoData.heroBadgeLabel ?? stock.symbol;
-  const isNegativeChange = stock.change.trim().startsWith("-");
+  const isNegativeChange =
+    normalizedChangeAbsolute !== null ? normalizedChangeAbsolute < 0 : stock.change.trim().startsWith("-");
   const priceChangePillClass = isNegativeChange
     ? "border-[rgba(220,38,38,0.14)] bg-[rgba(239,68,68,0.1)] text-[#DC2626]"
     : "border-[rgba(22,163,74,0.14)] bg-[rgba(22,163,74,0.1)] text-[#16A34A]";
@@ -992,8 +1208,6 @@ export function TestStockDetailPage({
     title: `${stock.name} Test Page`,
     watchlistQuery: stock.slug,
   };
-  const latestBar = chartSnapshot.bars[chartSnapshot.bars.length - 1];
-  const previousBar = chartSnapshot.bars[chartSnapshot.bars.length - 2];
   const intradayAverage =
     latestBar && Number.isFinite(latestBar.high) && Number.isFinite(latestBar.low) && Number.isFinite(latestBar.close)
       ? (latestBar.high + latestBar.low + latestBar.close) / 3
@@ -1025,17 +1239,6 @@ export function TestStockDetailPage({
     { period: "1Y", stock: computeReturnLabel(chartSnapshot.bars, 252), benchmark: benchmarkReturns?.["1Y"] ?? benchmarkReturnFallbacks["1Y"] },
     { period: "3Y", stock: computeReturnLabel(chartSnapshot.bars, 756), benchmark: benchmarkReturns?.["3Y"] ?? benchmarkReturnFallbacks["3Y"] },
   ];
-  const chartSummary = demoData.chartSummary ?? {
-    stockReturn: stockReturn !== null ? formatProductPercent(stockReturn ?? 0, 2, "Awaiting extended history") : "+38.75%",
-    benchmarkReturn:
-      benchmarkReturn !== null
-        ? formatProductPercent(benchmarkReturn ?? 0, 2, benchmarkReturnFallbacks["1Y"])
-        : benchmarkReturnFallbacks["1Y"],
-    outperformance:
-      outperformance !== null
-        ? formatProductPercent(outperformance ?? 0, 2, "+22.55%")
-        : "+22.55%",
-  };
   const investorDetailRows = demoData.investorDetails ?? [
     { label: "Symbol", value: stock.symbol, helper: "" },
     { label: "Sector", value: stock.sector, helper: "" },
@@ -1085,29 +1288,101 @@ export function TestStockDetailPage({
     ? Math.min(...chartSnapshot.bars.map((bar) => bar.low))
     : null;
   const oneYearReturn = computeReturnLabel(chartSnapshot.bars, 252);
+  const normalizedOneYearReturn =
+    hasFiniteNumber(normalizedData?.performance.oneYear)
+      ? formatProductPercent(normalizedData.performance.oneYear, 2, "--")
+      : null;
+  const chartSummaryOneYearReturn =
+    normalizedOneYearReturn ??
+    (oneYearReturn.includes("Awaiting") ? null : oneYearReturn);
+  const chartSummaryWeek52Range =
+    hasFiniteNumber(normalizedData?.keyStatistics.week52Low) &&
+    hasFiniteNumber(normalizedData?.keyStatistics.week52High)
+      ? `${toRupeeNumber(normalizedData.keyStatistics.week52Low)} to ${toRupeeNumber(
+          normalizedData.keyStatistics.week52High,
+        )}`
+      : resolvedWeek52Range !== null
+        ? `${toRupeeNumber(resolvedWeek52Range.low)} to ${toRupeeNumber(resolvedWeek52Range.high)}`
+        : null;
+  const nativeChartSupportingStats = [
+    {
+      label: "Spot price",
+      value: toRupeeNumber(latestPriceValue),
+      helper: "",
+    },
+    ...(chartSummaryOneYearReturn
+      ? [
+          {
+            label: "1Y return",
+            value: chartSummaryOneYearReturn,
+            helper: "",
+          },
+        ]
+      : []),
+    ...(chartSummaryWeek52Range
+      ? [
+          {
+            label: "52W range",
+            value: chartSummaryWeek52Range,
+            helper: "",
+          },
+        ]
+      : []),
+  ];
+  const riddraSignalCards = useMemo(
+    () =>
+      buildRiddraSignalCards({
+        stockName: stock.name,
+        normalizedData,
+        benchmarkReturns,
+        rScore,
+      }),
+    [benchmarkReturns, normalizedData, rScore, stock.name],
+  );
+  const freshnessSummaryLabel = normalizedData?.dataStatus.acceptedProviderException
+    ? "Accepted exception"
+    : normalizedData?.dataStatus.isStale
+      ? "Needs attention"
+      : "Fresh";
+  const lastImportLabel = formatDisplay(
+    normalizedData?.dataStatus.lastSuccessfulImportAt ??
+      normalizedData?.latestSnapshot?.tradeDate ??
+      stock.snapshotMeta?.lastUpdated,
+    "Unavailable",
+  );
   const fairValueUpside =
     typeof latestPriceValue === "number" && latestPriceValue > 0
       ? ((forecast.base - latestPriceValue) / latestPriceValue) * 100
       : null;
   const nextCatalystDate = "28 Apr 2026";
   const relativeStrengthRank = "81 / 100";
-  const chartHeaderStats = [
-    {
-      label: "Alpha",
-      value: chartSummary.outperformance,
-    },
-    {
-      label: "RS rank",
-      value: relativeStrengthRank,
-    },
-  ];
   const summaryQuickDetailRows = [
     { label: "Symbol", value: investorDetailLookup.get("symbol") ?? stock.symbol },
     { label: "Sector", value: investorDetailLookup.get("sector") ?? displaySectorName },
-    { label: "Market cap", value: investorDetailLookup.get("market cap") ?? "₹3,39,480 Cr" },
-    { label: "P/E", value: investorDetailLookup.get("p/e") ?? "13.80" },
+    {
+      label: "Market cap",
+      value:
+        normalizedData?.keyStatistics.marketCap !== null &&
+        normalizedData?.keyStatistics.marketCap !== undefined
+          ? toCompactRupeeNumber(normalizedData.keyStatistics.marketCap)
+          : investorDetailLookup.get("market cap") ?? "₹3,39,480 Cr",
+    },
+    {
+      label: "P/E",
+      value:
+        normalizedData?.keyStatistics.pe !== null && normalizedData?.keyStatistics.pe !== undefined
+          ? normalizedData.keyStatistics.pe.toFixed(2)
+          : investorDetailLookup.get("p/e") ?? "13.80",
+    },
     { label: "ROE", value: investorDetailLookup.get("roe") ?? "22.40%" },
-    { label: "Dividend yield", value: investorDetailLookup.get("dividend yield") ?? "0.62%" },
+    {
+      label: "Dividend yield",
+      value:
+        normalizedData?.keyStatistics.dividendYield !== null &&
+        normalizedData?.keyStatistics.dividendYield !== undefined
+          ? formatProductPercent(normalizedData.keyStatistics.dividendYield, 2, "--")
+          : investorDetailLookup.get("dividend yield") ?? "0.62%",
+    },
   ];
   const summaryPerformanceRows = [
     { label: "Analyst target", value: toRupeeNumber(forecast.base) },
@@ -1118,14 +1393,26 @@ export function TestStockDetailPage({
   const sectionTabs = [
     { id: "summary", label: "Summary", onClick: () => scrollToSection("summary"), active: activeSectionId === "summary" },
     {
+      id: "financials",
+      label: "Financials",
+      onClick: () => scrollToSection("financials"),
+      active: activeSectionId === "financials",
+    },
+    {
       id: "performance",
       label: "Performance",
       onClick: () => scrollToSection("performance"),
       active: activeSectionId === "performance",
     },
     {
+      id: "corporate-actions",
+      label: "Actions",
+      onClick: () => scrollToSection("corporate-actions"),
+      active: activeSectionId === "corporate-actions",
+    },
+    {
       id: "ownership",
-      label: "Ownership",
+      label: "Holders",
       onClick: () => scrollToSection("ownership"),
       active: activeSectionId === "ownership",
     },
@@ -1135,76 +1422,22 @@ export function TestStockDetailPage({
       onClick: () => scrollToSection("latest-news"),
       active: activeSectionId === "latest-news",
     },
+    {
+      id: "riddra-score",
+      label: "R Score",
+      onClick: () => scrollToSection("riddra-score"),
+      active: activeSectionId === "riddra-score",
+    },
     { id: "forecast", label: "Forecast", onClick: () => scrollToSection("forecast"), active: activeSectionId === "forecast" },
   ];
+  const showLegacyDataSections = false;
   const pageThemeClass = isNightMode ? "test-stock-night" : "";
 
-  useEffect(() => {
-    if (!Number.isFinite(latestPriceValue ?? NaN) || latestPriceValue === null) {
-      setAnimatedHeroPriceValue(0);
-      return;
-    }
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setAnimatedHeroPriceValue(latestPriceValue);
-      return;
-    }
-
-    let animationFrame = 0;
-    const animationStart = performance.now();
-
-    setAnimatedHeroPriceValue(0);
-
-    const animatePrice = (now: number) => {
-      const progress = Math.min((now - animationStart) / heroPriceAnimationDurationMs, 1);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-      setAnimatedHeroPriceValue(Number((latestPriceValue * easedProgress).toFixed(2)));
-
-      if (progress < 1) {
-        animationFrame = window.requestAnimationFrame(animatePrice);
-      }
-    };
-
-    animationFrame = window.requestAnimationFrame(animatePrice);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-    };
-  }, [latestPriceValue, stock.slug]);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setAnimatedRScoreValue(rScore.score);
-      return;
-    }
-
-    let animationFrame = 0;
-    const animationStart = performance.now();
-
-    setAnimatedRScoreValue(0);
-
-    const animateScore = (now: number) => {
-      const progress = Math.min((now - animationStart) / heroScoreAnimationDurationMs, 1);
-      const easedProgress = 1 - Math.pow(1 - progress, 3);
-      setAnimatedRScoreValue(Math.round(rScore.score * easedProgress));
-
-      if (progress < 1) {
-        animationFrame = window.requestAnimationFrame(animateScore);
-      }
-    };
-
-    animationFrame = window.requestAnimationFrame(animateScore);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-    };
-  }, [rScore.score, stock.slug]);
-
-  const animatedHeroPriceLabel =
-    latestPriceValue !== null ? toRupeeNumber(animatedHeroPriceValue) : stock.price;
-  const animatedRScoreDisplay = Math.max(0, Math.min(animatedRScoreValue, 100));
-  const animatedRScoreOffset =
-    rScoreRingCircumference - (animatedRScoreDisplay / 100) * rScoreRingCircumference;
+  const heroPriceLabel =
+    latestPriceValue !== null ? toRupeeNumber(latestPriceValue) : stock.price;
+  const displayedRScore = Math.max(0, Math.min(rScore.score, 100));
+  const displayedRScoreOffset =
+    rScoreRingCircumference - (displayedRScore / 100) * rScoreRingCircumference;
 
   useEffect(() => {
     if (!availableYears.includes(calculatorYears)) {
@@ -1412,9 +1645,9 @@ export function TestStockDetailPage({
                   </p>
                   <div className="mt-0.5 flex flex-wrap items-end gap-2">
                     <p className="truncate text-[1rem] font-semibold text-[#111827]">{stock.name}</p>
-                    <p className="text-[1rem] font-semibold text-[#1B3A6B]">{stock.price}</p>
+                    <p className="text-[1rem] font-semibold text-[#1B3A6B]">{latestPriceValue !== null ? toRupeeNumber(latestPriceValue) : stock.price}</p>
                     <p className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.83rem] font-semibold ${priceChangePillClass}`}>
-                      {stock.change}
+                      {displayPriceChangeLabel}
                     </p>
                   </div>
                 </div>
@@ -1453,7 +1686,7 @@ export function TestStockDetailPage({
           className="gap-3 xl:gap-3 lg:items-start lg:grid-cols-[minmax(0,76.25%)_minmax(246px,23.75%)] xl:grid-cols-[minmax(0,76.9%)_minmax(252px,23.1%)] [&>div:first-child]:space-y-3 sm:[&>div:first-child]:space-y-3 [&>aside]:gap-3"
           left={
             <div className="space-y-3">
-              <ProductCard tone="primary" className="space-y-1.5 overflow-hidden border-[rgba(27,58,107,0.12)] bg-[linear-gradient(180deg,#FFFFFF_0%,#F7FAFD_100%)]">
+              <ProductCard tone="primary" className="space-y-1.5 overflow-hidden border-[rgba(27,58,107,0.14)] bg-[radial-gradient(circle_at_top_right,rgba(244,197,66,0.18),transparent_22%),linear-gradient(180deg,#FFFFFF_0%,#F5F9FE_100%)] shadow-[0_18px_38px_rgba(27,58,107,0.08)]">
                 <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-[rgba(27,58,107,0.1)] px-3.5 pb-2.5 pt-3">
                   <div className="flex flex-wrap items-center gap-2">
                     {["NSE", "BSE", "Future", "Options"].map((tab, index) => (
@@ -1474,7 +1707,11 @@ export function TestStockDetailPage({
                   </div>
                   <div className="flex items-center gap-1.5">
                     <p className="riddra-product-body text-[12px] text-[rgba(107,114,128,0.86)]">
-                      As on {formatDisplay(stock.snapshotMeta?.lastUpdated)} IST • All values in ₹
+                      As on {formatDisplay(
+                        latestSnapshotTradeDate ??
+                          normalizedLatestSnapshot?.snapshotAt ??
+                          stock.snapshotMeta?.lastUpdated,
+                      )} • All values in ₹
                     </p>
                     <button
                       type="button"
@@ -1507,24 +1744,33 @@ export function TestStockDetailPage({
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-end gap-2.5">
                         <p className="riddra-product-number text-[2.08rem] font-semibold tracking-[-0.05em] text-[#111827] sm:text-[2.42rem]">
-                          {animatedHeroPriceLabel}
+                          {heroPriceLabel}
                         </p>
                         <p
                           className="riddra-product-number text-[0.92rem] font-semibold"
-                          style={{ color: getTrendColor(stock.change) }}
+                          style={{ color: getTrendColor(displayPriceChangeLabel) }}
                         >
-                          {stock.change}
+                          {displayPriceChangeLabel}
                         </p>
                       </div>
                       <p className="riddra-product-body text-[12px] text-[rgba(107,114,128,0.82)]">
-                        {stock.symbol} • {benchmarkLabel} • {sectorLabel ?? benchmarkLabel}
+                        {stock.symbol} • {displayExchangeLabel} • Updated {lastImportLabel}
                       </p>
                       <div className="grid gap-2 sm:grid-cols-4">
                         {[
-                          { label: "Benchmark", value: benchmarkLabel },
-                          { label: "Sector index", value: sectorLabel ?? "Benchmark only" },
-                          { label: "Market cap", value: investorDetailLookup.get("market cap") ?? "₹3,39,480 Cr" },
-                          { label: "ROE", value: investorDetailLookup.get("roe") ?? "22.40%" },
+                          { label: "Symbol", value: stock.symbol },
+                          { label: "Exchange", value: displayExchangeLabel },
+                          { label: "Last updated", value: lastImportLabel },
+                          {
+                            label: "Volume",
+                            value:
+                              typeof latestSnapshotVolume === "number" && Number.isFinite(latestSnapshotVolume)
+                                ? new Intl.NumberFormat("en-IN", {
+                                    notation: "compact",
+                                    maximumFractionDigits: 2,
+                                  }).format(latestSnapshotVolume)
+                                : "Not available",
+                          },
                         ].map((item) => (
                           <div key={item.label} className="rounded-[11px] border border-[rgba(27,58,107,0.1)] bg-white px-2.5 py-2">
                             <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.72)]">{item.label}</p>
@@ -1566,26 +1812,26 @@ export function TestStockDetailPage({
                           strokeWidth="8"
                           strokeLinecap="round"
                           strokeDasharray={rScoreRingCircumference}
-                          strokeDashoffset={animatedRScoreOffset}
+                          strokeDashoffset={displayedRScoreOffset}
                         />
                       </svg>
                       <div className="absolute inset-[12px] flex items-center justify-center rounded-full border-[6px] border-[#E4B638] bg-[#FFFDF7] text-[1.28rem] font-semibold text-[#1B3A6B]">
-                        {animatedRScoreDisplay}
+                        {displayedRScore}
                       </div>
                     </div>
                     <p className="mt-1.5 text-[12px] font-medium text-[#1B3A6B]">{rScore.label} <span className="text-[rgba(107,114,128,0.76)]">/100</span></p>
                     <div className="mx-auto mt-1.5 h-2 w-full max-w-[100px] overflow-hidden rounded-full bg-[#E8EDF5]">
-                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#F59E0B,#E4B638,#16A34A)]" style={{ width: `${animatedRScoreDisplay}%` }} />
+                      <div className="h-full rounded-full bg-[linear-gradient(90deg,#F59E0B,#E4B638,#16A34A)]" style={{ width: `${displayedRScore}%` }} />
                     </div>
                     <p className="mt-1.5 text-[10px] leading-4 text-[rgba(107,114,128,0.76)]">Composite conviction scale across quality, momentum, and ownership.</p>
                   </div>
 
                   <div className="grid gap-1.5 rounded-[14px] bg-[rgba(237,242,248,0.8)] p-1.5 md:grid-cols-4 lg:col-span-2">
-                    {[
-                      { label: "Prev. Close", value: previousBar ? toRupeeNumber(previousBar.close) : stock.price },
-                      { label: "Open", value: latestBar ? toRupeeNumber(latestBar.open) : "--" },
-                      { label: "High", value: latestBar ? toRupeeNumber(latestBar.high) : "--" },
-                      { label: "Low", value: latestBar ? toRupeeNumber(latestBar.low) : "--" },
+                        {[
+                      { label: "Prev. Close", value: latestSnapshotPreviousClose !== null ? toRupeeNumber(latestSnapshotPreviousClose) : stock.price },
+                      { label: "Open", value: latestSnapshotOpen !== null ? toRupeeNumber(latestSnapshotOpen) : "--" },
+                      { label: "High", value: latestSnapshotHigh !== null ? toRupeeNumber(latestSnapshotHigh) : "--" },
+                      { label: "Low", value: latestSnapshotLow !== null ? toRupeeNumber(latestSnapshotLow) : "--" },
                     ].map((item) => (
                       <div key={item.label} className="rounded-[11px] bg-white px-2.5 py-2">
                         <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[rgba(107,114,128,0.74)]">{item.label}</p>
@@ -1604,124 +1850,90 @@ export function TestStockDetailPage({
                 {showStickyPriceBar && isDesktopViewport ? null : <InlineSectionTabBar tabs={sectionTabs} />}
               </div>
 
-              <div className="space-y-3">
+              <section className="grid gap-3 lg:grid-cols-2 2xl:grid-cols-4">
+                {riddraSignalCards.map((card) => (
+                  <ProductCard key={card.eyebrow} tone="secondary" className={`space-y-3 border ${card.accentClassName} p-4`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[rgba(107,114,128,0.72)]">
+                        {card.eyebrow}
+                      </p>
+                      <span className="rounded-full border border-[rgba(27,58,107,0.1)] bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#1B3A6B]">
+                        Riddra
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-[1.02rem] font-semibold leading-6 text-[#111827]">{card.title}</h2>
+                      <p className="text-sm leading-7 text-[rgba(75,85,99,0.9)]">{card.body}</p>
+                    </div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#1B3A6B]">{card.meta}</p>
+                  </ProductCard>
+                ))}
+              </section>
+
+              <section id="summary" className={sectionScrollAnchorClass}>
+                <MainChartContainer
+                  chartId={`${resolvedPageContext.routeSlug}-native-history`}
+                  title="Price chart"
+                  attribution={undefined}
+                  truthState={truthState}
+                  showTruthBadge={false}
+                  points={chartSnapshot.bars.slice(-2).map((bar) => ({
+                    label: bar.time,
+                    value: bar.close,
+                  }))}
+                  timeframes={(["7D", "1M", "6M", "1Y", "5Y", "MAX"] as NativeChartRange[]).map((range) => ({
+                    id: range,
+                    label: range,
+                    active: activeNativeChartRange === range,
+                    onClick: () => setActiveNativeChartRange(range),
+                  }))}
+                  supportingStats={nativeChartSupportingStats}
+                  chartContent={
+                    <NativeStockHistoryChart
+                      stockSlug={stock.slug}
+                      stockName={stock.name}
+                      range={activeNativeChartRange}
+                      initialData={nativeChartInitialData}
+                    />
+                  }
+                />
+              </section>
+
+              <StockNormalizedDataSections
+                stockName={stock.name}
+                stockSymbol={stock.symbol}
+                stockSlug={stock.slug}
+                normalizedData={normalizedData}
+              />
+
+              {showLegacyDataSections ? (
+              <>
               <section id="summary" className={sectionScrollAnchorClass}>
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1.58fr)_minmax(260px,0.92fr)] xl:items-start">
                   <MainChartContainer
                     chartId={`${resolvedPageContext.routeSlug}-comparison`}
-                    title="Price vs benchmark"
+                    title="Price chart"
                     attribution={undefined}
                     truthState={truthState}
                     showTruthBadge={false}
-                    points={comparisonSeries.stockValues.map((value, index) => ({
-                      label: comparisonSeries.labels[index] ?? `Point ${index + 1}`,
-                      value,
+                    points={chartSnapshot.bars.slice(-2).map((bar) => ({
+                      label: bar.time,
+                      value: bar.close,
                     }))}
-                    timeframes={(Object.keys(timeframeSessions) as TimeframeId[]).map((timeframe) => ({
-                      id: timeframe,
-                      label: timeframe,
-                      active: activeTimeframe === timeframe,
-                      onClick: () => setActiveTimeframe(timeframe),
+                    timeframes={(["7D", "1M", "6M", "1Y", "5Y", "MAX"] as NativeChartRange[]).map((range) => ({
+                      id: range,
+                      label: range,
+                      active: activeNativeChartRange === range,
+                      onClick: () => setActiveNativeChartRange(range),
                     }))}
-                    supportingStats={[
-                      {
-                        label: "Stock return",
-                        value: chartSummary.stockReturn,
-                        helper: "",
-                      },
-                      {
-                        label: "Benchmark return",
-                        value: chartSummary.benchmarkReturn,
-                        helper: "",
-                      },
-                      {
-                        label: "Outperformance",
-                        value: chartSummary.outperformance,
-                        helper: "",
-                      },
-                    ]}
+                    supportingStats={nativeChartSupportingStats}
                     chartContent={
-                      <div className="space-y-2.5">
-                        <div className="flex flex-wrap gap-2">
-                          {chartHeaderStats.map((item) => (
-                            <div
-                              key={item.label}
-                              className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(221,215,207,0.92)] bg-[#F3F4F6] px-3 py-1.5"
-                            >
-                              <span className="text-[11px] font-medium text-[rgba(75,85,99,0.9)]">
-                                {item.label}
-                              </span>
-                              <span className="text-[11px] font-semibold text-[#1B3A6B]">{item.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap items-center justify-end gap-2">
-                          <div className="flex flex-wrap gap-1.5">
-                            {[
-                              { label: stock.name, tone: "#1B3A6B", value: formatProductPercent(stockReturn ?? 0, 2, "--") },
-                              ...comparisonSeries.overlays.map((line) => ({
-                                label: line.label,
-                                tone: line.tone,
-                                value: formatProductPercent(computeSeriesReturn(line.values) ?? 0, 2, "--"),
-                              })),
-                            ].map((item) => (
-                              <div key={item.label} className="inline-flex items-center gap-2 rounded-full border border-[rgba(226,222,217,0.82)] bg-white px-2.5 py-1">
-                                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.tone }} />
-                                <span className="riddra-product-body text-[11px] font-medium text-[#1B3A6B]">
-                                  {item.label} <span className="text-[rgba(107,114,128,0.76)]">({item.value})</span>
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="rounded-[10px] border border-[rgba(221,215,207,0.92)] bg-[linear-gradient(180deg,rgba(27,58,107,0.04),rgba(27,58,107,0.01))] px-2 py-2">
-                          <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="h-[206px] w-full sm:h-[220px]" role="img" aria-label={`${stock.name} comparison chart`}>
-                            {[0, 1, 2, 3].map((line) => (
-                              <line
-                                key={line}
-                                x1={chartPadding}
-                                x2={chartWidth - chartPadding}
-                                y1={chartPadding + ((chartHeight - chartPadding * 2) / 3) * line}
-                                y2={chartPadding + ((chartHeight - chartPadding * 2) / 3) * line}
-                                stroke="#E2DED9"
-                              />
-                            ))}
-                            {overlayGeometries.map((line) => (
-                              <path
-                                key={line.label}
-                                d={line.geometry.linePath}
-                                fill="none"
-                                stroke={line.tone}
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeDasharray={line.dashed ? "7 6" : undefined}
-                              />
-                            ))}
-                            <path d={stockGeometry.linePath} fill="none" stroke="#1B3A6B" strokeWidth="2.8" strokeLinecap="round" />
-                            <text x={chartPadding} y={18} fontSize="11" fill="#1B3A6B">100</text>
-                            {[
-                              { tone: "#1B3A6B", value: comparisonSeries.stockValues[comparisonSeries.stockValues.length - 1], point: stockGeometry.points[stockGeometry.points.length - 1] },
-                              ...overlayGeometries.map((line) => ({
-                                tone: line.tone,
-                                value: line.values[line.values.length - 1],
-                                point: line.geometry.points[line.geometry.points.length - 1],
-                              })),
-                            ].map((marker) =>
-                              marker.point ? (
-                                <text
-                                  key={`${marker.tone}-${marker.value}`}
-                                  x={Math.min(marker.point.x + 8, chartWidth - 56)}
-                                  y={Math.max(marker.point.y - 6, 14)}
-                                  fontSize="11"
-                                  fill={marker.tone}
-                                >
-                                  {Number(marker.value ?? 100).toFixed(1)}
-                                </text>
-                              ) : null,
-                            )}
-                          </svg>
-                        </div>
-                      </div>
+                      <NativeStockHistoryChart
+                        stockSlug={stock.slug}
+                        stockName={stock.name}
+                        range={activeNativeChartRange}
+                        initialData={nativeChartInitialData}
+                      />
                     }
                   />
 
@@ -1796,7 +2008,6 @@ export function TestStockDetailPage({
                   </div>
                 </div>
               </section>
-              </div>
 
               <section id="performance" className={`${sectionScrollAnchorClass} space-y-3`}>
                 <ProductCard tone="secondary" className="space-y-3">
@@ -2275,6 +2486,8 @@ export function TestStockDetailPage({
                   ) : null}
                 </ProductCard>
               </section>
+              </>
+              ) : null}
 
               <section id="forecast" className={`${sectionScrollAnchorClass} space-y-3`}>
                 <ProductCard tone="secondary" className="space-y-3">
@@ -2432,18 +2645,6 @@ export function TestStockDetailPage({
                     )}
                   </div>
                 </ProductCard>
-              </section>
-
-              <section id="latest-news" className={sectionScrollAnchorClass}>
-                <EntityNewsSection
-                  entityType="stock"
-                  entitySlug={stock.slug}
-                  entityDisplayName={stock.name}
-                  symbol={stock.symbol}
-                  articles={marketNews}
-                  usedSectorFallback={marketNewsUsedSectorFallback}
-                  fallbackSectorLabel={marketNewsFallbackSectorLabel}
-                />
               </section>
 
               <section id="faq" className={sectionScrollAnchorClass}>

@@ -120,6 +120,7 @@ export const adminPrimaryNavigation: AdminNavGroup[] = [
     collapsible: true,
     items: [
       { label: "Global Site", href: "/admin/global-site", note: "Header, footer, banners, shared modules, and route strips.", adminOnly: true },
+      { label: "SEO", href: "/admin/seo", note: "Indexing policy, sitemap inclusion, and crawl controls.", adminOnly: true },
       { label: "Documents / Sources", href: "/admin/documents", note: "Factsheets, links, source labels, source dates, and source URLs.", adminOnly: true },
     ],
   },

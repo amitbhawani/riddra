@@ -342,6 +342,12 @@ export async function saveAdminPendingApproval(input: SaveAdminPendingApprovalIn
       await mirrorApprovalToFallback(normalized);
       return normalized;
     }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin approvals durable write failed. See server logs for the Supabase error details.",
+      );
+    }
   }
 
   const existingIndex = store.items.findIndex((item) => item.id === approval.id);
@@ -388,6 +394,12 @@ export async function reviewAdminPendingApproval(input: {
       const normalized = normalizeApproval(durableSaved, 0);
       await mirrorApprovalToFallback(normalized);
       return normalized;
+    }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin approvals durable review write failed. See server logs for the Supabase error details.",
+      );
     }
   }
 

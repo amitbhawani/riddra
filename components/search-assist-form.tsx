@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import type { SearchSuggestion } from "@/lib/search-suggestions";
 
@@ -20,7 +20,6 @@ export function SearchAssistForm({
   chromeTheme = "light",
 }: SearchAssistFormProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [query, setQuery] = useState(defaultValue);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [suggestionMessage, setSuggestionMessage] = useState<string | null>(null);
@@ -37,7 +36,7 @@ export function SearchAssistForm({
     if (compact && pathname !== "/search") {
       setQuery("");
     }
-  }, [compact, pathname, searchParams]);
+  }, [compact, defaultValue, pathname]);
 
   useEffect(() => {
     const shouldFetch = compact ? normalizedQuery.length >= 2 : normalizedQuery.length > 0;

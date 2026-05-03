@@ -9,7 +9,6 @@ import {
 import { EntityNewsSection } from "@/components/entity-news-section";
 import { JsonLd } from "@/components/json-ld";
 import { MutualFundDetailBriefPage } from "@/components/mutual-fund-detail-brief-page";
-import { getCurrentUser } from "@/lib/auth";
 import { getFund, getFunds } from "@/lib/content";
 import { getFundReturnValue } from "@/lib/fund-research";
 import { getLatestMarketNewsForEntity } from "@/lib/market-news/queries";
@@ -24,7 +23,6 @@ import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
 import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
-import { getMembershipFeatureStatus, getUserProductProfile } from "@/lib/user-product-store";
 import { StockFirstLaunchPlaceholderPage } from "@/components/stock-first-launch-placeholder-page";
 
 type PageProps = {
@@ -61,11 +59,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function MutualFundDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const currentUser = await getCurrentUser();
-  const viewerProfile = currentUser ? await getUserProductProfile(currentUser) : null;
-  const premiumAnalyticsUnlocked = viewerProfile
-    ? await getMembershipFeatureStatus(viewerProfile, "premium_analytics")
-    : false;
   const selectedRange = normalizeFundHistoryTimeframe(
     Array.isArray(resolvedSearchParams.range) ? resolvedSearchParams.range[0] : resolvedSearchParams.range,
   );
@@ -170,8 +163,8 @@ export default async function MutualFundDetailPage({ params, searchParams }: Pag
           mappingSource: fund.benchmarkMappingMeta?.source ?? "Unmapped benchmark",
         }}
         sharedSidebarRailData={sharedSidebarRailData}
-        viewerSignedIn={Boolean(currentUser)}
-        premiumAnalyticsUnlocked={premiumAnalyticsUnlocked}
+        viewerSignedIn={false}
+        premiumAnalyticsUnlocked={false}
         performanceContext={{
           selectedRange,
           comparisonWindow,

@@ -64,6 +64,9 @@ export function getSectionOrderForFamily(family: AdminFamilyKey) {
   return [
     "identity",
     "workflow",
+    ...(family === "stocks"
+      ? ["market_snapshot", "ownership_metrics", "financial_metrics"]
+      : []),
     ...(family === "ipos" ? ["lifecycle"] : []),
     "frontend_fields",
     "seo",
@@ -156,11 +159,11 @@ export function getSectionPresentation(
 
     if (family === "stocks") {
       return {
-        title: "Performance, fundamentals, and support",
+        title: "Ratings, context, and support",
         description:
-          "This section controls the summary, chart context, key facts, fundamentals, ownership, peers, and editorial support blocks.",
+          "This section controls the opening brief, route context, FAQs, peer handoffs, and the supporting editorial copy shown lower on the stock page.",
         frontendSection:
-          "Quick facts, performance, fundamentals, ownership, peers, and support blocks",
+          "Opening brief, route context, FAQ, and support blocks",
       };
     }
 
@@ -208,6 +211,33 @@ export function getSectionPresentation(
         frontendSection: "Summary, body, and support blocks",
       };
     }
+  }
+
+  if (sectionKey === "market_snapshot" && family === "stocks") {
+    return {
+      title: "Summary board: stock details and quick stats",
+      description:
+        "Edit the visible company numbers that feed the summary board: hero price, stock details, quick stats, and the headline valuation strip.",
+      frontendSection: "Summary board, stock details, and quick stats",
+    };
+  }
+
+  if (sectionKey === "financial_metrics" && family === "stocks") {
+    return {
+      title: "Quality: fundamentals snapshot",
+      description:
+        "Edit the core business and profitability rows used in the fundamentals snapshot and profitability lens.",
+      frontendSection: "Fundamentals snapshot and profitability lens",
+    };
+  }
+
+  if (sectionKey === "ownership_metrics" && family === "stocks") {
+    return {
+      title: "Quality: shareholding pattern",
+      description:
+        "Edit the visible promoter, FII, DII, and public ownership figures shown in the shareholding block on the summary and quality tabs.",
+      frontendSection: "Shareholding pattern and ownership mix",
+    };
   }
 
   if (sectionKey === "lifecycle") {

@@ -10,7 +10,7 @@ import {
 } from "@/lib/admin-operator-guards";
 import { hasProductUserCapability } from "@/lib/product-permissions";
 import {
-  getSystemSettings,
+  getAdminSystemSettings,
   listMediaAssets,
   saveMediaAsset,
   saveUploadedMediaAsset,
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (!hasProductUserCapability(role, capabilities, "can_manage_media")) {
       throw new AdminOperatorValidationError("You do not have permission to manage media assets.", 403);
     }
-    const settings = await getSystemSettings();
+    const settings = await getAdminSystemSettings();
 
     if (!settings.mediaUploadsEnabled) {
       return NextResponse.json(

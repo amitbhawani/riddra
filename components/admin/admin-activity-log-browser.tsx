@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   type AdminActivityGroupBy,
@@ -79,15 +79,30 @@ export function AdminActivityLogBrowser({
   const [selectedAction, setSelectedAction] = useState("all");
   const [groupBy, setGroupBy] = useState<AdminActivityGroupBy>("day");
 
+  const sortedEntries = useMemo(
+    () =>
+      [...entries].sort((left, right) => {
+        const createdAtOrder = right.createdAt.localeCompare(left.createdAt);
+        if (createdAtOrder !== 0) {
+          return createdAtOrder;
+        }
+
+        return right.id.localeCompare(left.id);
+      }),
+    [entries],
+  );
+
   const userOptions = Array.from(
-    new Set(entries.map((entry) => getAdminActivityActorLabel(entry)).filter(Boolean)),
+    new Set(sortedEntries.map((entry) => getAdminActivityActorLabel(entry)).filter(Boolean)),
   ).sort((left, right) => left.localeCompare(right));
   const pageOptions = Array.from(
-    new Map(entries.map((entry) => [getPageFilterValue(entry), getPageFilterLabel(entry)])).entries(),
+    new Map(
+      sortedEntries.map((entry) => [getPageFilterValue(entry), getPageFilterLabel(entry)]),
+    ).entries(),
   );
-  const actionOptions = Array.from(new Set(entries.map((entry) => entry.actionType))).sort();
+  const actionOptions = Array.from(new Set(sortedEntries.map((entry) => entry.actionType))).sort();
 
-  const filteredEntries = entries.filter((entry) => {
+  const filteredEntries = sortedEntries.filter((entry) => {
     if (selectedUser !== "all" && getAdminActivityActorLabel(entry) !== selectedUser) {
       return false;
     }
@@ -103,19 +118,44 @@ export function AdminActivityLogBrowser({
     return true;
   });
 
-  const groups = filteredEntries.reduce<
-    Array<{ key: string; label: string; entries: AdminActivityLogEntry[] }>
-  >((collection, entry) => {
-    const { key, label } = getGroupMeta(entry, groupBy);
-    const existing = collection.find((item) => item.key === key);
-    if (existing) {
-      existing.entries.push(entry);
-      return collection;
-    }
+  const groups = useMemo(() => {
+    const grouped = filteredEntries.reduce<
+      Map<string, { key: string; label: string; entries: AdminActivityLogEntry[] }>
+    >((collection, entry) => {
+      const { key, label } = getGroupMeta(entry, groupBy);
+      const existing = collection.get(key);
+      if (existing) {
+        existing.entries.push(entry);
+        return collection;
+      }
 
-    collection.push({ key, label, entries: [entry] });
-    return collection;
-  }, []);
+      collection.set(key, { key, label, entries: [entry] });
+      return collection;
+    }, new Map());
+
+    return Array.from(grouped.values())
+      .map((group) => ({
+        ...group,
+        entries: [...group.entries].sort((left, right) => {
+          const createdAtOrder = right.createdAt.localeCompare(left.createdAt);
+          if (createdAtOrder !== 0) {
+            return createdAtOrder;
+          }
+
+          return right.id.localeCompare(left.id);
+        }),
+      }))
+      .sort((left, right) => {
+        const leftNewest = left.entries[0]?.createdAt ?? "";
+        const rightNewest = right.entries[0]?.createdAt ?? "";
+        const createdAtOrder = rightNewest.localeCompare(leftNewest);
+        if (createdAtOrder !== 0) {
+          return createdAtOrder;
+        }
+
+        return right.key.localeCompare(left.key);
+      });
+  }, [filteredEntries, groupBy]);
 
   return (
     <div className="space-y-3">

@@ -35,7 +35,6 @@ import {
   getIndexWeightRoster,
   type IndexWeightRoster,
 } from "@/lib/index-content";
-import { getCurrentUser } from "@/lib/auth";
 import { getStocks } from "@/lib/content";
 import type { IndexComponent, IndexSnapshot } from "@/lib/index-intelligence";
 import { getMarketSnapshotGroups, type MarketSnapshotGroup } from "@/lib/market-snapshot-system";
@@ -44,7 +43,6 @@ import {
   type ProductTruthState,
 } from "@/lib/product-page-design";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
-import { getMembershipFeatureStatus, getUserProductProfile } from "@/lib/user-product-store";
 import { getSourceByCode } from "@/lib/source-registry";
 
 type RelatedIndexCard = {
@@ -614,6 +612,7 @@ export function IndexDetailBriefPage({
                 featureGate={{
                   label: "Premium analytics",
                   enabled: premiumAnalyticsUnlocked,
+                  featureKey: "premium_analytics",
                   lockedReason:
                     "The live index route stays open, but deeper benchmark analytics stay behind the higher member tier.",
                   ctaHref: "/pricing",
@@ -1294,11 +1293,6 @@ export async function IndexDetailRoutePage({
   slug: IndexSnapshot["slug"];
 }) {
   const config = indexRouteConfig[slug];
-  const currentUser = await getCurrentUser();
-  const viewerProfile = currentUser ? await getUserProductProfile(currentUser) : null;
-  const premiumAnalyticsUnlocked = viewerProfile
-    ? await getMembershipFeatureStatus(viewerProfile, "premium_analytics")
-    : false;
   let snapshot: IndexSnapshot | null = null;
   let roster: IndexWeightRoster | null = null;
   let readFailureDetail: string | null = null;
@@ -1360,8 +1354,8 @@ export async function IndexDetailRoutePage({
           relatedIndices={relatedIndices}
           marketSnapshotGroups={marketSnapshotGroups}
           componentRouteMap={componentRouteMap}
-          viewerSignedIn={Boolean(currentUser)}
-          premiumAnalyticsUnlocked={premiumAnalyticsUnlocked}
+          viewerSignedIn={false}
+          premiumAnalyticsUnlocked={false}
           globalSidebarRail={globalSidebarRail}
         />
       ) : (

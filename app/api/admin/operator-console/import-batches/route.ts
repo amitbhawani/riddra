@@ -4,6 +4,7 @@ import { requireOperator } from "@/lib/auth";
 import {
   canUseAdminFamilyImport,
   executeAdminImport,
+  type AdminImportBatchRow,
   listAdminImportBatches,
   type AdminImportFieldKey,
   type AdminImportMode,
@@ -49,10 +50,15 @@ export async function POST(request: NextRequest) {
       fileName?: string;
       importMode?: AdminImportMode;
       fieldMapping?: Record<string, AdminImportFieldKey>;
+      rows?: AdminImportBatchRow[];
     };
 
-    if (!payload.family || !payload.csvText || !payload.fileName || !payload.importMode) {
+    if (!payload.family || !payload.fileName || !payload.importMode) {
       return badRequest("Family, file, and import mode are required.");
+    }
+
+    if (!payload.csvText && (!Array.isArray(payload.rows) || payload.rows.length === 0)) {
+      return badRequest("Family, file, and at least one preview row are required.");
     }
 
     const family = payload.family as SupportedAdminImportFamily;
@@ -73,6 +79,7 @@ export async function POST(request: NextRequest) {
       fileName: payload.fileName,
       importMode: payload.importMode,
       fieldMapping: payload.fieldMapping,
+      previewRows: payload.rows,
     });
 
     return NextResponse.json({

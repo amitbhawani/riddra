@@ -22,6 +22,22 @@ function statusTone(status: "healthy" | "degraded" | "failed") {
   return "text-rose-200 border-rose-400/20 bg-rose-500/10";
 }
 
+function formatStructuredValue(value: string | boolean | number | null | undefined) {
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  if (typeof value === "number") {
+    return String(value);
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+
+  return "None";
+}
+
 export default async function RuntimeDiagnosticsPage() {
   const snapshot = await getRuntimeDiagnosticsSnapshot();
   const breadcrumbs = [
@@ -94,6 +110,24 @@ export default async function RuntimeDiagnosticsPage() {
                     {check.missingEnv.length > 0 ? check.missingEnv.join(", ") : "None"}
                   </p>
                 </div>
+                {check.structuredState ? (
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-mist/50">Structured state</p>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {Object.entries(check.structuredState).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2"
+                        >
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-mist/45">{key}</p>
+                          <p className="mt-1 text-sm leading-6 text-mist/78">
+                            {formatStructuredValue(value)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </GlowCard>
           ))}

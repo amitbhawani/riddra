@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import type { MouseEvent, ReactNode, KeyboardEvent } from "react";
 
+import { getInternalLinkProps } from "@/lib/link-utils";
+
 type MarketNewsClickSurfaceProps = {
   href: string;
   articleId: string;
@@ -72,6 +74,7 @@ export function MarketNewsTrackedLink({
   return (
     <Link
       href={href}
+      {...getInternalLinkProps()}
       className={className}
       onClick={(event) => {
         event.stopPropagation();

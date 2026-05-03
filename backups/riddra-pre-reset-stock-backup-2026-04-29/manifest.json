@@ -1,0 +1,426 @@
+{
+  "ok": false,
+  "backupDate": "2026-04-29",
+  "startedAt": "2026-04-29T00:53:24.719Z",
+  "completedAt": "2026-04-29T00:53:36.487Z",
+  "projectUrl": "https://jawojjmapxnevywrmmiq.supabase.co",
+  "backupDir": "/Users/amitbhawani/Documents/Ai FinTech Platform/backups/riddra-pre-reset-stock-backup-2026-04-29",
+  "summary": {
+    "exportedTables": 25,
+    "failedTables": 18,
+    "totalRows": 1101
+  },
+  "notes": [
+    "There is no physical table named stock_import_logs in the current schema.",
+    "The backup includes the current durable import-log equivalents: stock_import_errors, stock_import_activity_log, and stock_import_reconciliation.",
+    "CMS exports are limited to family = stocks.",
+    "Instrument export is limited to instrument_type in (stock, equity)."
+  ],
+  "tables": [
+    {
+      "table": "instruments",
+      "status": "exported",
+      "rows": 22,
+      "columns": 11,
+      "bytes": 3786,
+      "filename": "instruments.csv",
+      "note": "Filtered to instrument_type in (stock, equity)."
+    },
+    {
+      "table": "companies",
+      "status": "exported",
+      "rows": 2,
+      "columns": 9,
+      "bytes": 559,
+      "filename": "companies.csv",
+      "note": "Filtered to company rows attached to exported stock/equity instruments."
+    },
+    {
+      "table": "stock_pages",
+      "status": "exported",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 1,
+      "filename": "stock_pages.csv",
+      "note": "Legacy stock-page content attached to exported stock/equity instruments."
+    },
+    {
+      "table": "stocks_master",
+      "status": "exported",
+      "rows": 22,
+      "columns": 19,
+      "bytes": 7282,
+      "filename": "stocks_master.csv",
+      "note": "Yahoo stock master mapping rows."
+    },
+    {
+      "table": "raw_yahoo_imports",
+      "status": "exported",
+      "rows": 65,
+      "columns": 26,
+      "bytes": 398429,
+      "filename": "raw_yahoo_imports.csv",
+      "note": "Raw Yahoo payload archive preserved before reset."
+    },
+    {
+      "table": "stock_company_profile",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized company profile rows.",
+      "error": "Could not find the table 'public.stock_company_profile' in the schema cache"
+    },
+    {
+      "table": "stock_price_history",
+      "status": "exported",
+      "rows": 374,
+      "columns": 21,
+      "bytes": 257314,
+      "filename": "stock_price_history.csv",
+      "note": "Normalized Yahoo daily price history rows."
+    },
+    {
+      "table": "stock_market_snapshot",
+      "status": "exported",
+      "rows": 2,
+      "columns": 25,
+      "bytes": 2266,
+      "filename": "stock_market_snapshot.csv",
+      "note": "Latest normalized market snapshot rows."
+    },
+    {
+      "table": "stock_valuation_metrics",
+      "status": "exported",
+      "rows": 1,
+      "columns": 24,
+      "bytes": 8537,
+      "filename": "stock_valuation_metrics.csv",
+      "note": "Normalized valuation metric rows."
+    },
+    {
+      "table": "stock_share_statistics",
+      "status": "exported",
+      "rows": 1,
+      "columns": 23,
+      "bytes": 8598,
+      "filename": "stock_share_statistics.csv",
+      "note": "Normalized share-statistics rows."
+    },
+    {
+      "table": "stock_financial_highlights",
+      "status": "exported",
+      "rows": 1,
+      "columns": 27,
+      "bytes": 8653,
+      "filename": "stock_financial_highlights.csv",
+      "note": "Normalized financial highlights rows."
+    },
+    {
+      "table": "stock_income_statement",
+      "status": "exported",
+      "rows": 4,
+      "columns": 28,
+      "bytes": 5159,
+      "filename": "stock_income_statement.csv",
+      "note": "Normalized income statement rows."
+    },
+    {
+      "table": "stock_balance_sheet",
+      "status": "exported",
+      "rows": 4,
+      "columns": 27,
+      "bytes": 5165,
+      "filename": "stock_balance_sheet.csv",
+      "note": "Normalized balance-sheet rows."
+    },
+    {
+      "table": "stock_cash_flow",
+      "status": "exported",
+      "rows": 4,
+      "columns": 25,
+      "bytes": 5096,
+      "filename": "stock_cash_flow.csv",
+      "note": "Normalized cash-flow rows."
+    },
+    {
+      "table": "stock_dividends",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized dividend rows.",
+      "error": "Could not find the table 'public.stock_dividends' in the schema cache"
+    },
+    {
+      "table": "stock_splits",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized split rows.",
+      "error": "Could not find the table 'public.stock_splits' in the schema cache"
+    },
+    {
+      "table": "stock_corporate_actions",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized corporate action rows.",
+      "error": "Could not find the table 'public.stock_corporate_actions' in the schema cache"
+    },
+    {
+      "table": "stock_earnings_events",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized earnings event rows.",
+      "error": "Could not find the table 'public.stock_earnings_events' in the schema cache"
+    },
+    {
+      "table": "stock_earnings_trend",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized earnings trend rows.",
+      "error": "Could not find the table 'public.stock_earnings_trend' in the schema cache"
+    },
+    {
+      "table": "stock_analyst_ratings",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized analyst ratings rows.",
+      "error": "Could not find the table 'public.stock_analyst_ratings' in the schema cache"
+    },
+    {
+      "table": "stock_holders_summary",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized holder summary rows.",
+      "error": "Could not find the table 'public.stock_holders_summary' in the schema cache"
+    },
+    {
+      "table": "stock_holders_detail",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized holder detail rows.",
+      "error": "Could not find the table 'public.stock_holders_detail' in the schema cache"
+    },
+    {
+      "table": "stock_options_contracts",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized options rows.",
+      "error": "Could not find the table 'public.stock_options_contracts' in the schema cache"
+    },
+    {
+      "table": "stock_news",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Normalized stock news rows.",
+      "error": "Could not find the table 'public.stock_news' in the schema cache"
+    },
+    {
+      "table": "stock_technical_indicators",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Calculated technical indicator rows.",
+      "error": "Could not find the table 'public.stock_technical_indicators' in the schema cache"
+    },
+    {
+      "table": "stock_performance_metrics",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Calculated performance metric rows.",
+      "error": "Could not find the table 'public.stock_performance_metrics' in the schema cache"
+    },
+    {
+      "table": "stock_growth_metrics",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Calculated growth metric rows.",
+      "error": "Could not find the table 'public.stock_growth_metrics' in the schema cache"
+    },
+    {
+      "table": "stock_health_ratios",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Calculated health ratio rows.",
+      "error": "Could not find the table 'public.stock_health_ratios' in the schema cache"
+    },
+    {
+      "table": "stock_riddra_scores",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Calculated Riddra score rows.",
+      "error": "Could not find the table 'public.stock_riddra_scores' in the schema cache"
+    },
+    {
+      "table": "stock_quote_history",
+      "status": "exported",
+      "rows": 31,
+      "columns": 11,
+      "bytes": 12675,
+      "filename": "stock_quote_history.csv",
+      "note": "Legacy public stock quote history."
+    },
+    {
+      "table": "stock_ohlcv_history",
+      "status": "exported",
+      "rows": 19,
+      "columns": 17,
+      "bytes": 6425,
+      "filename": "stock_ohlcv_history.csv",
+      "note": "Legacy public stock OHLCV history."
+    },
+    {
+      "table": "stock_fundamental_snapshots",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Legacy stock fundamentals snapshot rows.",
+      "error": "Could not find the table 'public.stock_fundamental_snapshots' in the schema cache"
+    },
+    {
+      "table": "stock_shareholding_snapshots",
+      "status": "failed",
+      "rows": 0,
+      "columns": 0,
+      "bytes": 0,
+      "filename": null,
+      "note": "Legacy stock shareholding snapshot rows.",
+      "error": "Could not find the table 'public.stock_shareholding_snapshots' in the schema cache"
+    },
+    {
+      "table": "stock_import_jobs",
+      "status": "exported",
+      "rows": 27,
+      "columns": 24,
+      "bytes": 60817,
+      "filename": "stock_import_jobs.csv",
+      "note": "Parent stock import jobs."
+    },
+    {
+      "table": "stock_import_job_items",
+      "status": "exported",
+      "rows": 65,
+      "columns": 18,
+      "bytes": 496444,
+      "filename": "stock_import_job_items.csv",
+      "note": "Per-stock/per-module job queue rows."
+    },
+    {
+      "table": "stock_import_errors",
+      "status": "exported",
+      "rows": 48,
+      "columns": 16,
+      "bytes": 35708,
+      "filename": "stock_import_errors.csv",
+      "note": "Durable Yahoo import errors."
+    },
+    {
+      "table": "stock_import_coverage",
+      "status": "exported",
+      "rows": 11,
+      "columns": 18,
+      "bytes": 12243,
+      "filename": "stock_import_coverage.csv",
+      "note": "Module-wise import coverage rows."
+    },
+    {
+      "table": "stock_import_activity_log",
+      "status": "exported",
+      "rows": 251,
+      "columns": 23,
+      "bytes": 144731,
+      "filename": "stock_import_activity_log.csv",
+      "note": "Step-level import activity log rows."
+    },
+    {
+      "table": "stock_import_reconciliation",
+      "status": "exported",
+      "rows": 57,
+      "columns": 17,
+      "bytes": 52836,
+      "filename": "stock_import_reconciliation.csv",
+      "note": "Raw-vs-normalized reconciliation rows."
+    },
+    {
+      "table": "market_data_sources",
+      "status": "exported",
+      "rows": 1,
+      "columns": 14,
+      "bytes": 1976,
+      "filename": "market_data_sources.csv",
+      "note": "Source registry preserved for post-reset sync resumption."
+    },
+    {
+      "table": "cms_admin_records",
+      "status": "exported",
+      "rows": 9,
+      "columns": 28,
+      "bytes": 40737,
+      "filename": "cms_admin_records.csv",
+      "note": "Stock-family CMS records only."
+    },
+    {
+      "table": "cms_admin_record_revisions",
+      "status": "exported",
+      "rows": 62,
+      "columns": 11,
+      "bytes": 26248,
+      "filename": "cms_admin_record_revisions.csv",
+      "note": "Stock-family CMS revisions only."
+    },
+    {
+      "table": "cms_admin_pending_approvals",
+      "status": "exported",
+      "rows": 18,
+      "columns": 20,
+      "bytes": 66962,
+      "filename": "cms_admin_pending_approvals.csv",
+      "note": "Stock-family CMS approvals only."
+    }
+  ]
+}

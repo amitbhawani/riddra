@@ -1680,6 +1680,12 @@ export async function saveAdminManagedRecord(input: SaveAdminRecordInput) {
       );
       return normalizedSaved;
     }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin managed record durable write failed. See server logs for the Supabase error details.",
+      );
+    }
   }
 
   await writeStore(nextStore);
@@ -1755,6 +1761,12 @@ export async function appendAdminRecordRevision(
     if (durableRevision) {
       await writeStore(nextStore, { skipWhenDisabled: true });
       return durableRevision;
+    }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin record revision durable write failed. See server logs for the Supabase error details.",
+      );
     }
   }
 

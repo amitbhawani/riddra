@@ -24,11 +24,17 @@ import { getFundCategorySearchAliases } from "@/lib/fund-search-aliases";
 import { getFundPortfolioLens, getFundReturnValue } from "@/lib/fund-research";
 import { getFundTruthLabel } from "@/lib/market-truth";
 import { isStockFirstLaunchPlaceholderFamily } from "@/lib/public-launch-scope";
+import { buildSeoMetadata } from "@/lib/seo-config";
 
-export const metadata: Metadata = {
-  title: "Mutual Funds",
-  description: "Riddra mutual fund hub with structured page templates and category-led discovery.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    policyKey: "mutual_funds_hub",
+    title: "Mutual Funds | Riddra",
+    description:
+      "Riddra mutual fund hub with structured page templates and category-led discovery.",
+    publicHref: "/mutual-funds",
+  });
+}
 
 export default async function MutualFundsIndexPage() {
   if (isStockFirstLaunchPlaceholderFamily("mutual_funds")) {

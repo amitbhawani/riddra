@@ -5,19 +5,26 @@ import { AdminUsersClient } from "@/components/admin/admin-users-client";
 import { AdminPageFrame, AdminPageHeader } from "@/components/admin/admin-primitives";
 import { getCurrentUser } from "@/lib/auth";
 import { getAdminMembershipTiers } from "@/lib/admin-operator-store";
-import { listUserProductProfiles } from "@/lib/user-product-store";
+import {
+  backfillUserProductProfileActivityForToday,
+  listUserProductProfiles,
+} from "@/lib/user-product-store";
 
 export const metadata: Metadata = {
   title: "Users",
   description: "Manage user profiles, roles, membership tiers, and activity.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminUsersPage() {
-  const [users, tiers, currentUser] = await Promise.all([
-    listUserProductProfiles(),
+  const [tiers, currentUser] = await Promise.all([
     getAdminMembershipTiers(),
     getCurrentUser(),
   ]);
+  await backfillUserProductProfileActivityForToday();
+  const users = await listUserProductProfiles();
 
   return (
     <AdminPageFrame>

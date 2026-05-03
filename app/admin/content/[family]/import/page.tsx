@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { AdminContentImportClient } from "@/components/admin/admin-content-import-client";
+import { StockFieldMapCard } from "@/components/stock-field-map-card";
 import {
   AdminActionLink,
   AdminPageFrame,
@@ -17,6 +18,7 @@ import {
   supportedAdminImportFamilies,
   type SupportedAdminImportFamily,
 } from "@/lib/admin-content-imports";
+import { getAdminRecordEditorData, type AdminFamilyKey } from "@/lib/admin-content-registry";
 
 type Params = Promise<{ family: string }>;
 
@@ -50,6 +52,10 @@ export default async function AdminContentFamilyImportPage({
 
   const template = getAdminImportTemplate(typedFamily);
   const recentBatches = await listAdminImportBatches(typedFamily);
+  const stockFieldMapEditor =
+    typedFamily === "stocks"
+      ? await getAdminRecordEditorData("stocks" as AdminFamilyKey, "draft-stocks", null)
+      : null;
   const batchDetails = await Promise.all(
     recentBatches.slice(0, 6).map(async (batch) => {
       const details = await getAdminImportBatchDetails(batch.id);
@@ -114,6 +120,31 @@ export default async function AdminContentFamilyImportPage({
           </div>
         </div>
       </AdminSectionCard>
+
+      {typedFamily === "stocks" ? (
+        <>
+          <AdminSectionCard
+            title="Historical price boundary"
+            description="Do not import OHLCV candles, 52-week ranges, chart history, or mutual fund NAV rows here."
+          >
+            <p className="text-sm leading-7 text-[#4b5563]">
+              Use Market Data Import for historical prices, NAVs and candles. Open{" "}
+              <a href="/admin/market-data/import" className="font-semibold text-[#1B3A6B] underline">
+                Market Data Import
+              </a>{" "}
+              when you need durable OHLCV or NAV history. This stock content importer is only for CMS-style stock metadata,
+              editorial copy, and operator-managed frontend overrides.
+            </p>
+          </AdminSectionCard>
+          {stockFieldMapEditor ? (
+            <StockFieldMapCard
+              record={stockFieldMapEditor}
+              title="Stock field parity map"
+              description="This map shows which frontend stock labels belong to the structured backend fields before you prepare the CSV."
+            />
+          ) : null}
+        </>
+      ) : null}
 
       <AdminContentImportClient
         family={typedFamily}

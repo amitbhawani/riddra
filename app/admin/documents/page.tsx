@@ -13,6 +13,7 @@ import { getFunds, getStocks } from "@/lib/content";
 import { getIndexSnapshots } from "@/lib/index-content";
 import { getAdminOperatorStore } from "@/lib/admin-operator-store";
 import { formatAdminDateTime } from "@/lib/admin-time";
+import { getExternalLinkProps } from "@/lib/link-utils";
 
 export const metadata: Metadata = {
   title: "Documents / Sources",
@@ -158,7 +159,7 @@ export default async function AdminDocumentsPage() {
               rows={sourceRows.slice(0, 20).map((row) => [
                 <div key={`${row.asset}-${row.label}`} className="space-y-1">
                   <p className="font-semibold text-[#111827]">{row.asset}</p>
-                  <a href={row.href} className="text-xs leading-5 text-[#1d4ed8] underline" target="_blank" rel="noreferrer">
+                  <a href={row.href} className="text-xs leading-5 text-[#1d4ed8] underline" {...getExternalLinkProps()}>
                     {row.label}
                   </a>
                 </div>,

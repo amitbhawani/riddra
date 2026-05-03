@@ -1,8 +1,8 @@
-import { getFunds, getIpos, getStocks } from "@/lib/content";
+import { getFunds, getIpos, getPublicStockDiscoveryStocks } from "@/lib/content";
 import { communityProgramsItems } from "@/lib/community-programs";
 import { getLearnArticles, getLearningPaths, getMarketEvents } from "@/lib/learn";
 import { mentorshipTracks } from "@/lib/mentorship";
-import { filterEntriesToPublishableCms } from "@/lib/publishable-content";
+import { filterEntriesToPublicSearchRoutes } from "@/lib/public-search-routes";
 import { buildSearchCatalog } from "@/lib/search-catalog";
 import { webinars } from "@/lib/webinars";
 
@@ -16,7 +16,7 @@ export type SearchIndexRegistryRow = {
 
 export async function getSearchIndexRegistryRows(): Promise<SearchIndexRegistryRow[]> {
   const [stocks, ipos, funds, learnArticles, learningPaths, marketEvents] = await Promise.all([
-    getStocks(),
+    getPublicStockDiscoveryStocks(),
     getIpos(),
     getFunds(),
     getLearnArticles(),
@@ -24,7 +24,7 @@ export async function getSearchIndexRegistryRows(): Promise<SearchIndexRegistryR
     getMarketEvents(),
   ]);
 
-  return (await filterEntriesToPublishableCms(
+  return (await filterEntriesToPublicSearchRoutes(
     buildSearchCatalog({
       stocks,
       ipos,

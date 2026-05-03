@@ -48,7 +48,7 @@ function normalizeEntry(
   index = 0,
 ): AdminActivityLogEntry {
   const normalized = {
-    id: cleanString(value.id, 120) || `admin_activity_${index + 1}_${randomUUID()}`,
+    id: cleanString(value.id, 120) || randomUUID(),
     actorUserId: cleanString(value.actorUserId, 120) || null,
     actorEmail: cleanString(value.actorEmail, 240),
     actionType: cleanString(value.actionType, 160),
@@ -214,7 +214,8 @@ function isDebugOnlyActivityEntry(entry: AdminActivityLogEntry) {
 }
 
 export async function listAdminActivityLog(limit = 100) {
-  const fallbackStore = await readFallbackStore();
+  const fileFallbackEnabled = canUseFileFallback();
+  const fallbackStore = fileFallbackEnabled ? await readFallbackStore() : { entries: [] };
 
   if (!hasDurableCmsStateStore()) {
     return fallbackStore.entries.slice(0, limit);
@@ -222,24 +223,41 @@ export async function listAdminActivityLog(limit = 100) {
 
   const durableEntries = await listDurableAdminActivityLog(limit);
   if (!durableEntries) {
-    return fallbackStore.entries.slice(0, limit);
+    console.error("[admin-activity-log] durable activity read failed", {
+      scope: ADMIN_ACTIVITY_LOG_FILE_FALLBACK_SCOPE,
+      limit,
+      fallbackEnabled: fileFallbackEnabled,
+    });
+    return [];
   }
 
-  if (!durableEntries.length && fallbackStore.entries.length) {
+  if (!durableEntries.length && fileFallbackEnabled && fallbackStore.entries.length) {
     await seedDurableFromFallback(fallbackStore.entries.slice(0, limit));
     const seededEntries = await listDurableAdminActivityLog(limit);
     if (!seededEntries) {
-      return fallbackStore.entries.slice(0, limit);
+      return [];
     }
 
-    return mergeActivityEntries(seededEntries, fallbackStore.entries)
+    const normalizedSeededEntries = seededEntries
       .filter((entry) => !isDebugOnlyActivityEntry(entry))
       .slice(0, limit);
+    console.info("[admin-activity-log] seeded durable activity log from fallback", {
+      count: normalizedSeededEntries.length,
+      newestCreatedAt: normalizedSeededEntries[0]?.createdAt ?? null,
+      newestActionType: normalizedSeededEntries[0]?.actionType ?? null,
+    });
+    return normalizedSeededEntries;
   }
 
-  return mergeActivityEntries(durableEntries, fallbackStore.entries)
+  const normalizedEntries = durableEntries
     .filter((entry) => !isDebugOnlyActivityEntry(entry))
     .slice(0, limit);
+  console.info("[admin-activity-log] latest durable activity loaded", {
+    count: normalizedEntries.length,
+    newestCreatedAt: normalizedEntries[0]?.createdAt ?? null,
+    newestActionType: normalizedEntries[0]?.actionType ?? null,
+  });
+  return normalizedEntries;
 }
 
 export async function appendAdminActivityLog(input: Omit<AdminActivityLogEntry, "id" | "createdAt"> & {
@@ -274,6 +292,12 @@ export async function appendAdminActivityLog(input: Omit<AdminActivityLogEntry, 
         );
       }
       return durableEntry;
+    }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin activity log durable write failed. See server logs for the Supabase error details.",
+      );
     }
   }
 

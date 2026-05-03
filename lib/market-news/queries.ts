@@ -193,6 +193,101 @@ function getMarketNewsReadClient() {
 }
 
 const PUBLIC_MARKET_NEWS_STATUSES: MarketNewsArticleStatus[] = ["ready", "published"];
+const PUBLIC_MARKET_NEWS_READ_CACHE_TTL_MS = 60_000;
+
+type TimedCacheEntry<T> = {
+  expiresAt: number;
+  value: T;
+};
+
+const marketNewsArticlesCache = new Map<string, TimedCacheEntry<MarketNewsArticleWithRelations[]>>();
+const dailyMarketBriefArticlesCache = new Map<string, TimedCacheEntry<MarketNewsArticleWithRelations[]>>();
+const marketNewsFilterOptionsCache = new Map<number, TimedCacheEntry<MarketNewsFilterOptions>>();
+
+function readTimedCache<T>(cache: Map<string | number, TimedCacheEntry<T>>, key: string | number) {
+  const cached = cache.get(key);
+
+  if (!cached) {
+    return { hit: false as const, value: null };
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    cache.delete(key);
+    return { hit: false as const, value: null };
+  }
+
+  return { hit: true as const, value: cached.value };
+}
+
+function writeTimedCache<T>(cache: Map<string | number, TimedCacheEntry<T>>, key: string | number, value: T) {
+  cache.set(key, {
+    value,
+    expiresAt: Date.now() + PUBLIC_MARKET_NEWS_READ_CACHE_TTL_MS,
+  });
+}
+
+type MarketNewsCandidateEntity = Pick<
+  MarketNewsArticleEntityRecord,
+  | "id"
+  | "article_id"
+  | "entity_type"
+  | "entity_slug"
+  | "symbol"
+  | "display_name"
+  | "sector_slug"
+  | "relevance_score"
+  | "created_at"
+>;
+
+type MarketNewsArticleCandidateRow = Pick<
+  MarketNewsArticleRecord,
+  | "id"
+  | "slug"
+  | "original_title"
+  | "rewritten_title"
+  | "short_summary"
+  | "summary"
+  | "source_name"
+  | "source_url"
+  | "source_published_at"
+  | "published_at"
+  | "category"
+  | "impact_label"
+  | "image_url"
+  | "fallback_image_url"
+  | "image_alt_text"
+  | "canonical_url"
+  | "duplicate_group_id"
+  | "created_at"
+  | "updated_at"
+> & {
+  entities: MarketNewsCandidateEntity[];
+  source_reliability_score: number | null;
+  importance_score: number;
+  uses_fallback_image: boolean;
+};
+
+const MARKET_NEWS_ARTICLE_CANDIDATE_SELECT = [
+  "id",
+  "slug",
+  "original_title",
+  "rewritten_title",
+  "short_summary",
+  "summary",
+  "source_name",
+  "source_url",
+  "source_published_at",
+  "published_at",
+  "category",
+  "impact_label",
+  "image_url",
+  "fallback_image_url",
+  "image_alt_text",
+  "canonical_url",
+  "duplicate_group_id",
+  "created_at",
+  "updated_at",
+].join(", ");
 
 function getArticleTimestampValue(
   article: Pick<
@@ -629,11 +724,21 @@ function comparePublicListingArticles(
   return String(getArticleTimestampValue(right)).localeCompare(String(getArticleTimestampValue(left)));
 }
 
-function dedupeMarketNewsArticlesByDuplicateGroup(
-  articles: readonly MarketNewsArticleWithRelations[],
+function dedupeMarketNewsArticlesByDuplicateGroup<
+  T extends Pick<
+    MarketNewsArticleWithRelations,
+    | "duplicate_group_id"
+    | "rewritten_title"
+    | "original_title"
+    | "short_summary"
+    | "summary"
+    | "entities"
+  >,
+>(
+  articles: readonly T[],
   limit?: number,
 ) {
-  const deduped: MarketNewsArticleWithRelations[] = [];
+  const deduped: T[] = [];
   const safeLimit =
     typeof limit === "number" && Number.isFinite(limit)
       ? Math.max(Math.trunc(limit), 0)
@@ -920,6 +1025,10 @@ function normalizeMarketNewsArticleFilters(
     category: normalizeLooseFilterValue(input?.category),
     impactLabel: normalizeLooseFilterValue(input?.impactLabel),
   };
+}
+
+function buildMarketNewsArticleCacheKey(filters: Required<MarketNewsArticleFilters>) {
+  return JSON.stringify(filters);
 }
 
 export async function listEnabledMarketNewsSources() {
@@ -1690,10 +1799,10 @@ async function hydrateMarketNewsArticles(
   }
 
   const articleIds = articles.map((article) => article.id);
-  const rawItemIds = Array.from(
+  const sourceNames = Array.from(
     new Set(
       articles
-        .map((article) => normalizeLooseFilterValue(article.raw_item_id))
+        .map((article) => normalizeLooseFilterValue(article.source_name))
         .filter(Boolean),
     ),
   );
@@ -1722,43 +1831,20 @@ async function hydrateMarketNewsArticles(
 
   const entityMap = new Map<string, MarketNewsArticleEntityRecord[]>();
   const imageMap = new Map<string, MarketNewsArticleImageRecord>();
-  const rawSourceIdMap = new Map<string, string | null>();
   const sourceReliabilityMap = new Map<string, number | null>();
 
-  if (rawItemIds.length) {
-    const { data: rawItemsData, error: rawItemsError } = await supabase
-      .from("market_news_raw_items")
-      .select("id, source_id")
-      .in("id", rawItemIds);
+  if (sourceNames.length) {
+    const { data: sourceData, error: sourceError } = await supabase
+      .from("market_news_sources")
+      .select("name, reliability_score")
+      .in("name", sourceNames);
 
-    if (rawItemsError) {
-      throw new Error(`Unable to load market news raw items for source weighting: ${rawItemsError.message}`);
+    if (sourceError) {
+      throw new Error(`Unable to load market news source reliability scores: ${sourceError.message}`);
     }
 
-    const sourceIds = Array.from(
-      new Set(
-        ((rawItemsData ?? []) as Array<{ id: string; source_id: string | null }>)
-          .map((item) => {
-            rawSourceIdMap.set(String(item.id), item.source_id ?? null);
-            return normalizeLooseFilterValue(item.source_id);
-          })
-          .filter(Boolean),
-      ),
-    );
-
-    if (sourceIds.length) {
-      const { data: sourceData, error: sourceError } = await supabase
-        .from("market_news_sources")
-        .select("id, reliability_score")
-        .in("id", sourceIds);
-
-      if (sourceError) {
-        throw new Error(`Unable to load market news source reliability scores: ${sourceError.message}`);
-      }
-
-      for (const source of (sourceData ?? []) as Array<{ id: string; reliability_score: number | null }>) {
-        sourceReliabilityMap.set(String(source.id), source.reliability_score ?? null);
-      }
+    for (const source of (sourceData ?? []) as Array<{ name: string; reliability_score: number | null }>) {
+      sourceReliabilityMap.set(String(source.name).trim(), source.reliability_score ?? null);
     }
   }
 
@@ -1783,9 +1869,10 @@ async function hydrateMarketNewsArticles(
     };
     const image = imageMap.get(article.id) ?? null;
     const resolvedImage = getNewsImageForArticle(article, image);
-    const rawItemId = normalizeLooseFilterValue(article.raw_item_id);
-    const sourceId = rawItemId ? rawSourceIdMap.get(rawItemId) ?? null : null;
-    const sourceReliabilityScore = sourceId ? sourceReliabilityMap.get(sourceId) ?? null : null;
+    const normalizedSourceName = normalizeLooseFilterValue(article.source_name);
+    const sourceReliabilityScore = normalizedSourceName
+      ? sourceReliabilityMap.get(normalizedSourceName) ?? null
+      : null;
 
     return {
       ...sanitizedArticle,
@@ -2096,23 +2183,19 @@ async function listMarketNewsArticlesByIds(articleIds: readonly string[], limit:
   return sortArticlesByRecency(hydrated).slice(0, safeLimit);
 }
 
-export async function getMarketNewsArticles(input?: number | MarketNewsArticleFilters) {
-  const supabase = getMarketNewsReadClient();
+function getMarketNewsHydrationCandidateLimit(limit: number) {
+  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 60) : 24;
+  return Math.min(Math.max(safeLimit * 3, 18), Math.min(Math.max(safeLimit * 5, 40), 240));
+}
 
-  if (!supabase) {
-    return [] as MarketNewsArticleWithRelations[];
-  }
-
-  const filters = normalizeMarketNewsArticleFilters(input);
-  const constrainedArticleIds = await listMarketNewsArticleIdsForFilters(filters);
-
-  if (constrainedArticleIds && !constrainedArticleIds.length) {
-    return [] as MarketNewsArticleWithRelations[];
-  }
-
+async function buildMarketNewsArticleCandidates(
+  supabase: ReturnType<typeof createSupabaseReadClient>,
+  filters: Required<MarketNewsArticleFilters>,
+  constrainedArticleIds: string[] | null,
+) {
   let query = supabase
     .from("market_news_articles")
-    .select("*")
+    .select(MARKET_NEWS_ARTICLE_CANDIDATE_SELECT)
     .in("status", PUBLIC_MARKET_NEWS_STATUSES);
 
   if (filters.category) {
@@ -2127,22 +2210,176 @@ export async function getMarketNewsArticles(input?: number | MarketNewsArticleFi
     query = query.in("id", constrainedArticleIds);
   }
 
+  const candidateWindow = Math.min(Math.max(filters.limit * 5, 40), 240);
   const { data, error } = await query
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("source_published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(Math.min(Math.max(filters.limit * 5, 40), 240));
+    .limit(candidateWindow);
 
   if (error) {
     throw new Error(`Unable to load market news articles: ${error.message}`);
   }
 
-  const hydrated = await hydrateMarketNewsArticles((data ?? []) as MarketNewsArticleRecord[]);
-  const curated = sortArticlesByRecency(
-    hydrated.filter((article) => !isLowValueMarketNewsArticle(article)),
+  const articleRows = (data ?? []) as unknown as Array<
+    Pick<
+      MarketNewsArticleRecord,
+      | "id"
+      | "slug"
+      | "original_title"
+      | "rewritten_title"
+      | "short_summary"
+      | "summary"
+      | "source_name"
+      | "source_url"
+      | "source_published_at"
+      | "published_at"
+      | "category"
+      | "impact_label"
+      | "image_url"
+      | "fallback_image_url"
+      | "image_alt_text"
+      | "canonical_url"
+      | "duplicate_group_id"
+      | "created_at"
+      | "updated_at"
+    >
+  >;
+
+  if (!articleRows.length) {
+    return [] as MarketNewsArticleCandidateRow[];
+  }
+
+  const articleIds = articleRows.map((article) => article.id);
+  const sourceNames = Array.from(
+    new Set(
+      articleRows
+        .map((article) => normalizeLooseFilterValue(article.source_name))
+        .filter(Boolean),
+    ),
   );
 
-  return dedupeMarketNewsArticlesByDuplicateGroup(curated, filters.limit);
+  const [{ data: entityData, error: entityError }, { data: sourceData, error: sourceError }] =
+    await Promise.all([
+      supabase
+        .from("market_news_article_entities")
+        .select(
+          "id, article_id, entity_type, entity_slug, symbol, display_name, sector_slug, relevance_score, created_at",
+        )
+        .in("article_id", articleIds)
+        .order("relevance_score", { ascending: false })
+        .order("created_at", { ascending: true }),
+      sourceNames.length
+        ? supabase
+            .from("market_news_sources")
+            .select("name, reliability_score")
+            .in("name", sourceNames)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+  if (entityError) {
+    throw new Error(`Unable to load market news article entities: ${entityError.message}`);
+  }
+
+  if (sourceError) {
+    throw new Error(`Unable to load market news source reliability scores: ${sourceError.message}`);
+  }
+
+  const entityMap = new Map<string, MarketNewsCandidateEntity[]>();
+  const sourceReliabilityMap = new Map<string, number | null>();
+
+  for (const entity of (entityData ?? []) as MarketNewsCandidateEntity[]) {
+    const existing = entityMap.get(entity.article_id) ?? [];
+    existing.push(entity);
+    entityMap.set(entity.article_id, existing);
+  }
+
+  for (const source of (sourceData ?? []) as Array<{ name: string; reliability_score: number | null }>) {
+    sourceReliabilityMap.set(String(source.name).trim(), source.reliability_score ?? null);
+  }
+
+  return articleRows.map((article) => {
+    const entities = entityMap.get(article.id) ?? [];
+    const resolvedImage = getNewsImageForArticle(article, null);
+    const normalizedSourceName = normalizeLooseFilterValue(article.source_name);
+    const sourceReliabilityScore = normalizedSourceName
+      ? sourceReliabilityMap.get(normalizedSourceName) ?? null
+      : null;
+
+    return {
+      ...article,
+      entities,
+      source_reliability_score: sourceReliabilityScore,
+      importance_score: getMarketNewsImportanceScore({
+        ...article,
+        entities,
+      }),
+      uses_fallback_image: resolvedImage.usesFallback,
+    } satisfies MarketNewsArticleCandidateRow;
+  });
+}
+
+export async function getMarketNewsArticles(input?: number | MarketNewsArticleFilters) {
+  const supabase = getMarketNewsReadClient();
+
+  if (!supabase) {
+    return [] as MarketNewsArticleWithRelations[];
+  }
+
+  const filters = normalizeMarketNewsArticleFilters(input);
+  const cacheKey = buildMarketNewsArticleCacheKey(filters);
+  const cached = readTimedCache(marketNewsArticlesCache, cacheKey);
+
+  if (cached.hit) {
+    return cached.value;
+  }
+
+  const constrainedArticleIds = await listMarketNewsArticleIdsForFilters(filters);
+
+  if (constrainedArticleIds && !constrainedArticleIds.length) {
+    writeTimedCache(marketNewsArticlesCache, cacheKey, []);
+    return [] as MarketNewsArticleWithRelations[];
+  }
+
+  const candidates = await buildMarketNewsArticleCandidates(
+    supabase,
+    filters,
+    constrainedArticleIds,
+  );
+  const candidateLimit = getMarketNewsHydrationCandidateLimit(filters.limit);
+  const shortlistedIds = dedupeMarketNewsArticlesByDuplicateGroup(
+    sortArticlesByRecency<MarketNewsArticleCandidateRow>(
+      candidates.filter((article) => !isLowValueMarketNewsArticle(article)),
+    ),
+    candidateLimit,
+  ).map((article) => article.id);
+
+  if (!shortlistedIds.length) {
+    return [] as MarketNewsArticleWithRelations[];
+  }
+
+  const { data, error } = await supabase
+    .from("market_news_articles")
+    .select("*")
+    .in("id", shortlistedIds)
+    .in("status", PUBLIC_MARKET_NEWS_STATUSES);
+
+  if (error) {
+    throw new Error(`Unable to load market news article details: ${error.message}`);
+  }
+
+  const hydrated = await hydrateMarketNewsArticles((data ?? []) as MarketNewsArticleRecord[]);
+  const hydratedById = new Map(hydrated.map((article) => [article.id, article]));
+  const orderedHydrated = shortlistedIds
+    .map((articleId) => hydratedById.get(articleId) ?? null)
+    .filter((article): article is MarketNewsArticleWithRelations => article !== null);
+  const curated = sortArticlesByRecency(
+    orderedHydrated.filter((article) => !isLowValueMarketNewsArticle(article)),
+  );
+
+  const deduped = dedupeMarketNewsArticlesByDuplicateGroup(curated, filters.limit);
+  writeTimedCache(marketNewsArticlesCache, cacheKey, deduped);
+  return deduped;
 }
 
 export async function getPublishedMarketNewsSitemapEntries() {
@@ -2249,12 +2486,21 @@ function getMarketNewsRecencyDecayBoost(article: Pick<MarketNewsArticleRecord, "
   return decayFactor * 10;
 }
 
-async function getMarketNewsClickMetrics(articleIds: readonly string[]) {
+async function getMarketNewsClickMetrics(
+  articleIds: readonly string[],
+  options?: {
+    includeInternalAnalytics?: boolean;
+  },
+) {
   if (!articleIds.length) {
     return new Map<string, { clicks24h: number; clicks7d: number }>();
   }
 
-  const supabase = getMarketNewsReadClient();
+  if (!options?.includeInternalAnalytics || !hasRuntimeSupabaseAdminEnv()) {
+    return new Map<string, { clicks24h: number; clicks7d: number }>();
+  }
+
+  const supabase = requireMarketNewsAdminClient();
 
   if (!supabase) {
     return new Map<string, { clicks24h: number; clicks7d: number }>();
@@ -2418,6 +2664,21 @@ export async function getDailyMarketBriefArticles(
   },
 ) {
   const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 40) : 5;
+  const cacheKey = JSON.stringify({
+    limit: safeLimit,
+    fromIso: String(input?.fromIso ?? "").trim(),
+    toIso: String(input?.toIso ?? "").trim(),
+    hoursWindow:
+      typeof input?.hoursWindow === "number" && Number.isFinite(input.hoursWindow)
+        ? Math.trunc(input.hoursWindow)
+        : null,
+  });
+  const cached = readTimedCache(dailyMarketBriefArticlesCache, cacheKey);
+
+  if (cached.hit) {
+    return cached.value;
+  }
+
   const candidateArticles = await getMarketNewsArticles({
     limit: Math.max(safeLimit * 10, 40),
   });
@@ -2426,12 +2687,13 @@ export async function getDailyMarketBriefArticles(
   );
 
   if (!recentArticles.length) {
+    writeTimedCache(dailyMarketBriefArticlesCache, cacheKey, []);
     return [] as MarketNewsArticleWithRelations[];
   }
 
   const clickMetrics = await getMarketNewsClickMetrics(recentArticles.map((article) => article.id));
 
-  return dedupeMarketNewsArticlesByDuplicateGroup(
+  const deduped = dedupeMarketNewsArticlesByDuplicateGroup(
     [...recentArticles]
       .sort((left, right) => {
         const leftScore =
@@ -2448,13 +2710,14 @@ export async function getDailyMarketBriefArticles(
       }),
     safeLimit,
   );
+
+  writeTimedCache(dailyMarketBriefArticlesCache, cacheKey, deduped);
+  return deduped;
 }
 
-export async function getMarketNewsFilterOptions(limit = 160) {
-  const articles = await getMarketNewsArticles({
-    limit: Math.max(Math.min(Math.max(Math.trunc(limit), 1), 240), 60),
-  });
-
+export function buildMarketNewsFilterOptionsFromArticles(
+  articles: readonly MarketNewsArticleWithRelations[],
+): MarketNewsFilterOptions {
   const companyMap = new Map<string, string>();
   const sectorMap = new Map<string, string>();
   const categorySet = new Set<string>();
@@ -2471,11 +2734,17 @@ export async function getMarketNewsFilterOptions(limit = 160) {
 
     for (const entity of article.entities) {
       if (entity.entity_type === "stock" && entity.entity_slug.trim()) {
-        companyMap.set(entity.entity_slug.trim(), entity.display_name.trim() || titleCaseFromSlug(entity.entity_slug.trim()));
+        companyMap.set(
+          entity.entity_slug.trim(),
+          entity.display_name.trim() || titleCaseFromSlug(entity.entity_slug.trim()),
+        );
       }
 
       if (entity.entity_type === "sector" && entity.entity_slug.trim()) {
-        sectorMap.set(entity.entity_slug.trim(), entity.display_name.trim() || titleCaseFromSlug(entity.entity_slug.trim()));
+        sectorMap.set(
+          entity.entity_slug.trim(),
+          entity.display_name.trim() || titleCaseFromSlug(entity.entity_slug.trim()),
+        );
       } else if (entity.sector_slug?.trim()) {
         const normalizedSectorSlug = entity.sector_slug.trim();
 
@@ -2523,6 +2792,23 @@ export async function getMarketNewsFilterOptions(limit = 160) {
       })),
     ),
   } satisfies MarketNewsFilterOptions;
+}
+
+export async function getMarketNewsFilterOptions(limit = 160) {
+  const safeLimit = Math.max(Math.min(Math.max(Math.trunc(limit), 1), 240), 60);
+  const cached = readTimedCache(marketNewsFilterOptionsCache, safeLimit);
+
+  if (cached.hit) {
+    return cached.value;
+  }
+
+  const articles = await getMarketNewsArticles({
+    limit: safeLimit,
+  });
+  const options = buildMarketNewsFilterOptionsFromArticles(articles);
+
+  writeTimedCache(marketNewsFilterOptionsCache, safeLimit, options);
+  return options;
 }
 
 export async function getMarketNewsArticleBySlug(slug: string) {

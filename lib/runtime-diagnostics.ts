@@ -15,6 +15,7 @@ export type RuntimeDiagnosticCheck = {
   detail: string;
   missingEnv: string[];
   latestSignal: string | null;
+  structuredState?: Record<string, string | boolean | number | null>;
 };
 
 export type RuntimeDiagnosticsSnapshot = {
@@ -97,11 +98,14 @@ export async function getRuntimeDiagnosticsSnapshot(): Promise<RuntimeDiagnostic
         configured: false,
         host: null,
         indexUid: "riddra_search",
+        indexPrefix: "riddra",
         healthy: false,
         indexPresent: false,
         indexedDocuments: 0,
         lastUpdate: null,
         message: "Meilisearch diagnostics timed out.",
+        fallbackActive: true,
+        lastSearchError: "Meilisearch diagnostics timed out.",
       },
     ),
     withTimeout(
@@ -242,6 +246,14 @@ export async function getRuntimeDiagnosticsSnapshot(): Promise<RuntimeDiagnostic
       latestSignal:
         searchStatus.lastUpdate ??
         (searchStatus.message ? sanitizeDetail(searchStatus.message) : null),
+      structuredState: {
+        meilisearch_configured: searchStatus.configured,
+        fallback_active: searchStatus.fallbackActive,
+        index_prefix: searchStatus.indexPrefix,
+        last_search_error: searchStatus.lastSearchError
+          ? sanitizeDetail(searchStatus.lastSearchError)
+          : null,
+      },
     },
     {
       key: "market_data",

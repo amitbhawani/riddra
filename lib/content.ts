@@ -1,5 +1,4 @@
 import { cache } from "react";
-import { unstable_noStore as noStore } from "next/cache";
 
 import type { User } from "@supabase/supabase-js";
 
@@ -15,6 +14,7 @@ import { getDurableFundHoldingSnapshots } from "@/lib/fund-holding-store";
 import {
   getPublishableCmsRecordBySlug,
   getPublishableCmsRecords,
+  invalidatePublishableContentCaches,
   type PublishableCmsRecord,
 } from "@/lib/publishable-content";
 import { hasRuntimeSupabaseAdminEnv, hasRuntimeSupabaseEnv } from "@/lib/runtime-launch-config";
@@ -24,13 +24,22 @@ import {
   type StockSnapshot,
 } from "@/lib/mock-data";
 import { normalizeBenchmarkSlug } from "@/lib/benchmark-labels";
+import {
+  resolveCanonicalStockBySlug,
+  type CanonicalStockResolution,
+} from "@/lib/canonical-stock-resolver";
 import { getEquitySnapshotPresentation } from "@/lib/market-session";
 import { getStockResearchArchiveItems } from "@/lib/research-archive-memory-store";
 import { getDurableFundSectorAllocationSnapshots } from "@/lib/fund-sector-allocation-store";
 import { getDurableStockShareholdingEntries } from "@/lib/stock-shareholding-store";
 import { getDurableStockFundamentalsEntries } from "@/lib/stock-fundamentals-store";
 import { getSourceEntryStore } from "@/lib/source-entry-store";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import {
+  buildActiveMarketDataRowQuarantineLookup,
+  isMarketDataRowQuarantined,
+  loadActiveMarketDataRowQuarantines,
+} from "@/lib/market-data-row-quarantine";
+import { createSupabaseAdminClient, createSupabaseReadClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { type AdminManagedRecord, getAdminManagedRecord } from "@/lib/admin-operator-store";
 import {
@@ -57,6 +66,19 @@ type TimedCacheEntry<T> = {
 };
 
 const stockCatalogCache = new Map<string, TimedCacheEntry<StockSnapshot[]>>();
+const publicStockCatalogCache = new Map<string, TimedCacheEntry<StockSnapshot[]>>();
+const publicStockDiscoveryCache = new Map<string, TimedCacheEntry<StockSnapshot[]>>();
+const publicStockDiscoveryPageCache = new Map<
+  string,
+  TimedCacheEntry<{
+    stocks: StockSnapshot[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }>
+>();
+const publicStockRouteSlugCache = new Map<string, TimedCacheEntry<string[]>>();
 const stockDetailCache = new Map<string, TimedCacheEntry<StockSnapshot | null>>();
 const ipoCatalogCache = new Map<string, TimedCacheEntry<IpoSnapshot[]>>();
 const ipoDetailCache = new Map<string, TimedCacheEntry<IpoSnapshot | null>>();
@@ -104,14 +126,27 @@ function writeTimedCache<T>(cache: Map<string, TimedCacheEntry<T>>, key: string,
   });
 }
 
+function cleanCatalogString(value: unknown, maxLength = 4000) {
+  return String(value ?? "").trim().slice(0, maxLength);
+}
+
+function normalizeCatalogSlug(value: unknown) {
+  return cleanCatalogString(value, 240).toLowerCase();
+}
+
 export function invalidatePublicContentCachesForAdminRecord(
   family: "stocks" | "mutual-funds" | "ipos",
   slug?: string | null,
 ) {
   const normalizedSlug = slug?.trim().toLowerCase() || null;
+  invalidatePublishableContentCaches();
 
   if (family === "stocks") {
     stockCatalogCache.clear();
+    publicStockCatalogCache.clear();
+    publicStockDiscoveryCache.clear();
+    publicStockDiscoveryPageCache.clear();
+    publicStockRouteSlugCache.clear();
     if (normalizedSlug) {
       stockDetailCache.delete(normalizedSlug);
     }
@@ -306,7 +341,7 @@ async function createSupabaseContentReadClient() {
     return createSupabaseAdminClient();
   }
 
-  return createSupabaseServerClient();
+  return createSupabaseReadClient();
 }
 
 function logPublicContentReadWarning(operation: string, error: unknown) {
@@ -316,6 +351,16 @@ function logPublicContentReadWarning(operation: string, error: unknown) {
 
   const detail = error instanceof Error ? error.message : String(error);
   console.warn(`[content] ${operation}: ${detail}`);
+}
+
+const unavailablePublicStockTables = new Set<string>();
+
+function isMissingTableReadError(error: unknown, table: string) {
+  const detail = error instanceof Error ? error.message : String(error);
+  return (
+    detail.includes(`Could not find the table 'public.${table}'`) ||
+    detail.includes(`relation "public.${table}" does not exist`)
+  );
 }
 
 function isMissingColumnReadError(
@@ -530,6 +575,7 @@ async function getPublishedAdminManagedContentOverride(
       readAdminManagedTextField(record.sections.frontend_fields?.values, "manualNotes"),
     seoDescription: readAdminManagedTextField(record.sections.seo?.values, "metaDescription"),
     benchmarkMapping: record.benchmarkMapping ?? null,
+    record,
   };
 }
 
@@ -580,6 +626,204 @@ function readAdminSectionText(
   return readAdminManagedTextField(record.sections[sectionKey]?.values, fieldKey);
 }
 
+function buildShareholdingNote(sourceDate: string | null | undefined) {
+  return sourceDate
+    ? `Latest routed shareholding snapshot dated ${sourceDate}.`
+    : "Operator-managed ownership update.";
+}
+
+function buildFundamentalNote(sourceDate: string | null | undefined) {
+  return sourceDate
+    ? `Updated from the latest fundamentals snapshot dated ${sourceDate}.`
+    : "Operator-managed financial update.";
+}
+
+function upsertStockLabelValueNote(
+  rows: StockSnapshot["fundamentals"] | StockSnapshot["shareholding"],
+  label: string,
+  value: string | null | undefined,
+  note: string,
+) {
+  if (!value || value.trim().length === 0) {
+    return rows;
+  }
+
+  const nextRows = [...rows];
+  const existingIndex = nextRows.findIndex(
+    (item) => item.label.trim().toLowerCase() === label.trim().toLowerCase(),
+  );
+  const nextValue = value.trim();
+
+  if (existingIndex >= 0) {
+    nextRows[existingIndex] = {
+      label,
+      value: nextValue,
+      note: note || nextRows[existingIndex].note,
+    };
+    return nextRows;
+  }
+
+  nextRows.push({ label, value: nextValue, note });
+  return nextRows;
+}
+
+function applyAdminManagedStockOverrides(
+  stock: StockSnapshot,
+  record: AdminManagedRecord,
+): StockSnapshot {
+  const summary = readAdminSectionText(record, "frontend_fields", "summary");
+  const thesis = readAdminSectionText(record, "frontend_fields", "thesis");
+  const momentumLabel = readAdminSectionText(record, "frontend_fields", "momentumLabel");
+  const keyPoints = parseMultilineValues(
+    readAdminSectionText(record, "frontend_fields", "keyPointsText"),
+  );
+  const newsItems = parseNewsItems(
+    readAdminSectionText(record, "frontend_fields", "newsItemsText"),
+  );
+  const faqItems = parseFaqItems(readAdminSectionText(record, "frontend_fields", "faqText"));
+
+  const marketCap = readAdminSectionText(record, "market_snapshot", "marketCap");
+  const week52High = readAdminSectionText(record, "market_snapshot", "week52High");
+  const week52Low = readAdminSectionText(record, "market_snapshot", "week52Low");
+  const peRatio = readAdminSectionText(record, "market_snapshot", "peRatio");
+  const pbRatio = readAdminSectionText(record, "market_snapshot", "pbRatio");
+  const roe = readAdminSectionText(record, "market_snapshot", "roe");
+  const roce = readAdminSectionText(record, "market_snapshot", "roce");
+  const dividendYield = readAdminSectionText(record, "market_snapshot", "dividendYield");
+  const debtEquity = readAdminSectionText(record, "market_snapshot", "debtEquity");
+  const currentPrice = readAdminSectionText(record, "market_snapshot", "currentPrice");
+  const dayChange = readAdminSectionText(record, "market_snapshot", "dayChange");
+  const snapshotAsOf =
+    readAdminSectionText(record, "market_snapshot", "snapshotAsOf") ??
+    readAdminSectionText(record, "data_sources", "snapshotDate");
+  const snapshotSource =
+    readAdminSectionText(record, "data_sources", "snapshotSource") ?? "CMS manual stock data";
+
+  let nextStats = stock.stats;
+  nextStats = upsertStockStat(nextStats, "Market Cap", marketCap);
+
+  if (week52High || week52Low) {
+    nextStats = upsertStockStat(
+      nextStats,
+      "52W Range",
+      [week52Low, week52High].filter(Boolean).join(" - "),
+    );
+  }
+
+  nextStats = upsertStockStat(nextStats, "P/E", peRatio);
+  nextStats = upsertStockStat(nextStats, "P/B", pbRatio);
+  nextStats = upsertStockStat(nextStats, "ROE", roe);
+  nextStats = upsertStockStat(nextStats, "ROCE", roce);
+  nextStats = upsertStockStat(nextStats, "Dividend Yield", dividendYield);
+  nextStats = upsertStockStat(nextStats, "Debt / Equity", debtEquity);
+
+  const fundamentalsDate = readAdminSectionText(record, "data_sources", "fundamentalsDate");
+  let nextFundamentals = stock.fundamentals;
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Revenue growth",
+    readAdminSectionText(record, "financial_metrics", "revenueGrowth"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Profit growth",
+    readAdminSectionText(record, "financial_metrics", "profitGrowth"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Operating margin",
+    readAdminSectionText(record, "financial_metrics", "operatingMargin"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "EBITDA margin",
+    readAdminSectionText(record, "financial_metrics", "ebitdaMargin"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "EPS",
+    readAdminSectionText(record, "financial_metrics", "eps"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Free cash flow",
+    readAdminSectionText(record, "financial_metrics", "freeCashFlow"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Net debt / EBITDA",
+    readAdminSectionText(record, "financial_metrics", "netDebtToEbitda"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+  nextFundamentals = upsertStockLabelValueNote(
+    nextFundamentals,
+    "Book value",
+    readAdminSectionText(record, "financial_metrics", "bookValue"),
+    buildFundamentalNote(fundamentalsDate),
+  );
+
+  const shareholdingDate = readAdminSectionText(record, "data_sources", "shareholdingDate");
+  let nextShareholding = stock.shareholding;
+  nextShareholding = upsertStockLabelValueNote(
+    nextShareholding,
+    "Promoters",
+    readAdminSectionText(record, "ownership_metrics", "promoterHolding"),
+    buildShareholdingNote(shareholdingDate),
+  );
+  nextShareholding = upsertStockLabelValueNote(
+    nextShareholding,
+    "FIIs",
+    readAdminSectionText(record, "ownership_metrics", "fiiHolding"),
+    buildShareholdingNote(shareholdingDate),
+  );
+  nextShareholding = upsertStockLabelValueNote(
+    nextShareholding,
+    "DIIs",
+    readAdminSectionText(record, "ownership_metrics", "diiHolding"),
+    buildShareholdingNote(shareholdingDate),
+  );
+  nextShareholding = upsertStockLabelValueNote(
+    nextShareholding,
+    "Public",
+    readAdminSectionText(record, "ownership_metrics", "publicHolding"),
+    buildShareholdingNote(shareholdingDate),
+  );
+
+  const hasManualSnapshot = Boolean(currentPrice || dayChange || snapshotAsOf);
+
+  return {
+    ...stock,
+    price: currentPrice ?? stock.price,
+    change: dayChange ?? stock.change,
+    summary: summary ?? stock.summary,
+    thesis: thesis ?? stock.thesis,
+    momentumLabel: momentumLabel ?? stock.momentumLabel,
+    keyPoints: keyPoints.length ? keyPoints : stock.keyPoints,
+    stats: nextStats,
+    fundamentals: nextFundamentals,
+    shareholding: nextShareholding,
+    newsItems: newsItems.length ? newsItems : stock.newsItems,
+    faqItems: faqItems.length ? faqItems : stock.faqItems,
+    snapshotMeta: hasManualSnapshot
+      ? {
+          mode: "manual_close",
+          source: snapshotSource,
+          lastUpdated:
+            snapshotAsOf ?? stock.snapshotMeta?.lastUpdated ?? "Manual update pending date",
+          marketLabel: "CMS manual stock data",
+          marketDetail:
+            "This stock route is using operator-managed stock metrics from the admin editor instead of only the automated source lane.",
+        }
+      : stock.snapshotMeta,
+  };
+}
+
 function buildAdminManagedStockFallback(record: AdminManagedRecord): StockSnapshot {
   const identityCompanyName =
     readAdminSectionText(record, "identity", "companyName") ?? record.title;
@@ -614,7 +858,7 @@ function buildAdminManagedStockFallback(record: AdminManagedRecord): StockSnapsh
   );
   const faqItems = parseFaqItems(readAdminSectionText(record, "frontend_fields", "faqText"));
 
-  return {
+  const fallbackStock = {
     ...baseSnapshot,
     name: identityCompanyName,
     symbol:
@@ -645,6 +889,8 @@ function buildAdminManagedStockFallback(record: AdminManagedRecord): StockSnapsh
     newsItems: newsItems.length ? newsItems : baseSnapshot.newsItems,
     faqItems: faqItems.length ? faqItems : baseSnapshot.faqItems,
   };
+
+  return applyAdminManagedStockOverrides(fallbackStock, record);
 }
 
 async function getPublishedAdminManagedStockFallback(
@@ -668,6 +914,31 @@ type StockCatalogSourceRow = {
   stock_pages: Array<{ hero_summary: string | null; seo_description: string | null }> | null;
 };
 
+type CanonicalStockCatalogRow = {
+  id: string;
+  slug: string;
+  symbol: string | null;
+  company_name: string | null;
+  yahoo_symbol: string | null;
+  exchange: string | null;
+  status: string | null;
+};
+
+const CANONICAL_STOCK_CATALOG_BATCH_SIZE = 1000;
+
+type CanonicalStockSnapshotRow = {
+  id: string;
+  stock_id: string;
+  source_name: string | null;
+  snapshot_at: string | null;
+  trade_date: string | null;
+  price: number | null;
+  change_percent: number | null;
+};
+
+const CANONICAL_STOCK_SNAPSHOT_BATCH_SIZE = 250;
+const CANONICAL_STOCK_SNAPSHOT_LOOKUP_PAGE_SIZE = 100;
+
 type StockDetailSourceRow = {
   slug: string;
   name: string;
@@ -675,6 +946,16 @@ type StockDetailSourceRow = {
   sector_index_slug?: string | null;
   companies: Array<{ sector: string | null }> | null;
   stock_pages: Array<{ hero_summary: string | null; seo_description: string | null }> | null;
+};
+
+type CanonicalStockFallbackSeed = {
+  slug: string;
+  name: string;
+  symbol: string | null;
+  sector: string | null;
+  sector_index_slug?: string | null;
+  hero_summary: string | null;
+  seo_description: string | null;
 };
 
 type FundCatalogSourceRow = {
@@ -748,6 +1029,39 @@ async function readStockCatalogSourceRows(
   }
 }
 
+async function readCanonicalStockCatalogRows(): Promise<CanonicalStockCatalogRow[]> {
+  const supabase = await createSupabaseContentReadClient();
+  const rows: CanonicalStockCatalogRow[] = [];
+
+  for (let start = 0; ; start += CANONICAL_STOCK_CATALOG_BATCH_SIZE) {
+    const end = start + CANONICAL_STOCK_CATALOG_BATCH_SIZE - 1;
+    const { data, error } = await supabase
+      .from("stocks_master")
+      .select("id, slug, symbol, company_name, yahoo_symbol, exchange, status")
+      .eq("status", "active")
+      .order("company_name", { ascending: true })
+      .range(start, end);
+
+    if (error) {
+      throw new Error(`Canonical stock catalog read failed: ${error.message}`);
+    }
+
+    const page = (data ?? []).filter(
+      (row): row is CanonicalStockCatalogRow =>
+        typeof row?.id === "string" &&
+        typeof row?.slug === "string" &&
+        row.slug.trim().length > 0,
+    );
+    rows.push(...page);
+
+    if (page.length < CANONICAL_STOCK_CATALOG_BATCH_SIZE) {
+      break;
+    }
+  }
+
+  return rows;
+}
+
 async function readStockDetailSourceRow(slug: string): Promise<StockDetailSourceRow | null> {
   const supabase = await createSupabaseContentReadClient();
 
@@ -809,6 +1123,562 @@ async function readStockDetailSourceRow(slug: string): Promise<StockDetailSource
         }
       : null;
   }
+}
+
+function buildCanonicalStockFallbackSeed(
+  canonical: CanonicalStockResolution,
+  profileRow?: Record<string, unknown> | null,
+): CanonicalStockFallbackSeed | null {
+  const slug = canonical.slug?.trim().toLowerCase() ?? "";
+  const companyName =
+    String(profileRow?.long_name ?? profileRow?.short_name ?? canonical.companyName ?? "").trim();
+
+  if (!slug || !companyName) {
+    return null;
+  }
+
+  const sector =
+    String(profileRow?.sector ?? "").trim() || null;
+  const industry = String(profileRow?.industry ?? "").trim() || null;
+  const longBusinessSummary = String(profileRow?.long_business_summary ?? "").trim() || null;
+
+  return {
+    slug,
+    name: companyName,
+    symbol: canonical.symbol,
+    sector,
+    sector_index_slug: null,
+    hero_summary:
+      longBusinessSummary ??
+      (industry
+        ? `${companyName} is mapped from the canonical stocks_master universe. Industry coverage is currently tagged as ${industry}.`
+        : `${companyName} is mapped from the canonical stocks_master universe while the legacy instrument-backed route layer is still being migrated.`),
+    seo_description:
+      longBusinessSummary ??
+      (industry
+        ? `${companyName} stock route is now resolving from the canonical stocks_master universe with ${industry} context.`
+        : `${companyName} stock route is resolving from the canonical stocks_master universe while legacy public-page dependencies are phased out.`),
+  };
+}
+
+function buildCanonicalCatalogStockSeed(
+  row: CanonicalStockCatalogRow,
+): CanonicalStockFallbackSeed | null {
+  const slug = normalizeCatalogSlug(row.slug);
+  const companyName = cleanCatalogString(row.company_name, 240);
+  const symbol =
+    cleanCatalogString(row.symbol, 80) || cleanCatalogString(row.yahoo_symbol, 80) || null;
+
+  if (!slug || !companyName) {
+    return null;
+  }
+
+  return {
+    slug,
+    name: companyName,
+    symbol,
+    sector: null,
+    sector_index_slug: null,
+    hero_summary: `${companyName} is available through the canonical stocks_master universe while the public stock listing layer is being migrated away from older legacy source dependencies.`,
+    seo_description: `${companyName} stock route is available from the canonical stocks_master universe, with public route enrichment layered in where legacy source rows still exist.`,
+  };
+}
+
+function mapCanonicalSnapshotRowToPayload(
+  row: CanonicalStockSnapshotRow | null | undefined,
+): SourceSnapshotPayload | null {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    source: row.source_name ?? "Canonical stock snapshot",
+    ingestMode: "stock_market_snapshot",
+    price: row.price,
+    changePercent: row.change_percent,
+    lastUpdated: row.snapshot_at ?? row.trade_date ?? null,
+  };
+}
+
+type PublicStockDiscoveryOverlayRow = {
+  slug: string;
+  name: string;
+  symbol: string | null;
+  sector: string | null;
+  sector_index_slug?: string | null;
+  hero_summary: string | null;
+  seo_description: string | null;
+};
+
+async function readPublicStockDiscoveryOverlayRows(): Promise<
+  Map<string, PublicStockDiscoveryOverlayRow>
+> {
+  const publishableRecords = await getPublishableCmsRecords("stock");
+  const publishableSlugs = publishableRecords.map((record) => record.canonicalSlug);
+
+  if (!publishableSlugs.length) {
+    return new Map();
+  }
+
+  let rawRows: StockCatalogSourceRow[] = [];
+
+  try {
+    rawRows = await readStockCatalogSourceRows(publishableSlugs);
+  } catch (error) {
+    logPublicContentReadWarning(
+      "stock discovery overlay source read failed; using CMS publishable fallback rows",
+      error,
+    );
+  }
+
+  const rawRowMap = new Map(rawRows.map((row) => [row.slug, row]));
+
+  return new Map(
+    publishableRecords.map((record) => {
+      const row = rawRowMap.get(record.canonicalSlug);
+      const publishableRow = buildPublishableStockRow(record);
+
+      return [
+        record.canonicalSlug,
+        row
+          ? {
+              slug: row.slug,
+              name: row.name,
+              symbol: row.symbol,
+              sector_index_slug: row.sector_index_slug ?? publishableRow.sector_index_slug,
+              sector: row.companies?.[0]?.sector ?? null,
+              hero_summary: row.stock_pages?.[0]?.hero_summary ?? null,
+              seo_description: row.stock_pages?.[0]?.seo_description ?? null,
+            }
+          : publishableRow,
+      ] as const;
+    }),
+  );
+}
+
+async function buildPublicStockDiscoveryStocks(): Promise<StockSnapshot[]> {
+  const [canonicalRows, overlayRows, adminFallbackRecords] = await Promise.all([
+    readCanonicalStockCatalogRows(),
+    readPublicStockDiscoveryOverlayRows(),
+    getPublishedAdminManagedStockFallbackRecords(),
+  ]);
+
+  const snapshotRows = await readCanonicalStockSnapshotRowsForStocks(
+    canonicalRows.map((row) => row.id),
+  ).catch((error) => {
+    logPublicContentReadWarning(
+      "canonical public stock snapshot cluster read failed; listing routes will stay conservative",
+      error,
+    );
+    return [] as CanonicalStockSnapshotRow[];
+  });
+
+  const snapshotByStockId = new Map(snapshotRows.map((row) => [row.stock_id, row]));
+  const mergedStocks = new Map<string, StockSnapshot>();
+
+  for (const row of canonicalRows) {
+    const seed =
+      overlayRows.get(normalizeCatalogSlug(row.slug)) ?? buildCanonicalCatalogStockSeed(row);
+
+    if (!seed) {
+      continue;
+    }
+
+    const liveSnapshot = mapCanonicalSnapshotRowToPayload(snapshotByStockId.get(row.id));
+    mergedStocks.set(seed.slug, mapStockRow(seed, liveSnapshot));
+  }
+
+  for (const record of adminFallbackRecords) {
+    if (!mergedStocks.has(record.slug)) {
+      mergedStocks.set(record.slug, buildAdminManagedStockFallback(record));
+    }
+  }
+
+  return Array.from(mergedStocks.values()).sort((left, right) =>
+    left.name.localeCompare(right.name),
+  );
+}
+
+async function buildPublicStockDiscoverySlugs(): Promise<string[]> {
+  const [canonicalRows, adminFallbackRecords] = await Promise.all([
+    readCanonicalStockCatalogRows(),
+    getPublishedAdminManagedStockFallbackRecords(),
+  ]);
+
+  const slugs = new Set<string>();
+
+  for (const row of canonicalRows) {
+    const slug = normalizeCatalogSlug(row.slug);
+
+    if (slug) {
+      slugs.add(slug);
+    }
+  }
+
+  for (const record of adminFallbackRecords) {
+    const slug = normalizeCatalogSlug(record.slug);
+
+    if (slug) {
+      slugs.add(slug);
+    }
+  }
+
+  return Array.from(slugs).sort((left, right) => left.localeCompare(right));
+}
+
+export type PublicStockDiscoveryPageData = {
+  stocks: StockSnapshot[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+async function readCanonicalStockCatalogPageRows(page: number, pageSize: number) {
+  const safePage = Math.max(1, Math.trunc(page));
+  const safePageSize = Math.max(1, Math.min(100, Math.trunc(pageSize)));
+  const offset = (safePage - 1) * safePageSize;
+  const supabase = await createSupabaseContentReadClient();
+  const { data, error, count } = await supabase
+    .from("stocks_master")
+    .select("id, slug, symbol, company_name, yahoo_symbol, exchange, status", {
+      count: "exact",
+    })
+    .eq("status", "active")
+    .order("company_name", { ascending: true })
+    .range(offset, offset + safePageSize - 1);
+
+  if (error) {
+    throw new Error(`Canonical stock catalog page read failed: ${error.message}`);
+  }
+
+  const rows = (data ?? []).filter(
+    (row): row is CanonicalStockCatalogRow =>
+      typeof row?.id === "string" &&
+      typeof row?.slug === "string" &&
+      row.slug.trim().length > 0,
+  );
+
+  return {
+    rows,
+    total: Number(count ?? 0),
+    page: safePage,
+    pageSize: safePageSize,
+    totalPages: Math.max(1, Math.ceil(Number(count ?? 0) / safePageSize)),
+  };
+}
+
+async function readCanonicalStockSnapshotRowsForStocks(
+  stockIds: string[],
+): Promise<CanonicalStockSnapshotRow[]> {
+  if (!stockIds.length) {
+    return [];
+  }
+
+  const supabase = await createSupabaseContentReadClient();
+  const latestByStockId = new Map<string, CanonicalStockSnapshotRow>();
+  const quarantineLookup = buildActiveMarketDataRowQuarantineLookup(
+    await loadActiveMarketDataRowQuarantines({
+      tableName: "stock_market_snapshot",
+      stockIds,
+      limit: 2000,
+    }),
+  );
+
+  for (let start = 0; start < stockIds.length; start += CANONICAL_STOCK_SNAPSHOT_BATCH_SIZE) {
+    const stockIdBatch = stockIds.slice(start, start + CANONICAL_STOCK_SNAPSHOT_BATCH_SIZE);
+    const { data, error } = await supabase
+      .from("stock_market_snapshot")
+      .select("id, stock_id, source_name, snapshot_at, trade_date, price, change_percent")
+      .in("stock_id", stockIdBatch)
+      .order("trade_date", { ascending: false })
+      .order("snapshot_at", { ascending: false });
+
+    if (error) {
+      throw new Error(`Canonical stock snapshot page read failed: ${error.message}`);
+    }
+
+    for (const row of (data ?? []) as CanonicalStockSnapshotRow[]) {
+      if (
+        !row?.stock_id ||
+        latestByStockId.has(row.stock_id) ||
+        isMarketDataRowQuarantined(quarantineLookup, {
+          rowId: row.id,
+          stockId: row.stock_id,
+          rowDate: row.trade_date,
+        })
+      ) {
+        continue;
+      }
+
+      latestByStockId.set(row.stock_id, row);
+    }
+  }
+
+  return Array.from(latestByStockId.values());
+}
+
+export const getPublicStockDiscoveryPage = cache(
+  async (page = 1, pageSize = 60): Promise<PublicStockDiscoveryPageData> => {
+    const safePage = Math.max(1, Math.trunc(page));
+    const safePageSize = Math.max(1, Math.min(100, Math.trunc(pageSize)));
+    const cacheKey = `${safePage}:${safePageSize}`;
+    const cached = readTimedCache(publicStockDiscoveryPageCache, cacheKey);
+
+    if (cached.hit) {
+      return cached.value;
+    }
+
+    if (!hasRuntimeSupabaseEnv()) {
+      const empty = {
+        stocks: [] as StockSnapshot[],
+        total: 0,
+        page: safePage,
+        pageSize: safePageSize,
+        totalPages: 1,
+      };
+      writeTimedCache(publicStockDiscoveryPageCache, cacheKey, empty);
+      return empty;
+    }
+
+    try {
+      const { rows, total, totalPages } = await readCanonicalStockCatalogPageRows(
+        safePage,
+        safePageSize,
+      );
+      const snapshots = await readCanonicalStockSnapshotRowsForStocks(
+        rows.map((row) => row.id),
+      ).catch((error) => {
+        logPublicContentReadWarning(
+          "canonical stock page snapshot read failed; listing will stay conservative",
+          error,
+        );
+        return [] as CanonicalStockSnapshotRow[];
+      });
+      const snapshotByStockId = new Map(snapshots.map((row) => [row.stock_id, row]));
+      const stocks = rows
+        .map((row) => {
+          const seed = buildCanonicalCatalogStockSeed(row);
+          if (!seed) {
+            return null;
+          }
+          const liveSnapshot = mapCanonicalSnapshotRowToPayload(
+            snapshotByStockId.get(row.id),
+          );
+          return mapStockRow(seed, liveSnapshot);
+        })
+        .filter((row): row is StockSnapshot => row !== null);
+
+      const payload = {
+        stocks,
+        total,
+        page: safePage,
+        pageSize: safePageSize,
+        totalPages,
+      };
+      writeTimedCache(publicStockDiscoveryPageCache, cacheKey, payload);
+      return payload;
+    } catch (error) {
+      logPublicContentReadWarning(
+        "canonical stock page discovery read failed; preserving legacy stock catalog",
+        error,
+      );
+      const legacyStocks = await getStocks();
+      const total = legacyStocks.length;
+      const start = (safePage - 1) * safePageSize;
+      const payload = {
+        stocks: legacyStocks.slice(start, start + safePageSize),
+        total,
+        page: safePage,
+        pageSize: safePageSize,
+        totalPages: Math.max(1, Math.ceil(total / safePageSize)),
+      };
+      writeTimedCache(publicStockDiscoveryPageCache, cacheKey, payload);
+      return payload;
+    }
+  },
+);
+
+export const getPublicStockDiscoveryStocks = cache(async (): Promise<StockSnapshot[]> => {
+  const cached = readTimedCache(publicStockDiscoveryCache, "all");
+  if (cached.hit) {
+    return cached.value;
+  }
+
+  if (!hasRuntimeSupabaseEnv()) {
+    const stocks: StockSnapshot[] = [];
+    writeTimedCache(publicStockDiscoveryCache, "all", stocks);
+    return stocks;
+  }
+
+  try {
+    const discoveryStocks = await buildPublicStockDiscoveryStocks();
+    writeTimedCache(publicStockDiscoveryCache, "all", discoveryStocks);
+    return discoveryStocks;
+  } catch (error) {
+    logPublicContentReadWarning(
+      "canonical stock discovery catalog read failed; preserving legacy stock catalog",
+      error,
+    );
+    const legacyStocks = await getStocks();
+    writeTimedCache(publicStockDiscoveryCache, "all", legacyStocks);
+    return legacyStocks;
+  }
+});
+
+export const getPublicStockDiscoverySlugs = cache(async (): Promise<string[]> => {
+  const cached = readTimedCache(publicStockRouteSlugCache, "all");
+  if (cached.hit) {
+    return cached.value;
+  }
+
+  const slugs = await buildPublicStockDiscoverySlugs();
+  writeTimedCache(publicStockRouteSlugCache, "all", slugs);
+  return slugs;
+});
+
+async function readCanonicalStockProfileRow(
+  stockId: string | null | undefined,
+): Promise<Record<string, unknown> | null> {
+  const normalizedStockId = String(stockId ?? "").trim();
+  if (!normalizedStockId) {
+    return null;
+  }
+
+  if (unavailablePublicStockTables.has("stock_company_profile")) {
+    return null;
+  }
+
+  const supabase = await createSupabaseContentReadClient();
+  const { data, error } = await supabase
+    .from("stock_company_profile")
+    .select("long_name, short_name, sector, industry, long_business_summary")
+    .eq("stock_id", normalizedStockId)
+    .order("profile_date", { ascending: false })
+    .order("imported_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingTableReadError(error, "stock_company_profile")) {
+      unavailablePublicStockTables.add("stock_company_profile");
+    }
+    logPublicContentReadWarning(
+      `canonical stock company profile read failed for ${normalizedStockId}`,
+      error,
+    );
+    return null;
+  }
+
+  return (data as Record<string, unknown> | null) ?? null;
+}
+
+async function readCanonicalStockMarketSnapshotPayload(
+  stockId: string | null | undefined,
+): Promise<SourceSnapshotPayload | null> {
+  const normalizedStockId = String(stockId ?? "").trim();
+  if (!normalizedStockId) {
+    return null;
+  }
+
+  const supabase = await createSupabaseContentReadClient();
+  const quarantineLookup = buildActiveMarketDataRowQuarantineLookup(
+    await loadActiveMarketDataRowQuarantines({
+      tableName: "stock_market_snapshot",
+      stockIds: [normalizedStockId],
+      limit: 100,
+    }),
+  );
+  let snapshotRow: CanonicalStockSnapshotRow | null = null;
+
+  for (let from = 0; from < 1000; from += CANONICAL_STOCK_SNAPSHOT_LOOKUP_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("stock_market_snapshot")
+      .select("id, stock_id, source_name, snapshot_at, trade_date, price, change_percent")
+      .eq("stock_id", normalizedStockId)
+      .order("trade_date", { ascending: false })
+      .order("snapshot_at", { ascending: false })
+      .range(from, from + CANONICAL_STOCK_SNAPSHOT_LOOKUP_PAGE_SIZE - 1);
+
+    if (error) {
+      logPublicContentReadWarning(
+        `canonical stock market snapshot read failed for ${normalizedStockId}`,
+        error,
+      );
+      return null;
+    }
+
+    const page = (data ?? []) as CanonicalStockSnapshotRow[];
+    if (!page.length) {
+      break;
+    }
+
+    const safeRow = page.find(
+      (row) =>
+        !isMarketDataRowQuarantined(quarantineLookup, {
+          rowId: row.id,
+          stockId: row.stock_id,
+          rowDate: row.trade_date,
+        }),
+    );
+
+    if (safeRow) {
+      snapshotRow = safeRow;
+      break;
+    }
+
+    if (page.length < CANONICAL_STOCK_SNAPSHOT_LOOKUP_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  if (!snapshotRow) {
+    return null;
+  }
+
+  return {
+    source: String(snapshotRow.source_name ?? "Yahoo market snapshot").trim() || "Yahoo market snapshot",
+    lastUpdated:
+      String(snapshotRow.snapshot_at ?? snapshotRow.trade_date ?? "").trim() || null,
+    price:
+      typeof snapshotRow.price === "number" || typeof snapshotRow.price === "string"
+        ? snapshotRow.price
+        : null,
+    changePercent:
+      typeof snapshotRow.change_percent === "number" || typeof snapshotRow.change_percent === "string"
+        ? snapshotRow.change_percent
+        : null,
+  };
+}
+
+async function resolveStockLiveSnapshot(
+  slug: string,
+  stocksMasterId?: string | null,
+): Promise<SourceSnapshotPayload | null> {
+  const normalizedSnapshot = await readCanonicalStockMarketSnapshotPayload(stocksMasterId);
+  if (normalizedSnapshot) {
+    return normalizedSnapshot;
+  }
+
+  try {
+    return mapDurableQuoteToSnapshotPayload(await getDurableStockQuoteSnapshot(slug));
+  } catch (error) {
+    return mapDurableReadFailureToSnapshotPayload("stock", error);
+  }
+}
+
+async function buildCanonicalFallbackStock(
+  canonical: CanonicalStockResolution,
+  liveSnapshot: SourceSnapshotPayload | null,
+): Promise<StockSnapshot | null> {
+  const profileRow = await readCanonicalStockProfileRow(canonical.stocksMasterId);
+  const fallbackSeed = buildCanonicalStockFallbackSeed(canonical, profileRow);
+
+  if (!fallbackSeed) {
+    return null;
+  }
+
+  return mapStockRow(fallbackSeed, liveSnapshot);
 }
 
 async function readFundCatalogSourceRows(
@@ -1608,7 +2478,6 @@ async function applyResearchArchiveStockItems(stocks: StockSnapshot[]): Promise<
 }
 
 export const getStocks = cache(async (): Promise<StockSnapshot[]> => {
-  noStore();
   const cached = readTimedCache(stockCatalogCache, "all");
   if (cached.hit) {
     return cached.value;
@@ -1682,8 +2551,88 @@ export const getStocks = cache(async (): Promise<StockSnapshot[]> => {
   }
 });
 
+export const getPublicStocks = cache(async (): Promise<StockSnapshot[]> => {
+  const cached = readTimedCache(publicStockCatalogCache, "all");
+  if (cached.hit) {
+    return cached.value;
+  }
+
+  if (!hasRuntimeSupabaseEnv()) {
+    const stocks: StockSnapshot[] = [];
+    writeTimedCache(publicStockCatalogCache, "all", stocks);
+    return stocks;
+  }
+
+  try {
+    const [canonicalRows, legacyStocks] = await Promise.all([
+      readCanonicalStockCatalogRows(),
+      getStocks(),
+    ]);
+
+    const canonicalSlugs = canonicalRows
+      .map((row) => normalizeCatalogSlug(row.slug))
+      .filter((slug): slug is string => Boolean(slug));
+    const durableSnapshots =
+      canonicalSlugs.length > 0
+        ? await getDurableStockQuoteSnapshots(canonicalSlugs)
+        : {
+            snapshots: new Map<string, Awaited<ReturnType<typeof getDurableStockQuoteSnapshot>>>(),
+            readFailures: new Map<string, unknown>(),
+          };
+    const canonicalSeedRows = canonicalRows
+      .map((row) => {
+        const seed = buildCanonicalCatalogStockSeed(row);
+
+        if (!seed) {
+          return null;
+        }
+
+        const readFailure = durableSnapshots.readFailures.get(seed.slug);
+        const liveSnapshot = readFailure
+          ? mapDurableReadFailureToSnapshotPayload("stock", readFailure)
+          : mapDurableQuoteToSnapshotPayload(
+              durableSnapshots.snapshots.get(seed.slug) ?? null,
+            );
+
+        return mapStockRow(seed, liveSnapshot);
+      })
+      .filter((row): row is StockSnapshot => row !== null);
+    const enrichedCanonicalStocks = await applySourceEntryStockCloses(
+      await applyDurableStockShareholding(
+        await applyDurableStockFundamentals(canonicalSeedRows),
+      ),
+    );
+    const mergedStocks = new Map<string, StockSnapshot>();
+
+    for (const stock of enrichedCanonicalStocks) {
+      mergedStocks.set(stock.slug, stock);
+    }
+
+    for (const stock of legacyStocks) {
+      mergedStocks.set(stock.slug, stock);
+    }
+
+    const publicStocks = Array.from(mergedStocks.values()).sort((left, right) =>
+      left.name.localeCompare(right.name),
+    );
+    writeTimedCache(publicStockCatalogCache, "all", publicStocks);
+    return publicStocks;
+  } catch (error) {
+    logPublicContentReadWarning(
+      "canonical public stock catalog read failed; preserving legacy stock catalog",
+      error,
+    );
+    const legacyStocks = await getStocks();
+    writeTimedCache(publicStockCatalogCache, "all", legacyStocks);
+    return legacyStocks;
+  }
+});
+
+export const getPublicStockRouteSlugs = cache(async (): Promise<string[]> => {
+  return getPublicStockDiscoverySlugs();
+});
+
 export const getStock = cache(async (slug: string): Promise<StockSnapshot | null> => {
-  noStore();
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) {
     return null;
@@ -1701,9 +2650,51 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
   }
 
   try {
-    const publishableRecord = await getPublishableCmsRecordBySlug("stock", normalizedSlug);
+    const [publishableRecord, canonicalStock] = await Promise.all([
+      getPublishableCmsRecordBySlug("stock", normalizedSlug),
+      resolveCanonicalStockBySlug(normalizedSlug).catch((error) => {
+        logPublicContentReadWarning(
+          `canonical stock resolver failed for ${normalizedSlug}; preserving legacy stock route flow`,
+          error,
+        );
+        return null;
+      }),
+    ]);
 
     if (!publishableRecord) {
+      const liveSnapshot = await resolveStockLiveSnapshot(
+        normalizedSlug,
+        canonicalStock?.stocksMasterId ?? null,
+      );
+      const canonicalFallbackStock = canonicalStock
+        ? await buildCanonicalFallbackStock(canonicalStock, liveSnapshot)
+        : null;
+
+      if (canonicalFallbackStock) {
+        const managedOverride = await getPublishedAdminManagedContentOverride(
+          "stocks",
+          normalizedSlug,
+        );
+        const stockWithOverrides = managedOverride
+          ? applyAdminManagedStockOverrides(
+              {
+                ...canonicalFallbackStock,
+                summary: managedOverride.summary ?? canonicalFallbackStock.summary,
+                sectorIndexSlug:
+                  managedOverride.benchmarkMapping ?? canonicalFallbackStock.sectorIndexSlug,
+              },
+              managedOverride.record,
+            )
+          : canonicalFallbackStock;
+        const [sourceEntryAppliedStock] = await applySourceEntryStockCloses([stockWithOverrides]);
+        const [enrichedStock] = await applyResearchArchiveStockItems([
+          sourceEntryAppliedStock ?? stockWithOverrides,
+        ]);
+        const canonicalResult = enrichedStock ?? stockWithOverrides;
+        writeTimedCache(stockDetailCache, normalizedSlug, canonicalResult);
+        return canonicalResult;
+      }
+
       const fallbackStock = await getPublishedAdminManagedStockFallback(normalizedSlug);
 
       if (!fallbackStock) {
@@ -1720,15 +2711,10 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
       return fallbackResult;
     }
 
-    let liveSnapshot: SourceSnapshotPayload | null = null;
-
-    try {
-      liveSnapshot = mapDurableQuoteToSnapshotPayload(
-        await getDurableStockQuoteSnapshot(normalizedSlug),
-      );
-    } catch (error) {
-      liveSnapshot = mapDurableReadFailureToSnapshotPayload("stock", error);
-    }
+    const liveSnapshot = await resolveStockLiveSnapshot(
+      normalizedSlug,
+      canonicalStock?.stocksMasterId ?? null,
+    );
 
     let data: StockDetailSourceRow | null = null;
 
@@ -1739,8 +2725,15 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
     }
 
     const publishableRow = buildPublishableStockRow(publishableRecord);
-    const mappedStock = data
-      ? mapStockRow(
+    const canonicalFallbackSeed = canonicalStock
+      ? buildCanonicalStockFallbackSeed(
+          canonicalStock,
+          await readCanonicalStockProfileRow(canonicalStock.stocksMasterId),
+        )
+      : null;
+    const mappedStock =
+      data
+        ? mapStockRow(
           {
             slug: data.slug,
             name: data.name,
@@ -1752,16 +2745,32 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
           },
           liveSnapshot,
         )
-      : mapStockRow(publishableRow, liveSnapshot);
+        : canonicalFallbackSeed
+          ? mapStockRow(
+              {
+                ...canonicalFallbackSeed,
+                sector_index_slug:
+                  canonicalFallbackSeed.sector_index_slug ?? publishableRow.sector_index_slug,
+                hero_summary:
+                  publishableRow.hero_summary ?? canonicalFallbackSeed.hero_summary,
+                seo_description:
+                  publishableRow.seo_description ?? canonicalFallbackSeed.seo_description,
+              },
+              liveSnapshot,
+            )
+          : mapStockRow(publishableRow, liveSnapshot);
 
     const managedOverride = await getPublishedAdminManagedContentOverride("stocks", normalizedSlug);
     const stockWithOverrides =
       mappedStock && managedOverride
-        ? {
-            ...mappedStock,
-            summary: managedOverride.summary ?? mappedStock.summary,
-            sectorIndexSlug: managedOverride.benchmarkMapping ?? mappedStock.sectorIndexSlug,
-          }
+        ? applyAdminManagedStockOverrides(
+            {
+              ...mappedStock,
+              summary: managedOverride.summary ?? mappedStock.summary,
+              sectorIndexSlug: managedOverride.benchmarkMapping ?? mappedStock.sectorIndexSlug,
+            },
+            managedOverride.record,
+          )
         : mappedStock;
 
     if (!stockWithOverrides) {
@@ -1784,7 +2793,6 @@ export const getStock = cache(async (slug: string): Promise<StockSnapshot | null
 });
 
 export const getIpos = cache(async (): Promise<IpoSnapshot[]> => {
-  noStore();
   const cached = readTimedCache(ipoCatalogCache, "all");
   if (cached.hit) {
     return cached.value;
@@ -1870,7 +2878,6 @@ export const getIpos = cache(async (): Promise<IpoSnapshot[]> => {
 });
 
 export const getIpo = cache(async (slug: string): Promise<IpoSnapshot | null> => {
-  noStore();
   const normalizedSlug = slug.trim().toLowerCase();
 
   if (!normalizedSlug) {
@@ -1895,7 +2902,6 @@ export const getIpo = cache(async (slug: string): Promise<IpoSnapshot | null> =>
 });
 
 export const getFunds = cache(async (): Promise<FundSnapshot[]> => {
-  noStore();
   const cached = readTimedCache(fundCatalogCache, "all");
   if (cached.hit) {
     return cached.value;
@@ -1968,7 +2974,6 @@ export const getFunds = cache(async (): Promise<FundSnapshot[]> => {
 });
 
 export const getFund = cache(async (slug: string): Promise<FundSnapshot | null> => {
-  noStore();
   const normalizedSlug = slug.trim().toLowerCase();
   if (!normalizedSlug) {
     return null;

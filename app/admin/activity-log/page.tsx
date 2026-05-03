@@ -13,9 +13,16 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminActivityLogPage() {
-  const entries = await listAdminActivityLog(180);
+  const entries = await listAdminActivityLog(500);
+
+  console.info("[admin/activity-log] page load", {
+    count: entries.length,
+    newestCreatedAt: entries[0]?.createdAt ?? null,
+    newestActionType: entries[0]?.actionType ?? null,
+  });
 
   return (
     <AdminPageFrame>

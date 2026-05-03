@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Filter saved changes by user, page, and action.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminChangeLogPage() {
   const entries = await listAdminActivityLog(220);
 

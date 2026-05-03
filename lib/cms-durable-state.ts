@@ -1,5 +1,12 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { hasRuntimeSupabaseAdminEnv } from "@/lib/runtime-launch-config";
+import {
+  createPublicReadHelper,
+  createUserSessionHelper,
+  hasAdminServerHelper,
+  hasPublicReadHelper,
+  hasUserSessionHelper,
+} from "@/lib/supabase/access-helpers";
 import type {
   AdminGlobalCollectionKey,
   AdminGlobalModule,
@@ -29,17 +36,18 @@ type ProductUserProfileRow = {
   id: string;
   user_key: string;
   auth_user_id: string | null;
+  username?: string | null;
   email: string;
   name: string;
-  website_url: string | null;
-  x_handle: string | null;
-  linkedin_url: string | null;
-  instagram_handle: string | null;
-  youtube_url: string | null;
+  website_url?: string | null;
+  x_handle?: string | null;
+  linkedin_url?: string | null;
+  instagram_handle?: string | null;
+  youtube_url?: string | null;
   profile_visible: boolean | null;
   membership_tier: string | null;
   role: "admin" | "editor" | "user";
-  capabilities: unknown;
+  capabilities?: unknown;
   created_at: string;
   last_active_at: string;
   updated_at: string;
@@ -395,7 +403,139 @@ const TABLES = {
   cmsAdminImportRows: "cms_admin_import_rows",
 } as const;
 
+const PRODUCT_USER_PROFILE_SELECT_FULL =
+  "id,user_key,auth_user_id,username,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at";
+const PRODUCT_USER_PROFILE_SELECT_LEAN =
+  "id,user_key,auth_user_id,username,email,name,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at";
+const PRODUCT_USER_PROFILE_SELECT_LEGACY =
+  "id,user_key,auth_user_id,email,name,membership_tier,role,created_at,last_active_at,updated_at";
+const PRODUCT_USER_PROFILE_SELECT_ATTEMPTS = [
+  PRODUCT_USER_PROFILE_SELECT_FULL,
+  PRODUCT_USER_PROFILE_SELECT_LEAN,
+  PRODUCT_USER_PROFILE_SELECT_LEGACY,
+] as const;
+
 const missingTables = new Set<string>();
+
+function formatDurableError(error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  if (error && typeof error === "object") {
+    const candidate = error as {
+      code?: string | number;
+      message?: string;
+      details?: string | null;
+      hint?: string | null;
+      status?: string | number;
+    };
+
+    return {
+      code: candidate.code ?? null,
+      message: candidate.message ?? null,
+      details: candidate.details ?? null,
+      hint: candidate.hint ?? null,
+      status: candidate.status ?? null,
+    };
+  }
+
+  return error;
+}
+
+function formatDurableErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error && typeof error === "object") {
+    const candidate = error as {
+      code?: string | number;
+      message?: string;
+      details?: string | null;
+      hint?: string | null;
+    };
+    const parts = [
+      candidate.code ? `[${candidate.code}]` : null,
+      candidate.message ?? null,
+      candidate.details ?? null,
+      candidate.hint ? `Hint: ${candidate.hint}` : null,
+    ].filter(Boolean);
+
+    if (parts.length > 0) {
+      return parts.join(" ");
+    }
+  }
+
+  return "Unknown durable profile error.";
+}
+
+function logDurableProfileError(
+  operation: "get_by_auth_user_id" | "get_by_user_key" | "get_by_email" | "save" | "touch_last_active",
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[cms-durable-state] product_user_profiles durable operation failed", {
+    operation,
+    table: TABLES.productUserProfiles,
+    ...context,
+    error: formatDurableError(error),
+  });
+}
+
+function logDurableAdminActivityError(
+  operation: "list" | "append",
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[cms-durable-state] cms_admin_activity_log durable operation failed", {
+    operation,
+    table: TABLES.cmsAdminActivityLog,
+    ...context,
+    error: formatDurableError(error),
+  });
+}
+
+function logDurableAdminRecordError(
+  operation: "save_record" | "append_record_revision" | "append_record_version",
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[cms-durable-state] admin record durable operation failed", {
+    operation,
+    ...context,
+    error: formatDurableError(error),
+  });
+}
+
+function logDurableAdminApprovalError(
+  operation: "save_pending_approval",
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[cms-durable-state] cms_admin_pending_approvals durable operation failed", {
+    operation,
+    table: TABLES.cmsAdminPendingApprovals,
+    ...context,
+    error: formatDurableError(error),
+  });
+}
+
+function logDurableAdminImportError(
+  operation: "list_batches" | "list_rows" | "save_batch" | "replace_rows",
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[cms-durable-state] admin import durable operation failed", {
+    operation,
+    ...context,
+    error: formatDurableError(error),
+  });
+}
 
 function cleanString(value: string | null | undefined, maxLength = 4000) {
   return String(value ?? "").trim().slice(0, maxLength);
@@ -407,8 +547,20 @@ function cleanStringList(value: unknown) {
     : [];
 }
 
+function hasAdminDurableTable(table: string) {
+  return hasAdminServerHelper() && !missingTables.has(table);
+}
+
+function hasSessionDurableTable(table: string) {
+  return hasUserSessionHelper() && !missingTables.has(table);
+}
+
+function hasPublicDurableTable(table: string) {
+  return hasPublicReadHelper() && !missingTables.has(table);
+}
+
 function hasDurableTable(table: string) {
-  return hasRuntimeSupabaseAdminEnv() && !missingTables.has(table);
+  return hasAdminDurableTable(table);
 }
 
 function isMissingTableError(error: unknown, table: string) {
@@ -439,14 +591,24 @@ export function hasDurableCmsStateStore() {
   return hasRuntimeSupabaseAdminEnv();
 }
 
+export function hasDurableUserSessionStateStore() {
+  return hasUserSessionHelper();
+}
+
+export function hasDurablePublicReadStateStore() {
+  return hasPublicReadHelper();
+}
+
 function mapProfileRow(row: ProductUserProfileRow): ProductUserProfile {
   const email = cleanString(row.email);
   const username =
+    cleanString(row.username) ||
     email
       .split("@")[0]
       .toLowerCase()
       .replace(/[^a-z0-9_]+/g, "_")
-      .replace(/^_+|_+$/g, "") || cleanString(row.user_key);
+      .replace(/^_+|_+$/g, "") ||
+    cleanString(row.user_key);
   return {
     id: cleanString(row.id),
     userKey: cleanString(row.user_key),
@@ -467,6 +629,48 @@ function mapProfileRow(row: ProductUserProfileRow): ProductUserProfile {
     updatedAt: cleanString(row.updated_at),
     lastActiveAt: cleanString(row.last_active_at),
   };
+}
+
+async function selectDurableUserProfileRow(
+  queryRunner: (selectClause: string) => Promise<{ data: unknown; error: unknown }>,
+  operation: "get_by_auth_user_id" | "get_by_user_key" | "get_by_email",
+  context: Record<string, unknown>,
+) {
+  const table = TABLES.productUserProfiles;
+
+  for (const selectClause of PRODUCT_USER_PROFILE_SELECT_ATTEMPTS) {
+    try {
+      const { data, error } = await queryRunner(selectClause);
+
+      if (error) {
+        logDurableProfileError(operation, error, {
+          ...context,
+          selectClause,
+        });
+
+        if (isMissingTableError(error, table)) {
+          markTableMissing(table, error);
+          return null;
+        }
+
+        const code = typeof error === "object" && error !== null && "code" in error ? String((error as { code?: string }).code ?? "") : "";
+        if (code === "42703" || String((error as { message?: string })?.message ?? "").includes("does not exist")) {
+          continue;
+        }
+
+        return null;
+      }
+
+      return data ? mapProfileRow(data as unknown as ProductUserProfileRow) : null;
+    } catch (error) {
+      logDurableProfileError(operation, error, {
+        ...context,
+        selectClause,
+      });
+    }
+  }
+
+  return null;
 }
 
 function mapWatchlistRow(row: UserWatchlistItemRow): UserWatchlistItem {
@@ -840,19 +1044,81 @@ export async function getDurableUserProfileByUserKey(userKey: string) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from(table)
-      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
-      .eq("user_key", cleanString(userKey))
-      .maybeSingle();
+    return await selectDurableUserProfileRow(
+      async (selectClause) =>
+        await supabase
+          .from(table)
+          .select(selectClause)
+          .eq("user_key", cleanString(userKey))
+          .maybeSingle(),
+      "get_by_user_key",
+      {
+        userKey: cleanString(userKey),
+      },
+    );
+  } catch (error) {
+    logDurableProfileError("get_by_user_key", error, {
+      userKey: cleanString(userKey),
+    });
+    return null;
+  }
+}
 
-    if (error) {
-      markTableMissing(table, error);
-      return null;
-    }
+export async function getDurableUserProfileByAuthUserId(authUserId: string) {
+  const table = TABLES.productUserProfiles;
+  if (!hasDurableTable(table)) {
+    return null;
+  }
 
-    return data ? mapProfileRow(data as ProductUserProfileRow) : null;
-  } catch {
+  try {
+    const supabase = createSupabaseAdminClient();
+    return await selectDurableUserProfileRow(
+      async (selectClause) =>
+        await supabase
+          .from(table)
+          .select(selectClause)
+          .eq("auth_user_id", cleanString(authUserId))
+          .maybeSingle(),
+      "get_by_auth_user_id",
+      {
+        authUserId: cleanString(authUserId),
+      },
+    );
+  } catch (error) {
+    logDurableProfileError("get_by_auth_user_id", error, {
+      authUserId: cleanString(authUserId),
+    });
+    return null;
+  }
+}
+
+export async function getSessionDurableUserProfileByAuthUserId(authUserId: string) {
+  const table = TABLES.productUserProfiles;
+  const normalizedAuthUserId = cleanString(authUserId);
+  if (!hasSessionDurableTable(table) || !normalizedAuthUserId) {
+    return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    return await selectDurableUserProfileRow(
+      async (selectClause) =>
+        await supabase
+          .from(table)
+          .select(selectClause)
+          .eq("auth_user_id", normalizedAuthUserId)
+          .maybeSingle(),
+      "get_by_auth_user_id",
+      {
+        authUserId: normalizedAuthUserId,
+        accessBoundary: "user_session",
+      },
+    );
+  } catch (error) {
+    logDurableProfileError("get_by_auth_user_id", error, {
+      authUserId: normalizedAuthUserId,
+      accessBoundary: "user_session",
+    });
     return null;
   }
 }
@@ -865,19 +1131,22 @@ export async function getDurableUserProfileByEmail(email: string) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from(table)
-      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
-      .eq("email", cleanString(email))
-      .maybeSingle();
-
-    if (error) {
-      markTableMissing(table, error);
-      return null;
-    }
-
-    return data ? mapProfileRow(data as ProductUserProfileRow) : null;
-  } catch {
+    return await selectDurableUserProfileRow(
+      async (selectClause) =>
+        await supabase
+          .from(table)
+          .select(selectClause)
+          .eq("email", cleanString(email))
+          .maybeSingle(),
+      "get_by_email",
+      {
+        email: cleanString(email),
+      },
+    );
+  } catch (error) {
+    logDurableProfileError("get_by_email", error, {
+      email: cleanString(email),
+    });
     return null;
   }
 }
@@ -892,7 +1161,7 @@ export async function listDurableUserProfiles() {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from(table)
-      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
+      .select(PRODUCT_USER_PROFILE_SELECT_LEAN)
       .order("last_active_at", { ascending: false });
 
     if (error) {
@@ -906,6 +1175,37 @@ export async function listDurableUserProfiles() {
   }
 }
 
+export async function listDurableUserProfileUsernameCandidates(prefix: string) {
+  const table = TABLES.productUserProfiles;
+  const normalizedPrefix = cleanString(prefix).toLowerCase();
+  if (!hasDurableTable(table) || !normalizedPrefix) {
+    return null;
+  }
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from(table)
+      .select("user_key,username")
+      .ilike("username", `${normalizedPrefix}%`)
+      .limit(250);
+
+    if (error) {
+      markTableMissing(table, error);
+      return null;
+    }
+
+    return ((data as { user_key?: string | null; username?: string | null }[] | null) ?? [])
+      .map((row) => ({
+        userKey: cleanString(row.user_key),
+        username: cleanString(row.username),
+      }))
+      .filter((row) => row.userKey && row.username);
+  } catch {
+    return null;
+  }
+}
+
 export async function saveDurableUserProfile(profile: ProductUserProfile) {
   const table = TABLES.productUserProfiles;
   if (!hasDurableTable(table)) {
@@ -914,10 +1214,15 @@ export async function saveDurableUserProfile(profile: ProductUserProfile) {
 
   try {
     const supabase = createSupabaseAdminClient();
+    const normalizedId =
+      cleanString(profile.id) && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanString(profile.id))
+        ? cleanString(profile.id)
+        : undefined;
     const payload = {
-      id: cleanString(profile.id) || undefined,
+      id: normalizedId,
       user_key: cleanString(profile.userKey),
       auth_user_id: cleanString(profile.authUserId) || null,
+      username: cleanString(profile.username) || null,
       email: cleanString(profile.email),
       name: cleanString(profile.name),
       website_url: cleanString(profile.websiteUrl) || null,
@@ -933,20 +1238,310 @@ export async function saveDurableUserProfile(profile: ProductUserProfile) {
       last_active_at: cleanString(profile.lastActiveAt),
       updated_at: cleanString(profile.updatedAt) || new Date().toISOString(),
     };
-    const { data, error } = await supabase
-      .from(table)
-      .upsert(payload, { onConflict: "user_key" })
-      .select("id,user_key,auth_user_id,email,name,website_url,x_handle,linkedin_url,instagram_handle,youtube_url,profile_visible,membership_tier,role,capabilities,created_at,last_active_at,updated_at")
-      .single();
+    const payloadAttempts = [
+      {
+        payload,
+        selectClause: PRODUCT_USER_PROFILE_SELECT_FULL,
+      },
+      {
+        payload: {
+          id: payload.id,
+          user_key: payload.user_key,
+          auth_user_id: payload.auth_user_id,
+          username: payload.username,
+          email: payload.email,
+          name: payload.name,
+          profile_visible: payload.profile_visible,
+          membership_tier: payload.membership_tier,
+          role: payload.role,
+          capabilities: payload.capabilities,
+          created_at: payload.created_at,
+          last_active_at: payload.last_active_at,
+          updated_at: payload.updated_at,
+        },
+        selectClause: PRODUCT_USER_PROFILE_SELECT_LEAN,
+      },
+      {
+        payload: {
+          id: payload.id,
+          user_key: payload.user_key,
+          auth_user_id: payload.auth_user_id,
+          email: payload.email,
+          name: payload.name,
+          membership_tier: payload.membership_tier,
+          role: payload.role,
+          created_at: payload.created_at,
+          last_active_at: payload.last_active_at,
+          updated_at: payload.updated_at,
+        },
+        selectClause: PRODUCT_USER_PROFILE_SELECT_LEGACY,
+      },
+    ] as const;
+    let lastError: unknown = null;
 
-    if (error) {
-      markTableMissing(table, error);
-      return null;
+    for (const attempt of payloadAttempts) {
+      const { data, error } = await supabase
+        .from(table)
+        .upsert(attempt.payload, { onConflict: "user_key" })
+        .select(attempt.selectClause)
+        .single();
+
+      if (!error) {
+        return mapProfileRow(data as unknown as ProductUserProfileRow);
+      }
+
+      lastError = error;
+
+      logDurableProfileError("save", error, {
+        userKey: cleanString(profile.userKey),
+        email: cleanString(profile.email),
+        authUserId: cleanString(profile.authUserId),
+        selectClause: attempt.selectClause,
+      });
+
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+        return null;
+      }
+
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: string }).code ?? "")
+          : "";
+      if (code === "42703" || String((error as { message?: string })?.message ?? "").includes("does not exist")) {
+        continue;
+      }
+
+      throw new Error(formatDurableErrorMessage(error));
     }
 
-    return mapProfileRow(data as ProductUserProfileRow);
-  } catch {
+    if (lastError) {
+      throw new Error(formatDurableErrorMessage(lastError));
+    }
+  } catch (error) {
+    logDurableProfileError("save", error, {
+      userKey: cleanString(profile.userKey),
+      email: cleanString(profile.email),
+      authUserId: cleanString(profile.authUserId),
+    });
+    throw error;
+  }
+}
+
+export async function saveSessionDurableUserProfile(profile: ProductUserProfile) {
+  const table = TABLES.productUserProfiles;
+  if (!hasSessionDurableTable(table)) {
     return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const normalizedId =
+      cleanString(profile.id) && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanString(profile.id))
+        ? cleanString(profile.id)
+        : undefined;
+    const payload = {
+      id: normalizedId,
+      user_key: cleanString(profile.userKey),
+      auth_user_id: cleanString(profile.authUserId) || null,
+      username: cleanString(profile.username) || null,
+      email: cleanString(profile.email),
+      name: cleanString(profile.name),
+      website_url: cleanString(profile.websiteUrl) || null,
+      x_handle: cleanString(profile.xHandle) || null,
+      linkedin_url: cleanString(profile.linkedinUrl) || null,
+      instagram_handle: cleanString(profile.instagramHandle) || null,
+      youtube_url: cleanString(profile.youtubeUrl) || null,
+      profile_visible: profile.profileVisible,
+      membership_tier: cleanString(profile.membershipTier) || null,
+      role: profile.role,
+      capabilities: (profile.capabilities ?? []) as ProductUserCapability[],
+      created_at: cleanString(profile.createdAt),
+      last_active_at: cleanString(profile.lastActiveAt),
+      updated_at: cleanString(profile.updatedAt) || new Date().toISOString(),
+    };
+    const payloadAttempts = [
+      {
+        payload,
+        selectClause: PRODUCT_USER_PROFILE_SELECT_FULL,
+      },
+      {
+        payload: {
+          id: payload.id,
+          user_key: payload.user_key,
+          auth_user_id: payload.auth_user_id,
+          username: payload.username,
+          email: payload.email,
+          name: payload.name,
+          profile_visible: payload.profile_visible,
+          membership_tier: payload.membership_tier,
+          role: payload.role,
+          capabilities: payload.capabilities,
+          created_at: payload.created_at,
+          last_active_at: payload.last_active_at,
+          updated_at: payload.updated_at,
+        },
+        selectClause: PRODUCT_USER_PROFILE_SELECT_LEAN,
+      },
+      {
+        payload: {
+          id: payload.id,
+          user_key: payload.user_key,
+          auth_user_id: payload.auth_user_id,
+          email: payload.email,
+          name: payload.name,
+          membership_tier: payload.membership_tier,
+          role: payload.role,
+          created_at: payload.created_at,
+          last_active_at: payload.last_active_at,
+          updated_at: payload.updated_at,
+        },
+        selectClause: PRODUCT_USER_PROFILE_SELECT_LEGACY,
+      },
+    ] as const;
+    let lastError: unknown = null;
+
+    for (const attempt of payloadAttempts) {
+      const { data, error } = await supabase
+        .from(table)
+        .upsert(attempt.payload, { onConflict: "user_key" })
+        .select(attempt.selectClause)
+        .single();
+
+      if (!error) {
+        return mapProfileRow(data as unknown as ProductUserProfileRow);
+      }
+
+      lastError = error;
+
+      logDurableProfileError("save", error, {
+        userKey: cleanString(profile.userKey),
+        email: cleanString(profile.email),
+        authUserId: cleanString(profile.authUserId),
+        selectClause: attempt.selectClause,
+        accessBoundary: "user_session",
+      });
+
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+        return null;
+      }
+
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String((error as { code?: string }).code ?? "")
+          : "";
+      if (code === "42703" || String((error as { message?: string })?.message ?? "").includes("does not exist")) {
+        continue;
+      }
+
+      throw new Error(formatDurableErrorMessage(error));
+    }
+
+    if (lastError) {
+      throw new Error(formatDurableErrorMessage(lastError));
+    }
+  } catch (error) {
+    logDurableProfileError("save", error, {
+      userKey: cleanString(profile.userKey),
+      email: cleanString(profile.email),
+      authUserId: cleanString(profile.authUserId),
+      accessBoundary: "user_session",
+    });
+    throw error;
+  }
+}
+
+export async function touchDurableUserProfileLastActive(input: {
+  userKey: string;
+  lastActiveAt: string;
+  updatedAt?: string;
+}) {
+  const table = TABLES.productUserProfiles;
+  if (!hasDurableTable(table)) {
+    return false;
+  }
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    const lastActiveAt = cleanString(input.lastActiveAt) || new Date().toISOString();
+    const { error } = await supabase
+      .from(table)
+      .update({
+        last_active_at: lastActiveAt,
+        updated_at: cleanString(input.updatedAt) || lastActiveAt,
+      })
+      .eq("user_key", cleanString(input.userKey));
+
+    if (error) {
+      logDurableProfileError("touch_last_active", error, {
+        userKey: cleanString(input.userKey),
+        lastActiveAt,
+      });
+
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+        return false;
+      }
+
+      throw new Error(formatDurableErrorMessage(error));
+    }
+
+    return true;
+  } catch (error) {
+    logDurableProfileError("touch_last_active", error, {
+      userKey: cleanString(input.userKey),
+      lastActiveAt: cleanString(input.lastActiveAt),
+    });
+    return false;
+  }
+}
+
+export async function touchSessionDurableUserProfileLastActive(input: {
+  authUserId: string;
+  lastActiveAt: string;
+  updatedAt?: string;
+}) {
+  const table = TABLES.productUserProfiles;
+  const normalizedAuthUserId = cleanString(input.authUserId);
+  if (!hasSessionDurableTable(table) || !normalizedAuthUserId) {
+    return false;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const lastActiveAt = cleanString(input.lastActiveAt) || new Date().toISOString();
+    const { error } = await supabase
+      .from(table)
+      .update({
+        last_active_at: lastActiveAt,
+        updated_at: cleanString(input.updatedAt) || lastActiveAt,
+      })
+      .eq("auth_user_id", normalizedAuthUserId);
+
+    if (error) {
+      logDurableProfileError("touch_last_active", error, {
+        authUserId: normalizedAuthUserId,
+        lastActiveAt,
+        accessBoundary: "user_session",
+      });
+
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+        return false;
+      }
+
+      throw new Error(formatDurableErrorMessage(error));
+    }
+
+    return true;
+  } catch (error) {
+    logDurableProfileError("touch_last_active", error, {
+      authUserId: normalizedAuthUserId,
+      lastActiveAt: cleanString(input.lastActiveAt),
+      accessBoundary: "user_session",
+    });
+    return false;
   }
 }
 
@@ -1024,7 +1619,36 @@ export async function listDurableWatchlistItems(profileId: string) {
       .order("added_at", { ascending: false });
 
     if (error) {
-      markTableMissing(table, error);
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
+      return null;
+    }
+
+    return (data as UserWatchlistItemRow[] | null)?.map(mapWatchlistRow) ?? [];
+  } catch {
+    return null;
+  }
+}
+
+export async function listSessionDurableWatchlistItems(profileId: string) {
+  const table = TABLES.productUserWatchlistItems;
+  if (!hasSessionDurableTable(table)) {
+    return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const { data, error } = await supabase
+      .from(table)
+      .select("id,product_user_profile_id,stock_slug,stock_symbol,stock_name,added_at")
+      .eq("product_user_profile_id", cleanString(profileId))
+      .order("added_at", { ascending: false });
+
+    if (error) {
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
       return null;
     }
 
@@ -1072,6 +1696,44 @@ export async function saveDurableWatchlistItem(
   }
 }
 
+export async function saveSessionDurableWatchlistItem(
+  profileId: string,
+  item: UserWatchlistItem,
+) {
+  const table = TABLES.productUserWatchlistItems;
+  if (!hasSessionDurableTable(table)) {
+    return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const { data, error } = await supabase
+      .from(table)
+      .upsert(
+        {
+          id: cleanString(item.id) || undefined,
+          product_user_profile_id: cleanString(profileId),
+          stock_slug: cleanString(item.stockSlug),
+          stock_symbol: cleanString(item.stockSymbol),
+          stock_name: cleanString(item.stockName),
+          added_at: cleanString(item.addedAt),
+        },
+        { onConflict: "product_user_profile_id,stock_slug" },
+      )
+      .select("id,product_user_profile_id,stock_slug,stock_symbol,stock_name,added_at")
+      .single();
+
+    if (error) {
+      markTableMissing(table, error);
+      return null;
+    }
+
+    return mapWatchlistRow(data as UserWatchlistItemRow);
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteDurableWatchlistItem(profileId: string, stockSlug: string) {
   const table = TABLES.productUserWatchlistItems;
   if (!hasDurableTable(table)) {
@@ -1080,6 +1742,33 @@ export async function deleteDurableWatchlistItem(profileId: string, stockSlug: s
 
   try {
     const supabase = createSupabaseAdminClient();
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq("product_user_profile_id", cleanString(profileId))
+      .eq("stock_slug", cleanString(stockSlug));
+
+    if (error) {
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteSessionDurableWatchlistItem(profileId: string, stockSlug: string) {
+  const table = TABLES.productUserWatchlistItems;
+  if (!hasSessionDurableTable(table)) {
+    return false;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
     const { error } = await supabase
       .from(table)
       .delete()
@@ -1112,7 +1801,36 @@ export async function listDurablePortfolioHoldings(profileId: string) {
       .order("updated_at", { ascending: false });
 
     if (error) {
-      markTableMissing(table, error);
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
+      return null;
+    }
+
+    return (data as UserPortfolioHoldingRow[] | null)?.map(mapPortfolioRow) ?? [];
+  } catch {
+    return null;
+  }
+}
+
+export async function listSessionDurablePortfolioHoldings(profileId: string) {
+  const table = TABLES.productUserPortfolioHoldings;
+  if (!hasSessionDurableTable(table)) {
+    return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const { data, error } = await supabase
+      .from(table)
+      .select("id,product_user_profile_id,stock_slug,stock_symbol,stock_name,quantity,buy_price,added_at,updated_at")
+      .eq("product_user_profile_id", cleanString(profileId))
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
       return null;
     }
 
@@ -1163,6 +1881,47 @@ export async function saveDurablePortfolioHolding(
   }
 }
 
+export async function saveSessionDurablePortfolioHolding(
+  profileId: string,
+  holding: UserPortfolioHolding,
+) {
+  const table = TABLES.productUserPortfolioHoldings;
+  if (!hasSessionDurableTable(table)) {
+    return null;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
+    const { data, error } = await supabase
+      .from(table)
+      .upsert(
+        {
+          id: cleanString(holding.id) || undefined,
+          product_user_profile_id: cleanString(profileId),
+          stock_slug: cleanString(holding.stockSlug),
+          stock_symbol: cleanString(holding.stockSymbol),
+          stock_name: cleanString(holding.stockName),
+          quantity: holding.quantity,
+          buy_price: holding.buyPrice,
+          added_at: cleanString(holding.addedAt),
+          updated_at: cleanString(holding.updatedAt),
+        },
+        { onConflict: "product_user_profile_id,stock_slug" },
+      )
+      .select("id,product_user_profile_id,stock_slug,stock_symbol,stock_name,quantity,buy_price,added_at,updated_at")
+      .single();
+
+    if (error) {
+      markTableMissing(table, error);
+      return null;
+    }
+
+    return mapPortfolioRow(data as UserPortfolioHoldingRow);
+  } catch {
+    return null;
+  }
+}
+
 export async function deleteDurablePortfolioHolding(profileId: string, stockSlug: string) {
   const table = TABLES.productUserPortfolioHoldings;
   if (!hasDurableTable(table)) {
@@ -1171,6 +1930,33 @@ export async function deleteDurablePortfolioHolding(profileId: string, stockSlug
 
   try {
     const supabase = createSupabaseAdminClient();
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq("product_user_profile_id", cleanString(profileId))
+      .eq("stock_slug", cleanString(stockSlug));
+
+    if (error) {
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function deleteSessionDurablePortfolioHolding(profileId: string, stockSlug: string) {
+  const table = TABLES.productUserPortfolioHoldings;
+  if (!hasSessionDurableTable(table)) {
+    return false;
+  }
+
+  try {
+    const supabase = await createUserSessionHelper();
     const { error } = await supabase
       .from(table)
       .delete()
@@ -1196,6 +1982,33 @@ export async function getDurableSystemSettings() {
 
   try {
     const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from(table)
+      .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,public_head_code,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
+      .eq("settings_key", "default")
+      .maybeSingle();
+
+    if (error) {
+      if (isMissingTableError(error, table)) {
+        markTableMissing(table, error);
+      }
+      return null;
+    }
+
+    return data ? mapSettingsRow(data as SystemSettingsRow) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublicDurableSystemSettings() {
+  const table = TABLES.productSystemSettings;
+  if (!hasPublicDurableTable(table)) {
+    return null;
+  }
+
+  try {
+    const supabase = createPublicReadHelper();
     const { data, error } = await supabase
       .from(table)
       .select("settings_key,site_name,default_meta_title_suffix,default_meta_description,default_og_image,default_canonical_base,public_head_code,default_no_index,default_membership_tier,default_locked_cta_label,support_email,support_route,preview_enabled,media_uploads_enabled,watchlist_enabled,portfolio_enabled,updated_at")
@@ -1451,7 +2264,7 @@ export async function appendDurableCmsRecordVersion(version: CmsRecordVersion) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .insert({
         id: cleanString(version.id) || undefined,
@@ -1469,12 +2282,32 @@ export async function appendDurableCmsRecordVersion(version: CmsRecordVersion) {
       .single();
 
     if (error) {
+      logDurableAdminRecordError("append_record_version", error, {
+        table,
+        status,
+        id: cleanString(version.id),
+        family: cleanString(version.family),
+        slug: cleanString(version.slug),
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_record_versions durable write succeeded", {
+      table,
+      status,
+      id: cleanString(version.id),
+      family: cleanString(version.family),
+      slug: cleanString(version.slug),
+    });
     return mapVersionRow(data as CmsRecordVersionRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminRecordError("append_record_version", error, {
+      table,
+      id: cleanString(version.id),
+      family: cleanString(version.family),
+      slug: cleanString(version.slug),
+    });
     return null;
   }
 }
@@ -1719,7 +2552,7 @@ export async function saveDurableAdminManagedRecord(record: AdminManagedRecord) 
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .upsert(
         {
@@ -1758,12 +2591,32 @@ export async function saveDurableAdminManagedRecord(record: AdminManagedRecord) 
       .single();
 
     if (error) {
+      logDurableAdminRecordError("save_record", error, {
+        table,
+        status,
+        id: cleanString(record.id),
+        family: cleanString(record.family),
+        slug: cleanString(record.slug),
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_admin_records durable write succeeded", {
+      table,
+      status,
+      id: cleanString(record.id),
+      family: cleanString(record.family),
+      slug: cleanString(record.slug),
+    });
     return mapAdminManagedRecordRow(data as AdminManagedRecordRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminRecordError("save_record", error, {
+      table,
+      id: cleanString(record.id),
+      family: cleanString(record.family),
+      slug: cleanString(record.slug),
+    });
     return null;
   }
 }
@@ -1851,7 +2704,7 @@ export async function appendDurableAdminRecordRevision(revision: AdminRecordRevi
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .insert({
         id: cleanString(revision.id),
@@ -1870,12 +2723,32 @@ export async function appendDurableAdminRecordRevision(revision: AdminRecordRevi
       .single();
 
     if (error) {
+      logDurableAdminRecordError("append_record_revision", error, {
+        table,
+        status,
+        id: cleanString(revision.id),
+        family: cleanString(revision.family),
+        slug: cleanString(revision.slug),
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_admin_record_revisions durable write succeeded", {
+      table,
+      status,
+      id: cleanString(revision.id),
+      family: cleanString(revision.family),
+      slug: cleanString(revision.slug),
+    });
     return mapAdminRecordRevisionRow(data as AdminRecordRevisionRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminRecordError("append_record_revision", error, {
+      table,
+      id: cleanString(revision.id),
+      family: cleanString(revision.family),
+      slug: cleanString(revision.slug),
+    });
     return null;
   }
 }
@@ -2186,19 +3059,35 @@ export async function listDurableAdminActivityLog(limit = 100) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .select("id,actor_user_id,actor_email,action_type,target_type,target_id,target_family,target_slug,summary,metadata,created_at")
       .order("created_at", { ascending: false })
       .limit(limit);
 
     if (error) {
+      logDurableAdminActivityError("list", error, {
+        limit,
+        status,
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_admin_activity_log durable read succeeded", {
+      table,
+      status,
+      limit,
+      count: (data as AdminActivityLogRow[] | null)?.length ?? 0,
+      newestCreatedAt: (data as AdminActivityLogRow[] | null)?.[0]?.created_at ?? null,
+      newestActionType: (data as AdminActivityLogRow[] | null)?.[0]?.action_type ?? null,
+    });
+
     return (data as AdminActivityLogRow[] | null)?.map(mapAdminActivityLogRow) ?? [];
-  } catch {
+  } catch (error) {
+    logDurableAdminActivityError("list", error, {
+      limit,
+    });
     return null;
   }
 }
@@ -2223,7 +3112,7 @@ export async function appendDurableAdminActivityLog(entry: {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .insert({
         id: cleanString(entry.id),
@@ -2242,12 +3131,37 @@ export async function appendDurableAdminActivityLog(entry: {
       .single();
 
     if (error) {
+      logDurableAdminActivityError("append", error, {
+        id: cleanString(entry.id),
+        actionType: cleanString(entry.actionType),
+        targetType: cleanString(entry.targetType),
+        targetId: cleanString(entry.targetId) || null,
+        actorEmail: cleanString(entry.actorEmail),
+        status,
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_admin_activity_log durable write succeeded", {
+      table,
+      status,
+      id: cleanString(entry.id),
+      actionType: cleanString(entry.actionType),
+      targetType: cleanString(entry.targetType),
+      targetId: cleanString(entry.targetId) || null,
+      actorEmail: cleanString(entry.actorEmail),
+    });
+
     return mapAdminActivityLogRow(data as AdminActivityLogRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminActivityError("append", error, {
+      id: cleanString(entry.id),
+      actionType: cleanString(entry.actionType),
+      targetType: cleanString(entry.targetType),
+      targetId: cleanString(entry.targetId) || null,
+      actorEmail: cleanString(entry.actorEmail),
+    });
     return null;
   }
 }
@@ -2438,7 +3352,7 @@ export async function saveDurableAdminPendingApproval(approval: {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .upsert(
         {
@@ -2469,12 +3383,33 @@ export async function saveDurableAdminPendingApproval(approval: {
       .single();
 
     if (error) {
+      logDurableAdminApprovalError("save_pending_approval", error, {
+        status,
+        id: cleanString(approval.id),
+        family: cleanString(approval.family),
+        slug: cleanString(approval.slug),
+        decision: approval.decision,
+      });
       markTableMissing(table, error);
       return null;
     }
 
+    console.info("[cms-durable-state] cms_admin_pending_approvals durable write succeeded", {
+      table,
+      status,
+      id: cleanString(approval.id),
+      family: cleanString(approval.family),
+      slug: cleanString(approval.slug),
+      decision: approval.decision,
+    });
     return mapAdminPendingApprovalRow(data as AdminPendingApprovalRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminApprovalError("save_pending_approval", error, {
+      id: cleanString(approval.id),
+      family: cleanString(approval.family),
+      slug: cleanString(approval.slug),
+      decision: approval.decision,
+    });
     return null;
   }
 }
@@ -2498,15 +3433,24 @@ export async function listDurableAdminImportBatches(family?: string | null) {
       query = query.eq("family", cleanString(family, 120));
     }
 
-    const { data, error } = await query;
+    const { data, error, status } = await query;
 
     if (error) {
+      logDurableAdminImportError("list_batches", error, {
+        table,
+        status,
+        family: cleanString(family, 120) || null,
+      });
       markTableMissing(table, error);
       return null;
     }
 
     return (data as AdminImportBatchRow[] | null)?.map(mapAdminImportBatchRow) ?? [];
-  } catch {
+  } catch (error) {
+    logDurableAdminImportError("list_batches", error, {
+      table,
+      family: cleanString(family, 120) || null,
+    });
     return null;
   }
 }
@@ -2519,7 +3463,7 @@ export async function listDurableAdminImportRows(batchId: string) {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .select(
         "id,batch_id,row_number,identifier,title,slug,matched_record_id,matched_slug,operation,status,warnings,errors,payload,result_note,created_at,updated_at",
@@ -2528,12 +3472,21 @@ export async function listDurableAdminImportRows(batchId: string) {
       .order("row_number", { ascending: true });
 
     if (error) {
+      logDurableAdminImportError("list_rows", error, {
+        table,
+        status,
+        batchId: cleanString(batchId),
+      });
       markTableMissing(table, error);
       return null;
     }
 
     return (data as AdminImportRowRow[] | null)?.map(mapAdminImportRowRow) ?? [];
-  } catch {
+  } catch (error) {
+    logDurableAdminImportError("list_rows", error, {
+      table,
+      batchId: cleanString(batchId),
+    });
     return null;
   }
 }
@@ -2576,7 +3529,7 @@ export async function saveDurableAdminImportBatch(batch: {
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .upsert(
         {
@@ -2613,12 +3566,25 @@ export async function saveDurableAdminImportBatch(batch: {
       .single();
 
     if (error) {
+      logDurableAdminImportError("save_batch", error, {
+        table,
+        status,
+        id: cleanString(batch.id),
+        family: cleanString(batch.family, 120),
+        fileName: cleanString(batch.fileName, 240),
+      });
       markTableMissing(table, error);
       return null;
     }
 
     return mapAdminImportBatchRow(data as AdminImportBatchRow);
-  } catch {
+  } catch (error) {
+    logDurableAdminImportError("save_batch", error, {
+      table,
+      id: cleanString(batch.id),
+      family: cleanString(batch.family, 120),
+      fileName: cleanString(batch.fileName, 240),
+    });
     return null;
   }
 }
@@ -2659,12 +3625,18 @@ export async function replaceDurableAdminImportRows(
   try {
     const supabase = createSupabaseAdminClient();
     const cleanedBatchId = cleanString(batchId);
-    const { error: deleteError } = await supabase
+    const { error: deleteError, status: deleteStatus } = await supabase
       .from(table)
       .delete()
       .eq("batch_id", cleanedBatchId);
 
     if (deleteError) {
+      logDurableAdminImportError("replace_rows", deleteError, {
+        table,
+        status: deleteStatus,
+        batchId: cleanedBatchId,
+        phase: "delete_existing",
+      });
       markTableMissing(table, deleteError);
       return null;
     }
@@ -2673,7 +3645,7 @@ export async function replaceDurableAdminImportRows(
       return [];
     }
 
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from(table)
       .insert(
         rows.map((row) => ({
@@ -2701,12 +3673,24 @@ export async function replaceDurableAdminImportRows(
       .order("row_number", { ascending: true });
 
     if (error) {
+      logDurableAdminImportError("replace_rows", error, {
+        table,
+        status,
+        batchId: cleanedBatchId,
+        rowCount: rows.length,
+        phase: "insert_rows",
+      });
       markTableMissing(table, error);
       return null;
     }
 
     return (data as AdminImportRowRow[] | null)?.map(mapAdminImportRowRow) ?? [];
-  } catch {
+  } catch (error) {
+    logDurableAdminImportError("replace_rows", error, {
+      table,
+      batchId: cleanString(batchId),
+      rowCount: rows.length,
+    });
     return null;
   }
 }

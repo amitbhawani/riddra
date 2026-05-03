@@ -8,11 +8,7 @@ export function normalizeAccountEmail(email: string | null | undefined) {
 }
 
 export function buildAccountUserKey(user: AccountScopedUser) {
-  const emailKey = normalizeAccountEmail(user.email)
-    ?.replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return emailKey || user.id;
+  return normalizeAccountEmail(user.email) || user.id;
 }
 
 export function buildAccountFallbackEmail(user: AccountScopedUser) {

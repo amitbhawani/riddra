@@ -12,6 +12,7 @@ import { getArchiveRefreshMemory } from "@/lib/archive-refresh-memory-store";
 import { requireUser } from "@/lib/auth";
 import { listDurableJobRuns } from "@/lib/durable-jobs";
 import { getJobRunMemory } from "@/lib/job-run-memory-store";
+import { getExternalLinkProps } from "@/lib/link-utils";
 import { getMarketDataRefreshProofStatus } from "@/lib/market-data-refresh";
 import {
   getMarketSourceCredentialGroups,
@@ -384,8 +385,7 @@ limit 20;`,
                       {item.url ? (
                         <a
                           href={item.url}
-                          target="_blank"
-                          rel="noreferrer"
+                          {...getExternalLinkProps()}
                           className="mt-3 block break-all text-sm leading-7 text-white underline decoration-white/25 underline-offset-4 transition hover:decoration-white/55"
                         >
                           {item.url}

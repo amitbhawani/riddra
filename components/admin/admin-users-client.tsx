@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
-import { formatAdminDateTime, formatAdminStorageDetail } from "@/lib/admin-time";
+import {
+  formatAdminDateTime,
+  formatAdminStorageDetail,
+  getAdminLastActivePresentation,
+} from "@/lib/admin-time";
 import type { ProductUserProfile } from "@/lib/user-product-store";
 import {
   editorAssignableProductCapabilities,
@@ -484,6 +488,7 @@ export function AdminUsersClient({
               const isCurrentAdmin =
                 normalizedCurrentAdminEmail !== null &&
                 normalizedCurrentAdminEmail === user.email.toLowerCase();
+              const lastActive = getAdminLastActivePresentation(user.lastActiveAt);
 
               return [
                 <div key={user.id} className="space-y-1">
@@ -543,9 +548,18 @@ export function AdminUsersClient({
                 <span key={`${user.id}-updated`} className="text-[13px] text-[#111827]">
                   {formatAdminDateTime(user.updatedAt)}
                 </span>,
-                <span key={`${user.id}-active`} className="text-[13px] text-[#111827]">
-                  {formatAdminDateTime(user.lastActiveAt)}
-                </span>,
+                <div key={`${user.id}-active`} className="space-y-1">
+                  {lastActive.detail ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <AdminBadge label={lastActive.label} tone={lastActive.tone} />
+                      </div>
+                      <p className="text-[12px] leading-5 text-[#6b7280]">{lastActive.detail}</p>
+                    </>
+                  ) : (
+                    <span className="text-[13px] text-[#111827]">{lastActive.label}</span>
+                  )}
+                </div>,
                 <div key={`${user.id}-actions`} className="flex flex-wrap gap-2">
                   <button
                     type="button"

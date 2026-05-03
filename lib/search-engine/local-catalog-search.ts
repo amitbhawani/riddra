@@ -11,6 +11,11 @@ type LocalCatalogCacheEntry = {
 let localCatalogCache: LocalCatalogCacheEntry | null = null;
 let localCatalogPromise: Promise<SearchIndexDocument[]> | null = null;
 
+export function invalidateLocalSearchCatalogCache() {
+  localCatalogCache = null;
+  localCatalogPromise = null;
+}
+
 function normalizeText(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 }

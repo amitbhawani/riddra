@@ -225,7 +225,7 @@ export function getPrivateBetaDeploymentReadiness(): PrivateBetaDeploymentReadin
     {
       title: "Meilisearch engine env",
       status: getConfigStatus(
-        [env.meilisearchHost, env.meilisearchApiKey, env.meilisearchIndexPrefix].filter(Boolean).length,
+        [env.meilisearchHost, env.meilisearchApiKey, env.meilisearchIndexPrefixExplicit].filter(Boolean).length,
         3,
       ),
       note:

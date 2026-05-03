@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { env } from "@/lib/env";
@@ -10,6 +11,7 @@ import {
 } from "@/lib/local-auth-bypass";
 import {
   OPEN_ACCESS_SURFACE_HEADER,
+  REQUEST_PATH_HEADER,
   isOpenAdminAccessEnabled,
   isTrustedLocalRequestHost,
 } from "@/lib/open-access";
@@ -25,9 +27,12 @@ import { hasSupabaseAuthCookies, logSupabaseServerWarning } from "@/lib/supabase
 import {
   ensureUserProductProfile,
   getUserProductProfile,
+  isUserProductStorageUnavailableError,
   getUserRole,
+  touchUserProductProfileActivity,
   type ProductUserRole,
 } from "@/lib/user-product-store";
+import { shouldTrackUserActivityRequest, USER_ACTIVITY_THROTTLE_MS, USER_ACTIVITY_TRACK_HEADER } from "@/lib/user-activity-tracking";
 
 export { isLocalAuthBypassEnabled } from "@/lib/local-auth-bypass";
 export { getAuthContinuityState } from "@/lib/local-auth-bypass";
@@ -78,14 +83,49 @@ async function isTrustedLocalBypassRequest() {
   return isTrustedLocalRequestHost(requestHeaders.get("host"));
 }
 
-export async function getCurrentUser() {
+async function shouldTrackCurrentUserActivityRequest() {
+  const requestHeaders = await headers();
+  const explicitTracking = requestHeaders.get(USER_ACTIVITY_TRACK_HEADER);
+  if (explicitTracking === "1") {
+    return true;
+  }
+
+  if (explicitTracking === "0") {
+    return false;
+  }
+
+  return shouldTrackUserActivityRequest({
+    pathname: requestHeaders.get(REQUEST_PATH_HEADER),
+    userAgent: requestHeaders.get("user-agent"),
+  });
+}
+
+async function maybeTrackCurrentUserActivity(user: User) {
+  if (!(await shouldTrackCurrentUserActivityRequest())) {
+    return;
+  }
+
+  try {
+    await touchUserProductProfileActivity(user, {
+      throttleMs: USER_ACTIVITY_THROTTLE_MS,
+    });
+  } catch (error) {
+    logSupabaseServerWarning("Unable to refresh product_user_profiles.last_active_at", error);
+  }
+}
+
+const getCachedCurrentUser = cache(async () => {
   if (await isTrustedLocalBypassRequest()) {
-    return await getLocalBypassUser();
+    const user = await getLocalBypassUser();
+    await maybeTrackCurrentUserActivity(user);
+    return user;
   }
 
   if (!hasRuntimeSupabaseEnv()) {
     if (await isOpenAccessRequest()) {
-      return await getLocalBypassUser();
+      const user = await getLocalBypassUser();
+      await maybeTrackCurrentUserActivity(user);
+      return user;
     }
 
     return null;
@@ -109,6 +149,7 @@ export async function getCurrentUser() {
     } = await supabase.auth.getUser();
 
     if (user) {
+      await maybeTrackCurrentUserActivity(user);
       return user;
     }
   } catch (error) {
@@ -116,10 +157,16 @@ export async function getCurrentUser() {
   }
 
   if (await isOpenAccessRequest()) {
-    return await getLocalBypassUser();
+    const user = await getLocalBypassUser();
+    await maybeTrackCurrentUserActivity(user);
+    return user;
   }
 
   return null;
+});
+
+export async function getCurrentUser() {
+  return getCachedCurrentUser();
 }
 
 export async function requireUser() {
@@ -129,15 +176,14 @@ export async function requireUser() {
     redirect("/login");
   }
 
-  await ensureUserProductProfile(user);
   return user;
 }
 
-export async function getCurrentOperatorContext(): Promise<{
+const getCachedCurrentOperatorContext = cache(async (): Promise<{
   user: User;
   role: ProductUserRole;
   capabilities: ProductUserCapability[];
-} | null> {
+} | null> => {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -152,13 +198,42 @@ export async function getCurrentOperatorContext(): Promise<{
     };
   }
 
-  const profile = await getUserProductProfile(user);
+  if (isAdminEmail(user.email)) {
+    return {
+      user,
+      role: "admin",
+      capabilities: [...allProductUserCapabilities],
+    };
+  }
+
+  let profile;
+  try {
+    profile = await getUserProductProfile(user);
+  } catch (error) {
+    if (isUserProductStorageUnavailableError(error)) {
+      return {
+        user,
+        role: "user",
+        capabilities: getEffectiveCapabilities("user", []),
+      };
+    }
+
+    throw error;
+  }
 
   return {
     user,
     role: profile.role,
     capabilities: getEffectiveCapabilities(profile.role, profile.capabilities),
   };
+});
+
+export async function getCurrentOperatorContext(): Promise<{
+  user: User;
+  role: ProductUserRole;
+  capabilities: ProductUserCapability[];
+} | null> {
+  return getCachedCurrentOperatorContext();
 }
 
 function normalizedAdminEmails() {

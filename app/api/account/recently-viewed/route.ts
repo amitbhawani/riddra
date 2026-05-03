@@ -36,13 +36,23 @@ export async function POST(request: NextRequest) {
     return badRequest("Recently viewed items need a page type, slug, title, and page link.");
   }
 
-  return NextResponse.json({
-    ok: true,
-    items: await recordUserRecentlyViewed(user, {
+  try {
+    return NextResponse.json({
+      ok: true,
+      items: await recordUserRecentlyViewed(user, {
+        pageType: payload.pageType,
+        slug: payload.slug,
+        title: payload.title,
+        href: payload.href,
+      }),
+    });
+  } catch (error) {
+    console.warn("[recently-viewed] unable to persist recent view; skipping", {
       pageType: payload.pageType,
       slug: payload.slug,
-      title: payload.title,
-      href: payload.href,
-    }),
-  });
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    return NextResponse.json({ ok: true, skipped: true });
+  }
 }

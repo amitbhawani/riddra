@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   doesRowMatchScreenerSectorFilter,
@@ -224,7 +224,6 @@ export function ScreenerWorkspace({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [activeStack, setActiveStack] = useState(getInitialStackTitle(savedStacks, initialStack));
   const [activeMetricGroup, setActiveMetricGroup] = useState(() => {
     if (initialMetricGroup) {
@@ -426,7 +425,10 @@ export function ScreenerWorkspace({
     }
 
     const nextQuery = params.toString();
-    const currentQuery = searchParams.toString();
+    const currentQuery =
+      typeof window === "undefined"
+        ? ""
+        : new URLSearchParams(window.location.search).toString();
 
     if (nextQuery === currentQuery) {
       return;
@@ -442,7 +444,6 @@ export function ScreenerWorkspace({
     pathname,
     router,
     savedStacks,
-    searchParams,
     sectorFilter,
     sortBy,
     truthFilter,

@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { mkdir, readFile, stat, writeFile } from "fs/promises";
 import path from "path";
-
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 
 import { buildAccountFallbackEmail, buildAccountUserKey, normalizeAccountEmail } from "@/lib/account-identity";
@@ -17,24 +17,39 @@ import {
   appendDurableRefreshJobRun,
   createDurableCmsPreviewSession,
   deleteDurablePortfolioHolding,
+  deleteSessionDurablePortfolioHolding,
+  deleteSessionDurableWatchlistItem,
   deleteDurableUserProfile,
   deleteDurableWatchlistItem,
   expireDurableCmsPreviewSessionsForRecord,
   getDurableCmsPreviewSession,
+  getPublicDurableSystemSettings,
   getLatestDurableCmsPreviewSessionForRecord,
   getDurableSystemSettings,
+  getDurableUserProfileByAuthUserId,
   getDurableUserProfileByEmail,
   getDurableUserProfileByUserKey,
   hasDurableCmsStateStore,
+  hasDurableUserSessionStateStore,
+  listDurableAdminActivityLog,
   listDurableCmsRecordVersions,
   listDurableMediaAssets,
   listDurablePortfolioHoldings,
   listDurableRefreshJobRuns,
+  listDurableUserProfileUsernameCandidates,
   listDurableUserProfiles,
   listDurableWatchlistItems,
+  listSessionDurablePortfolioHoldings,
+  listSessionDurableWatchlistItems,
   saveDurableMediaAsset,
   saveDurablePortfolioHolding,
   saveDurableSystemSettings,
+  saveSessionDurablePortfolioHolding,
+  saveSessionDurableUserProfile,
+  saveSessionDurableWatchlistItem,
+  getSessionDurableUserProfileByAuthUserId,
+  touchSessionDurableUserProfileLastActive,
+  touchDurableUserProfileLastActive,
   saveDurableUserProfile,
   saveDurableWatchlistItem,
 } from "@/lib/cms-durable-state";
@@ -48,8 +63,13 @@ import {
 import {
   canUseFileFallback,
   getFileFallbackDisabledMessage,
+  isHostedAppRuntime,
 } from "@/lib/durable-data-runtime";
-import { getConfiguredAdminEmails } from "@/lib/runtime-launch-config";
+import {
+  getConfiguredAdminEmails,
+  hasRuntimeSupabaseAdminEnv,
+  hasRuntimeSupabaseEnv,
+} from "@/lib/runtime-launch-config";
 import { getDurableStockQuoteSnapshot } from "@/lib/market-data-durable-store";
 import { saveMediaBinary } from "@/lib/media-storage";
 import { sampleStocks } from "@/lib/mock-data";
@@ -60,6 +80,7 @@ import {
   type ProductUserRole,
 } from "@/lib/product-permissions";
 import { sanitizeSystemHeadCodeInput } from "@/lib/system-head-code";
+import { USER_ACTIVITY_THROTTLE_MS } from "@/lib/user-activity-tracking";
 
 export type { ProductUserCapability, ProductUserRole } from "@/lib/product-permissions";
 
@@ -247,6 +268,7 @@ type UserProductStore = {
 };
 
 export type SaveUserProfileInput = {
+  authUserId?: string | null;
   email: string;
   name?: string | null;
   username?: string | null;
@@ -294,6 +316,19 @@ export type RemoveUserPortfolioHoldingResult = {
   removedSlug: string;
 };
 
+export class UserProductStorageUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UserProductStorageUnavailableError";
+  }
+}
+
+export type UserProductProfileState = {
+  profile: ProductUserProfile | null;
+  storageAvailable: boolean;
+  error: UserProductStorageUnavailableError | null;
+};
+
 const STORE_PATH = path.join(process.cwd(), "data", "user-product-store.json");
 const STORE_VERSION = 1;
 const USER_PRODUCT_FILE_FALLBACK_SCOPE = "User product data";
@@ -323,6 +358,45 @@ let storeCache:
 
 function cleanString(value: string | null | undefined) {
   return String(value ?? "").trim();
+}
+
+function normalizeProfileId(value: string | null | undefined) {
+  const candidate = cleanString(value);
+  return candidate || randomUUID();
+}
+
+function buildUserProductStorageUnavailableError(detail?: string) {
+  const baseMessage = getFileFallbackDisabledMessage(USER_PRODUCT_FILE_FALLBACK_SCOPE);
+  return new UserProductStorageUnavailableError(detail ? `${baseMessage} ${detail}` : baseMessage);
+}
+
+function logUserProductProfileBootstrapFailure(
+  stage: string,
+  user: Pick<User, "id" | "email">,
+  error?: unknown,
+) {
+  console.error("[user-product-store] Durable account profile bootstrap failed", {
+    stage,
+    hostedRuntime: isHostedAppRuntime(),
+    hasSupabasePublicEnv: hasRuntimeSupabaseEnv(),
+    hasSupabaseAdminEnv: hasRuntimeSupabaseAdminEnv(),
+    userId: cleanString(user.id),
+    email: normalizeAccountEmail(user.email) ?? null,
+    error:
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : error ?? null,
+  });
+}
+
+export function isUserProductStorageUnavailableError(
+  error: unknown,
+): error is UserProductStorageUnavailableError {
+  return error instanceof UserProductStorageUnavailableError;
 }
 
 function cleanUrlLikeValue(value: string | null | undefined) {
@@ -388,6 +462,19 @@ function buildDefaultUsername(value: {
   return preferred.length >= 3 ? preferred : `${preferred}_user`.slice(0, 24);
 }
 
+function buildBootstrapUsernameFromEmail(email: string | null | undefined) {
+  const normalizedEmail = normalizeAccountEmail(email);
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  return (
+    normalizeUsernameCandidate(normalizedEmail.split("@")[0]) ||
+    normalizeUsernameCandidate(normalizedEmail) ||
+    null
+  );
+}
+
 function containsBlockedUsernameTerm(username: string) {
   const normalized = normalizeUsernameCandidate(username);
   return Array.from(USERNAME_BLOCKLIST).some((term) => normalized.includes(term));
@@ -428,6 +515,52 @@ function defaultRoleForEmail(email: string | null | undefined): ProductUserRole 
   return getConfiguredAdminEmails().includes(normalized) ? "admin" : "user";
 }
 
+function normalizeMembershipTierValue(value: string | null | undefined) {
+  const normalized = cleanString(value).trim().toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized === "free") {
+    return "free";
+  }
+
+  if (normalized === "pro") {
+    return "pro";
+  }
+
+  if (normalized === "pro-max" || normalized === "pro_max" || normalized === "promax" || normalized === "pro max") {
+    return "pro-max";
+  }
+
+  return cleanString(value);
+}
+
+function defaultMembershipTierForEmail(
+  email: string | null | undefined,
+  fallback: string | null | undefined = "free",
+) {
+  const normalizedEmail = normalizeAccountEmail(email);
+  if (normalizedEmail && defaultRoleForEmail(normalizedEmail) === "admin") {
+    return "pro-max";
+  }
+
+  return normalizeMembershipTierValue(fallback) ?? null;
+}
+
+function resolveRoleForProfile(
+  email: string | null | undefined,
+  requestedRole: ProductUserRole | null | undefined,
+) {
+  const normalizedEmail = normalizeAccountEmail(email);
+  if (normalizedEmail && defaultRoleForEmail(normalizedEmail) === "admin") {
+    return "admin" as const;
+  }
+
+  return requestedRole ?? defaultRoleForEmail(email);
+}
+
 function defaultSettings(): SystemSettings {
   return {
     siteName: "Riddra",
@@ -464,9 +597,9 @@ function defaultStore(): UserProductStore {
 
 function normalizeProfile(value: Partial<ProductUserProfile>): ProductUserProfile {
   const email = normalizeAccountEmail(value.email) ?? "";
-  const userKey = cleanString(value.userKey) || normalizeSlug(email) || cleanString(value.authUserId) || randomUUID();
+  const userKey = cleanString(value.userKey) || email || cleanString(value.authUserId) || randomUUID();
   const now = new Date().toISOString();
-  const role = value.role ?? defaultRoleForEmail(email);
+  const role = resolveRoleForProfile(email, value.role);
   const username = buildDefaultUsername({
     username: value.username,
     name: value.name,
@@ -475,7 +608,7 @@ function normalizeProfile(value: Partial<ProductUserProfile>): ProductUserProfil
   });
 
   return {
-    id: cleanString(value.id) || `profile_${userKey}`,
+    id: normalizeProfileId(value.id),
     userKey,
     authUserId: cleanString(value.authUserId) || userKey,
     name: cleanString(value.name) || email.split("@")[0] || "Riddra user",
@@ -487,13 +620,153 @@ function normalizeProfile(value: Partial<ProductUserProfile>): ProductUserProfil
     instagramHandle: normalizeSocialHandle(value.instagramHandle),
     youtubeUrl: cleanUrlLikeValue(value.youtubeUrl),
     profileVisible: value.profileVisible !== false,
-    membershipTier: cleanString(value.membershipTier) || null,
+    membershipTier: defaultMembershipTierForEmail(email, value.membershipTier),
     role,
     capabilities: getEffectiveCapabilities(role, value.capabilities),
     createdAt: cleanString(value.createdAt) || now,
     updatedAt: cleanString(value.updatedAt) || now,
     lastActiveAt: cleanString(value.lastActiveAt) || now,
   };
+}
+
+function buildBootstrapProfileForUser(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+  options?: {
+    existing?: ProductUserProfile | null;
+    updatedAt?: string;
+    username?: string | null;
+    lastActiveAt?: string | null;
+  },
+) {
+  const existing = options?.existing ?? null;
+  const now = options?.updatedAt ?? new Date().toISOString();
+  const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
+  const role = resolveRoleForProfile(email, existing?.role ?? null);
+  const username =
+    cleanString(options?.username) ||
+    existing?.username ||
+    buildBootstrapUsernameFromEmail(email) ||
+    buildDefaultUsername({
+      email,
+      userKey: email,
+    });
+  const lastActive =
+    cleanString(options?.lastActiveAt) ||
+    (!existing?.lastActiveAt || Number.isNaN(new Date(existing.lastActiveAt).getTime())
+      ? now
+      : existing.lastActiveAt);
+
+  return buildNormalizedProfile({
+    id: existing?.id,
+    userKey: existing?.userKey ?? email,
+    authUserId: cleanString(user.id) || existing?.authUserId,
+    email,
+    name: existing?.name || deriveUserName(user) || email,
+    username,
+    websiteUrl: existing?.websiteUrl ?? null,
+    xHandle: existing?.xHandle ?? null,
+    linkedinUrl: existing?.linkedinUrl ?? null,
+    instagramHandle: existing?.instagramHandle ?? null,
+    youtubeUrl: existing?.youtubeUrl ?? null,
+    profileVisible: existing?.profileVisible ?? true,
+    membershipTier: defaultMembershipTierForEmail(email, existing?.membershipTier ?? "free"),
+    role,
+    capabilities: existing?.capabilities ?? [],
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
+    lastActiveAt: lastActive,
+  });
+}
+
+function shouldRefreshLastActiveAt(
+  lastActiveAt: string | null | undefined,
+  now = Date.now(),
+  thresholdMs = USER_ACTIVITY_THROTTLE_MS,
+) {
+  const parsed = Date.parse(cleanString(lastActiveAt));
+  return !Number.isFinite(parsed) || now - parsed >= thresholdMs;
+}
+
+function getActivityBackfillEmail(candidate: string | null | undefined): string | null {
+  const matched = String(candidate ?? "").match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return normalizeAccountEmail(matched?.[0] ?? null) ?? null;
+}
+
+async function findDurableProfileForUserActivity(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+) {
+  const canUseAuthUserId = !isLocalBypassUser(user) && cleanString(user.id).length > 0;
+
+  if (!canUseAuthUserId || !hasDurableUserSessionStateStore()) {
+    return null;
+  }
+
+  return getSessionDurableUserProfileByAuthUserId(cleanString(user.id));
+}
+
+async function findLegacyDurableProfileForRepair(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+) {
+  const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
+  const userKey = getUserKey(user);
+  const canUseAuthUserId = !isLocalBypassUser(user) && cleanString(user.id).length > 0;
+
+  return (
+    (canUseAuthUserId ? await getDurableUserProfileByAuthUserId(cleanString(user.id)) : null) ??
+    (email ? await getDurableUserProfileByEmail(email) : null) ??
+    (userKey ? await getDurableUserProfileByUserKey(userKey) : null) ??
+    null
+  );
+}
+
+function isRecoverableSelfServiceProfileWriteError(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as { code?: string | number; message?: string };
+  const code = String(candidate.code ?? "");
+  const message = String(candidate.message ?? "");
+
+  return (
+    code === "23505" ||
+    code === "42501" ||
+    message.includes("duplicate key") ||
+    message.includes("violates row-level security policy")
+  );
+}
+
+async function saveSessionDurableUserProfileWithLegacyRepair(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+  nextProfile: ProductUserProfile,
+) {
+  try {
+    return await saveSessionDurableUserProfile(nextProfile);
+  } catch (error) {
+    if (!hasDurableCmsStateStore() || !isRecoverableSelfServiceProfileWriteError(error)) {
+      throw error;
+    }
+
+    const legacyProfile = await findLegacyDurableProfileForRepair(user);
+    if (!legacyProfile) {
+      throw error;
+    }
+
+    return await saveDurableUserProfile({
+      ...nextProfile,
+      id: legacyProfile.id,
+      userKey: legacyProfile.userKey,
+      authUserId: cleanString(user.id) || nextProfile.authUserId,
+      email: normalizeAccountEmail(user.email) ?? legacyProfile.email,
+      username: nextProfile.username || legacyProfile.username,
+      membershipTier: nextProfile.membershipTier ?? legacyProfile.membershipTier,
+      role: nextProfile.role ?? legacyProfile.role,
+      capabilities: nextProfile.capabilities?.length ? nextProfile.capabilities : legacyProfile.capabilities,
+      createdAt: legacyProfile.createdAt,
+      updatedAt: nextProfile.updatedAt,
+      lastActiveAt: nextProfile.lastActiveAt,
+    });
+  }
 }
 
 function normalizeWatchlistItem(value: Partial<UserWatchlistItem>): UserWatchlistItem {
@@ -665,7 +938,7 @@ function normalizeVersion(value: Partial<CmsRecordVersion>): CmsRecordVersion {
   snapshot.status = normalizeAdminPublishState(snapshot.status as string);
 
   return {
-    id: cleanString(value.id) || `version_${randomUUID()}`,
+    id: cleanString(value.id) || randomUUID(),
     family: cleanString(value.family),
     slug: normalizeSlug(value.slug ?? ""),
     title: cleanString(value.title),
@@ -682,7 +955,7 @@ function normalizeVersion(value: Partial<CmsRecordVersion>): CmsRecordVersion {
 
 function normalizeRefreshJobRun(value: Partial<RefreshJobRun>): RefreshJobRun {
   return {
-    id: cleanString(value.id) || `refresh_run_${randomUUID()}`,
+    id: cleanString(value.id) || randomUUID(),
     jobKey: cleanString(value.jobKey),
     status: value.status ?? "running",
     startedAt: cleanString(value.startedAt) || new Date().toISOString(),
@@ -812,6 +1085,19 @@ function getUserKey(user: Pick<User, "id" | "email">) {
   return buildAccountUserKey(user);
 }
 
+function isLocalBypassUser(user: Pick<User, "id" | "email" | "user_metadata">) {
+  if (cleanString(user.id) === "local-admin-bypass") {
+    return true;
+  }
+
+  const userMetadata =
+    user.user_metadata && typeof user.user_metadata === "object"
+      ? (user.user_metadata as Record<string, unknown>)
+      : null;
+
+  return userMetadata?.localBypass === true;
+}
+
 function deriveUserName(user: Pick<User, "email" | "user_metadata">) {
   const fullName =
     cleanString((user as { user_metadata?: Record<string, unknown> }).user_metadata?.full_name as string | undefined) ||
@@ -826,6 +1112,10 @@ function deriveUserName(user: Pick<User, "email" | "user_metadata">) {
 
 function buildNormalizedProfile(input: Partial<ProductUserProfile>): ProductUserProfile {
   return normalizeProfile(input);
+}
+
+async function buildHostedSessionProfile(user: Pick<User, "id" | "email" | "user_metadata">) {
+  return buildBootstrapProfileForUser(user);
 }
 
 async function mutateStore<T>(
@@ -854,9 +1144,9 @@ function getOrCreateRecord(store: UserProductStore, user: Pick<User, "id" | "ema
         authUserId: user.id,
         email,
         name: deriveUserName(user),
-        membershipTier: store.settings.defaultMembershipTier,
+        membershipTier: defaultMembershipTierForEmail(email, "free"),
         role: defaultRoleForEmail(email),
-        capabilities: getDefaultCapabilitiesForRole(defaultRoleForEmail(email)),
+        capabilities: [],
       }),
       watchlist: [],
       portfolio: [],
@@ -916,7 +1206,13 @@ function mergeProfileWithFallbackRecord(
   });
 }
 
-function ensureUniqueUsername(username: string, profiles: ProductUserProfile[], excludeUserKey?: string | null) {
+type UsernameProfileLike = Pick<ProductUserProfile, "userKey" | "username">;
+
+function ensureUniqueUsername(
+  username: string,
+  profiles: UsernameProfileLike[],
+  excludeUserKey?: string | null,
+) {
   const normalized = normalizeUsernameCandidate(username);
   if (!normalized || normalized.length < 3) {
     return null;
@@ -943,6 +1239,51 @@ function ensureUniqueUsername(username: string, profiles: ProductUserProfile[], 
   return null;
 }
 
+function getProfileIdentityKeys(profile: ProductUserProfile) {
+  return [
+    cleanString(profile.authUserId) ? `auth:${cleanString(profile.authUserId)}` : null,
+    normalizeAccountEmail(profile.email) ? `email:${normalizeAccountEmail(profile.email)}` : null,
+    cleanString(profile.userKey) ? `userKey:${cleanString(profile.userKey)}` : null,
+  ].filter(Boolean) as string[];
+}
+
+function getProfileFreshnessValue(profile: ProductUserProfile) {
+  const updatedAt = Date.parse(profile.updatedAt || "");
+  const lastActiveAt = Date.parse(profile.lastActiveAt || "");
+  const createdAt = Date.parse(profile.createdAt || "");
+
+  return Math.max(
+    Number.isFinite(updatedAt) ? updatedAt : 0,
+    Number.isFinite(lastActiveAt) ? lastActiveAt : 0,
+    Number.isFinite(createdAt) ? createdAt : 0,
+  );
+}
+
+function collapseProfilesToCanonical(profiles: ProductUserProfile[]) {
+  const seenIdentityKeys = new Set<string>();
+  const canonicalProfiles: ProductUserProfile[] = [];
+
+  const rankedProfiles = [...profiles].sort((left, right) => {
+    return getProfileFreshnessValue(right) - getProfileFreshnessValue(left);
+  });
+
+  for (const profile of rankedProfiles) {
+    const identityKeys = getProfileIdentityKeys(profile);
+    if (identityKeys.some((key) => seenIdentityKeys.has(key))) {
+      continue;
+    }
+
+    canonicalProfiles.push(profile);
+    for (const key of identityKeys) {
+      seenIdentityKeys.add(key);
+    }
+  }
+
+  return canonicalProfiles.sort((left, right) =>
+    right.lastActiveAt.localeCompare(left.lastActiveAt) || right.updatedAt.localeCompare(left.updatedAt),
+  );
+}
+
 export async function validateUsernameAvailability(
   username: string,
   options?: { excludeUserKey?: string | null; allowAutoSuffix?: boolean },
@@ -961,8 +1302,13 @@ export async function validateUsernameAvailability(
     throw new Error("Choose a different username.");
   }
 
-  const profiles = await listUserProductProfiles();
-  const exactTaken = profiles.some(
+  const candidateProfiles =
+    (await listDurableUserProfileUsernameCandidates(normalized)) ??
+    (await listUserProductProfiles()).map((profile) => ({
+      userKey: profile.userKey,
+      username: profile.username,
+    }));
+  const exactTaken = candidateProfiles.some(
     (profile) =>
       profile.userKey !== options?.excludeUserKey &&
       profile.username.trim().toLowerCase() === normalized,
@@ -976,7 +1322,7 @@ export async function validateUsernameAvailability(
     throw new Error("That username is already taken.");
   }
 
-  const next = ensureUniqueUsername(normalized, profiles, options.excludeUserKey);
+  const next = ensureUniqueUsername(normalized, candidateProfiles, options.excludeUserKey);
   if (!next) {
     throw new Error("Could not generate a unique username right now.");
   }
@@ -1067,37 +1413,316 @@ export async function getUserProductStore() {
   return readStore();
 }
 
-export async function ensureUserProductProfile(user: Pick<User, "id" | "email" | "user_metadata">) {
-  if (hasDurableCmsStateStore()) {
-    const userKey = getUserKey(user);
-    const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
-    const settings = await getSystemSettings();
-    const existing =
-      (await getDurableUserProfileByUserKey(userKey)) ??
-      (await getDurableUserProfileByEmail(email));
-    const now = Date.now();
-    const lastActive = new Date(existing?.lastActiveAt ?? "").getTime();
-    const nextProfile = buildNormalizedProfile({
-      id: existing?.id,
-      userKey: existing?.userKey ?? userKey,
-      authUserId: user.id,
-      email,
-      name: deriveUserName(user) || existing?.name,
-      membershipTier: existing?.membershipTier ?? settings.defaultMembershipTier,
-      role: existing?.role ?? defaultRoleForEmail(email),
-      capabilities: existing?.capabilities ?? getDefaultCapabilitiesForRole(existing?.role ?? defaultRoleForEmail(email)),
-      createdAt: existing?.createdAt,
-      updatedAt: existing?.updatedAt,
-      lastActiveAt:
-        !Number.isFinite(lastActive) || now - lastActive > 1000 * 60 * 15
-          ? new Date().toISOString()
-          : existing?.lastActiveAt,
-    });
-    const saved = await saveDurableUserProfile(nextProfile);
-    if (saved) {
-      const fallbackStore = await readStore();
-      return mergeProfileWithFallbackRecord(saved, findRecordByProfile(fallbackStore, saved));
+export async function touchUserProductProfileActivity(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+  options?: {
+    throttleMs?: number;
+    at?: string;
+  },
+) {
+  const throttleMs = options?.throttleMs ?? USER_ACTIVITY_THROTTLE_MS;
+  const activityAt = cleanString(options?.at) || new Date().toISOString();
+  const activityAtMs = Date.parse(activityAt);
+
+  if (hasDurableUserSessionStateStore()) {
+    try {
+      const existing = await findDurableProfileForUserActivity(user);
+      if (!existing) {
+        if (isLocalBypassUser(user)) {
+          return null;
+        }
+        return ensureUserProductProfile(user);
+      }
+
+      if (!shouldRefreshLastActiveAt(existing.lastActiveAt, activityAtMs, throttleMs)) {
+        return existing;
+      }
+
+      const touched = await touchSessionDurableUserProfileLastActive({
+        authUserId: cleanString(user.id) || existing.authUserId,
+        lastActiveAt: activityAt,
+        updatedAt: activityAt,
+      });
+
+      return touched
+        ? normalizeProfile({
+            ...existing,
+            lastActiveAt: activityAt,
+            updatedAt: activityAt,
+          })
+        : existing;
+    } catch (error) {
+      logUserProductProfileBootstrapFailure("activity_touch_failed", user, error);
+
+      if (isHostedAppRuntime()) {
+        return null;
+      }
     }
+  }
+
+  if (isHostedAppRuntime()) {
+    return null;
+  }
+
+  return mutateStore(async (store) => {
+    const record = getOrCreateRecord(store, user);
+    if (
+      shouldRefreshLastActiveAt(
+        record.profile.lastActiveAt,
+        activityAtMs,
+        throttleMs,
+      )
+    ) {
+      record.profile.lastActiveAt = activityAt;
+      record.profile.updatedAt = activityAt;
+    }
+
+    return normalizeProfile(record.profile);
+  });
+}
+
+export async function backfillUserProductProfileActivityForToday() {
+  if (!hasDurableCmsStateStore()) {
+    return { touchedProfiles: 0, scannedEntries: 0 };
+  }
+
+  const entries = await listDurableAdminActivityLog(250);
+  if (!entries?.length) {
+    return { touchedProfiles: 0, scannedEntries: 0 };
+  }
+
+  const now = new Date();
+  const nowLabel = new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const latestByIdentity = new Map<
+    string,
+    { actorUserId: string | null; email: string | null; at: string }
+  >();
+
+  for (const entry of entries) {
+    const entryDate = new Date(entry.createdAt);
+    if (Number.isNaN(entryDate.getTime())) {
+      continue;
+    }
+
+    const entryLabel = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(entryDate);
+    if (entryLabel !== nowLabel) {
+      continue;
+    }
+
+    const actorEmail = getActivityBackfillEmail(entry.actorEmail);
+    const identityKey =
+      cleanString(entry.actorUserId) ||
+      actorEmail ||
+      "";
+
+    if (!identityKey) {
+      continue;
+    }
+
+    const existing = latestByIdentity.get(identityKey);
+    if (!existing || entry.createdAt.localeCompare(existing.at) > 0) {
+      latestByIdentity.set(identityKey, {
+        actorUserId: cleanString(entry.actorUserId) || null,
+        email: actorEmail ?? null,
+        at: entry.createdAt,
+      });
+    }
+  }
+
+  if (!latestByIdentity.size) {
+    return { touchedProfiles: 0, scannedEntries: entries.length };
+  }
+
+  const profiles = await listDurableUserProfiles();
+  if (!profiles?.length) {
+    return { touchedProfiles: 0, scannedEntries: entries.length };
+  }
+
+  let touchedProfiles = 0;
+  for (const activity of latestByIdentity.values()) {
+    const matchedProfile =
+      profiles.find(
+        (profile) =>
+          activity.actorUserId &&
+          cleanString(profile.authUserId) === activity.actorUserId,
+      ) ??
+      profiles.find(
+        (profile) =>
+          activity.email &&
+          normalizeAccountEmail(profile.email) === activity.email,
+      ) ??
+      null;
+
+    if (!matchedProfile) {
+      continue;
+    }
+
+    if (
+      !shouldRefreshLastActiveAt(
+        matchedProfile.lastActiveAt,
+        Date.parse(activity.at),
+        0,
+      )
+    ) {
+      continue;
+    }
+
+    const touched = await touchDurableUserProfileLastActive({
+      userKey: matchedProfile.userKey,
+      lastActiveAt: activity.at,
+      updatedAt: activity.at,
+    });
+    if (touched) {
+      touchedProfiles += 1;
+    }
+  }
+
+  return {
+    touchedProfiles,
+    scannedEntries: entries.length,
+  };
+}
+
+export async function ensureUserProductProfile(user: Pick<User, "id" | "email" | "user_metadata">) {
+  if (isLocalBypassUser(user)) {
+    if (canUseFileFallback()) {
+      return mutateStore(async (store) => {
+        const record = getOrCreateRecord(store, user);
+        const now = new Date().toISOString();
+
+        record.profile = normalizeProfile({
+          ...record.profile,
+          authUserId: cleanString(user.id) || record.profile.authUserId,
+          userKey: normalizeAccountEmail(user.email) ?? record.profile.userKey,
+          email: normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user),
+          name: deriveUserName(user) || record.profile.name,
+          role: resolveRoleForProfile(
+            normalizeAccountEmail(user.email) ?? record.profile.email,
+            record.profile.role,
+          ),
+          membershipTier: defaultMembershipTierForEmail(
+            normalizeAccountEmail(user.email) ?? record.profile.email,
+            record.profile.membershipTier ?? "free",
+          ),
+          updatedAt: now,
+          lastActiveAt: now,
+        });
+
+        return normalizeProfile(record.profile);
+      });
+    }
+
+    return buildNormalizedProfile({
+      ...buildBootstrapProfileForUser(user),
+      updatedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+    });
+  }
+
+  if (hasDurableUserSessionStateStore()) {
+    try {
+      const userKey = getUserKey(user);
+      const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
+      const existing = await findDurableProfileForUserActivity(user);
+      const now = new Date().toISOString();
+      const nowMs = Date.parse(now);
+      const fallbackStore = await readStore();
+      const desiredRole = resolveRoleForProfile(email, existing?.role ?? null);
+      const desiredMembershipTier = defaultMembershipTierForEmail(
+        email,
+        existing?.membershipTier ?? "free",
+      );
+      const needsProfileRepair =
+        !existing ||
+        cleanString(existing.authUserId) !== cleanString(user.id) ||
+        normalizeAccountEmail(existing.email) !== email ||
+        cleanString(existing.userKey) !== userKey ||
+        existing.role !== desiredRole ||
+        (existing.membershipTier ?? null) !== (desiredMembershipTier ?? null) ||
+        !cleanString(existing.username);
+      const shouldTouchActivity =
+        !existing || shouldRefreshLastActiveAt(existing.lastActiveAt, nowMs, USER_ACTIVITY_THROTTLE_MS);
+
+      if (existing && !needsProfileRepair) {
+        if (shouldTouchActivity) {
+          const touched = await touchSessionDurableUserProfileLastActive({
+            authUserId: cleanString(user.id) || existing.authUserId,
+            lastActiveAt: now,
+            updatedAt: now,
+          });
+          const activityProfile = touched
+            ? normalizeProfile({
+                ...existing,
+                lastActiveAt: now,
+                updatedAt: now,
+              })
+            : existing;
+          return mergeProfileWithFallbackRecord(
+            activityProfile,
+            findRecordByProfile(fallbackStore, activityProfile),
+          );
+        }
+
+        return mergeProfileWithFallbackRecord(existing, findRecordByProfile(fallbackStore, existing));
+      }
+
+      const bootstrapUsername = await validateUsernameAvailability(
+        existing?.username ||
+          buildBootstrapUsernameFromEmail(email) ||
+          deriveUserName(user) ||
+          email.split("@")[0],
+        {
+          excludeUserKey: existing?.userKey ?? email,
+          allowAutoSuffix: true,
+        },
+      );
+      const nextProfile = buildBootstrapProfileForUser(user, {
+        existing,
+        updatedAt: now,
+        username: bootstrapUsername,
+        lastActiveAt: shouldTouchActivity ? now : existing?.lastActiveAt ?? now,
+      });
+      const saved = await saveSessionDurableUserProfileWithLegacyRepair(user, nextProfile);
+      if (saved) {
+        return mergeProfileWithFallbackRecord(saved, findRecordByProfile(fallbackStore, saved));
+      }
+
+      logUserProductProfileBootstrapFailure("save_returned_null", user, {
+        userKey,
+        email,
+      });
+
+      if (isHostedAppRuntime()) {
+        throw buildUserProductStorageUnavailableError(
+          "Could not create or refresh the durable account profile right now.",
+        );
+      }
+    } catch (error) {
+      logUserProductProfileBootstrapFailure("durable_bootstrap_exception", user, error);
+
+      if (isHostedAppRuntime()) {
+        throw buildUserProductStorageUnavailableError(
+          error instanceof Error
+            ? error.message
+            : "Could not create or refresh the durable account profile right now.",
+        );
+      }
+    }
+  }
+
+  if (isHostedAppRuntime()) {
+    logUserProductProfileBootstrapFailure("missing_supabase_session_env", user);
+    throw buildUserProductStorageUnavailableError();
   }
 
   return mutateStore(async (store) => {
@@ -1106,9 +1731,12 @@ export async function ensureUserProductProfile(user: Pick<User, "id" | "email" |
     const lastActive = new Date(record.profile.lastActiveAt).getTime();
 
     record.profile.authUserId = user.id;
+    record.profile.userKey = normalizeAccountEmail(user.email) ?? record.profile.userKey;
     record.profile.email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
     record.profile.name = deriveUserName(user) || record.profile.name;
-    if (!Number.isFinite(lastActive) || now - lastActive > 1000 * 60 * 15) {
+    record.profile.role = resolveRoleForProfile(record.profile.email, record.profile.role);
+    record.profile.membershipTier = defaultMembershipTierForEmail(record.profile.email, "free");
+    if (!Number.isFinite(lastActive) || now - lastActive > USER_ACTIVITY_THROTTLE_MS) {
       record.profile.lastActiveAt = new Date().toISOString();
     }
 
@@ -1116,13 +1744,97 @@ export async function ensureUserProductProfile(user: Pick<User, "id" | "email" |
   });
 }
 
+const getCachedUserProductProfile = cache(
+  async (user: Pick<User, "id" | "email" | "user_metadata">) => {
+    if (hasDurableUserSessionStateStore()) {
+      return ensureUserProductProfile(user);
+    }
+
+    if (isHostedAppRuntime()) {
+      throw buildUserProductStorageUnavailableError();
+    }
+
+    const store = await readStore();
+    return normalizeProfile(getOrCreateRecord(store, user).profile);
+  },
+);
+
 export async function getUserProductProfile(user: Pick<User, "id" | "email" | "user_metadata">) {
-  if (hasDurableCmsStateStore()) {
-    return ensureUserProductProfile(user);
+  return getCachedUserProductProfile(user);
+}
+
+const SYSTEM_SETTINGS_CACHE_TTL_MS = 30_000;
+
+let cachedSystemSettings:
+  | {
+      expiresAt: number;
+      value: SystemSettings;
+    }
+  | null = null;
+
+function readTimedSystemSettingsCache() {
+  if (!cachedSystemSettings) {
+    return null;
+  }
+
+  if (cachedSystemSettings.expiresAt <= Date.now()) {
+    cachedSystemSettings = null;
+    return null;
+  }
+
+  return cachedSystemSettings.value;
+}
+
+function writeTimedSystemSettingsCache(value: SystemSettings) {
+  cachedSystemSettings = {
+    value,
+    expiresAt: Date.now() + SYSTEM_SETTINGS_CACHE_TTL_MS,
+  };
+
+  return value;
+}
+
+const getCachedPublicSystemSettings = cache(async () => {
+  const settings = await getPublicDurableSystemSettings();
+  if (settings) {
+    return settings;
   }
 
   const store = await readStore();
-  return normalizeProfile(getOrCreateRecord(store, user).profile);
+  return store.settings;
+});
+
+const getCachedAdminSystemSettings = cache(async () => {
+  if (hasDurableCmsStateStore()) {
+    const settings = await getDurableSystemSettings();
+    if (settings) {
+      return settings;
+    }
+  }
+
+  return getCachedPublicSystemSettings();
+});
+
+export async function getUserProductProfileState(
+  user: Pick<User, "id" | "email" | "user_metadata">,
+): Promise<UserProductProfileState> {
+  try {
+    return {
+      profile: await getUserProductProfile(user),
+      storageAvailable: true,
+      error: null,
+    };
+  } catch (error) {
+    if (isUserProductStorageUnavailableError(error)) {
+      return {
+        profile: await buildHostedSessionProfile(user),
+        storageAvailable: false,
+        error,
+      };
+    }
+
+    throw error;
+  }
 }
 
 export async function listUserProductProfiles() {
@@ -1142,42 +1854,48 @@ export async function listUserProductProfiles() {
             ),
         );
 
-      return [...mergedProfiles, ...fallbackOnlyProfiles].sort((left, right) =>
-        right.lastActiveAt.localeCompare(left.lastActiveAt),
-      );
+      return collapseProfilesToCanonical([...mergedProfiles, ...fallbackOnlyProfiles]);
     }
   }
 
   const store = await readStore();
-  return store.users
-    .map((item) => item.profile)
-    .sort((left, right) => right.lastActiveAt.localeCompare(left.lastActiveAt));
+  return collapseProfilesToCanonical(store.users.map((item) => item.profile));
 }
 
 export async function saveUserProductProfile(input: SaveUserProfileInput): Promise<SaveUserProfileResult> {
-  if (hasDurableCmsStateStore()) {
+  if (hasDurableUserSessionStateStore() && cleanString(input.authUserId)) {
     const email = normalizeAccountEmail(input.email);
     if (!email) {
       throw new Error("A valid email is required.");
     }
 
-    const existing = await getDurableUserProfileByEmail(email);
+    const existing = cleanString(input.authUserId)
+      ? await getSessionDurableUserProfileByAuthUserId(cleanString(input.authUserId))
+      : null;
     const settings = await getSystemSettings();
     const savedAt = new Date().toISOString();
-    const username = await validateUsernameAvailability(
+    const role = resolveRoleForProfile(email, input.role ?? existing?.role ?? null);
+    const requestedUsername =
       cleanString(input.username) ||
-        existing?.email?.split("@")[0] ||
-        cleanString(input.name) ||
-        email.split("@")[0],
-      {
-        excludeUserKey: existing?.userKey ?? normalizeSlug(email),
-        allowAutoSuffix: !cleanString(input.username),
-      },
-    );
+      existing?.username ||
+      existing?.email?.split("@")[0] ||
+      cleanString(input.name) ||
+      email.split("@")[0];
+    const normalizedExistingUsername = normalizeUsernameCandidate(existing?.username ?? "");
+    const normalizedRequestedUsername = normalizeUsernameCandidate(requestedUsername);
+    const username =
+      normalizedExistingUsername &&
+      normalizedRequestedUsername &&
+      normalizedExistingUsername === normalizedRequestedUsername
+        ? existing?.username ?? normalizedRequestedUsername
+        : await validateUsernameAvailability(requestedUsername, {
+            excludeUserKey: existing?.userKey ?? email,
+            allowAutoSuffix: !cleanString(input.username),
+          });
     const nextProfile = buildNormalizedProfile({
       id: existing?.id,
-      userKey: existing?.userKey ?? normalizeSlug(email),
-      authUserId: existing?.authUserId ?? normalizeSlug(email),
+      userKey: existing?.userKey ?? email,
+      authUserId: cleanString(input.authUserId) || existing?.authUserId || existing?.userKey || email,
       email,
       name: cleanString(input.name) || existing?.name || email.split("@")[0],
       username,
@@ -1192,14 +1910,150 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
       youtubeUrl:
         cleanUrlLikeValue(input.youtubeUrl) ?? existing?.youtubeUrl ?? null,
       profileVisible:
-        typeof input.profileVisible === "boolean" ? input.profileVisible : true,
-      membershipTier:
+        typeof input.profileVisible === "boolean"
+          ? input.profileVisible
+          : existing?.profileVisible ?? true,
+      membershipTier: defaultMembershipTierForEmail(
+        email,
         cleanString(input.membershipTier) || existing?.membershipTier || settings.defaultMembershipTier,
-      role: input.role ?? existing?.role ?? defaultRoleForEmail(email),
+      ),
+      role,
       capabilities:
         input.capabilities ??
         existing?.capabilities ??
-        getDefaultCapabilitiesForRole(input.role ?? existing?.role ?? defaultRoleForEmail(email)),
+        getDefaultCapabilitiesForRole(role),
+      createdAt: existing?.createdAt,
+      updatedAt: savedAt,
+      lastActiveAt: existing?.lastActiveAt ?? savedAt,
+    });
+    const sessionUser = {
+      id: cleanString(input.authUserId) || existing?.authUserId || "",
+      email,
+      user_metadata: {
+        name: cleanString(input.name) || existing?.name || email.split("@")[0],
+      },
+    };
+    const saved = await saveSessionDurableUserProfileWithLegacyRepair(sessionUser, nextProfile);
+    if (saved) {
+      if (canUseFileFallback()) {
+        await mutateStore(async (store) => {
+          const existingFallbackRecord =
+            store.users.find((item) => item.profile.userKey === saved.userKey) ??
+            store.users.find((item) => item.profile.email === saved.email) ??
+            null;
+
+          if (existingFallbackRecord) {
+            existingFallbackRecord.profile = normalizeProfile({
+              ...existingFallbackRecord.profile,
+              ...saved,
+              username,
+              websiteUrl: saved.websiteUrl,
+              xHandle: saved.xHandle,
+              linkedinUrl: saved.linkedinUrl,
+              instagramHandle: saved.instagramHandle,
+              youtubeUrl: saved.youtubeUrl,
+              profileVisible:
+                typeof input.profileVisible === "boolean"
+                  ? input.profileVisible
+                  : existingFallbackRecord.profile.profileVisible,
+            });
+          } else {
+            store.users.push({
+              profile: normalizeProfile({
+                ...saved,
+                username,
+                websiteUrl: saved.websiteUrl,
+                xHandle: saved.xHandle,
+                linkedinUrl: saved.linkedinUrl,
+                instagramHandle: saved.instagramHandle,
+                youtubeUrl: saved.youtubeUrl,
+                profileVisible:
+                  typeof input.profileVisible === "boolean" ? input.profileVisible : true,
+              }),
+              watchlist: [],
+              portfolio: [],
+              bookmarks: [],
+              recentlyViewed: [],
+            });
+          }
+        });
+      }
+      return {
+        profile: normalizeProfile({
+          ...saved,
+          username,
+          profileVisible: typeof input.profileVisible === "boolean" ? input.profileVisible : true,
+        }),
+        operation: existing ? "updated" : "created",
+        storageMode: "durable",
+        savedAt,
+      };
+    }
+
+    if (isHostedAppRuntime()) {
+      throw buildUserProductStorageUnavailableError(
+        "Could not save this account profile in durable storage right now.",
+      );
+    }
+  }
+
+  if (hasDurableCmsStateStore()) {
+    const email = normalizeAccountEmail(input.email);
+    if (!email) {
+      throw new Error("A valid email is required.");
+    }
+
+    const existing =
+      (cleanString(input.authUserId)
+        ? await getDurableUserProfileByAuthUserId(cleanString(input.authUserId))
+        : null) ??
+      (await getDurableUserProfileByEmail(email)) ??
+      (await getDurableUserProfileByUserKey(email));
+    const settings = await getAdminSystemSettings();
+    const savedAt = new Date().toISOString();
+    const role = resolveRoleForProfile(email, input.role ?? existing?.role ?? null);
+    const requestedUsername =
+      cleanString(input.username) ||
+      existing?.username ||
+      existing?.email?.split("@")[0] ||
+      cleanString(input.name) ||
+      email.split("@")[0];
+    const normalizedExistingUsername = normalizeUsernameCandidate(existing?.username ?? "");
+    const normalizedRequestedUsername = normalizeUsernameCandidate(requestedUsername);
+    const username =
+      normalizedExistingUsername &&
+      normalizedRequestedUsername &&
+      normalizedExistingUsername === normalizedRequestedUsername
+        ? existing?.username ?? normalizedRequestedUsername
+        : await validateUsernameAvailability(requestedUsername, {
+            excludeUserKey: existing?.userKey ?? email,
+            allowAutoSuffix: !cleanString(input.username),
+          });
+    const nextProfile = buildNormalizedProfile({
+      id: existing?.id,
+      userKey: existing?.userKey ?? email,
+      authUserId: cleanString(input.authUserId) || existing?.authUserId || existing?.userKey || email,
+      email,
+      name: cleanString(input.name) || existing?.name || email.split("@")[0],
+      username,
+      websiteUrl: cleanUrlLikeValue(input.websiteUrl) ?? existing?.websiteUrl ?? null,
+      xHandle: normalizeSocialHandle(input.xHandle) ?? existing?.xHandle ?? null,
+      linkedinUrl: cleanUrlLikeValue(input.linkedinUrl) ?? existing?.linkedinUrl ?? null,
+      instagramHandle: normalizeSocialHandle(input.instagramHandle) ?? existing?.instagramHandle ?? null,
+      youtubeUrl: cleanUrlLikeValue(input.youtubeUrl) ?? existing?.youtubeUrl ?? null,
+      profileVisible:
+        typeof input.profileVisible === "boolean"
+          ? input.profileVisible
+          : existing?.profileVisible ?? true,
+      membershipTier: defaultMembershipTierForEmail(
+        email,
+        cleanString(input.membershipTier) || existing?.membershipTier || settings.defaultMembershipTier,
+      ),
+      role,
+      capabilities:
+        input.capabilities ??
+        existing?.capabilities ??
+        getDefaultCapabilitiesForRole(role),
       createdAt: existing?.createdAt,
       updatedAt: savedAt,
       lastActiveAt: existing?.lastActiveAt ?? savedAt,
@@ -1260,6 +2114,16 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
         savedAt,
       };
     }
+
+    if (isHostedAppRuntime()) {
+      throw buildUserProductStorageUnavailableError(
+        "Could not save this account profile in durable storage right now.",
+      );
+    }
+  }
+
+  if (isHostedAppRuntime()) {
+    throw buildUserProductStorageUnavailableError();
   }
 
   return mutateStore(async (store) => {
@@ -1284,8 +2148,9 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
     if (!record) {
       record = {
         profile: normalizeProfile({
+          userKey: email,
           email,
-          authUserId: normalizeSlug(email),
+          authUserId: email,
           name: cleanString(input.name) || email.split("@")[0],
           username,
           websiteUrl: cleanUrlLikeValue(input.websiteUrl),
@@ -1294,11 +2159,12 @@ export async function saveUserProductProfile(input: SaveUserProfileInput): Promi
           instagramHandle: normalizeSocialHandle(input.instagramHandle),
           youtubeUrl: cleanUrlLikeValue(input.youtubeUrl),
           profileVisible: typeof input.profileVisible === "boolean" ? input.profileVisible : true,
-          membershipTier: cleanString(input.membershipTier) || store.settings.defaultMembershipTier,
+          membershipTier: defaultMembershipTierForEmail(
+            email,
+            cleanString(input.membershipTier) || "free",
+          ),
           role: input.role ?? defaultRoleForEmail(email),
-          capabilities:
-            input.capabilities ??
-            getDefaultCapabilitiesForRole(input.role ?? defaultRoleForEmail(email)),
+          capabilities: input.capabilities ?? [],
           updatedAt: savedAt,
           lastActiveAt: savedAt,
         }),
@@ -1404,13 +2270,32 @@ export async function removeUserProductProfile(input: { email: string }): Promis
 }
 
 export async function getUserRole(user: Pick<User, "id" | "email" | "user_metadata">) {
-  const profile = await ensureUserProductProfile(user);
-  return profile.role;
+  try {
+    const profile = await ensureUserProductProfile(user);
+    return profile.role;
+  } catch (error) {
+    if (isUserProductStorageUnavailableError(error)) {
+      const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
+      return defaultRoleForEmail(email);
+    }
+
+    throw error;
+  }
 }
 
 export async function getUserCapabilities(user: Pick<User, "id" | "email" | "user_metadata">) {
-  const profile = await ensureUserProductProfile(user);
-  return profile.capabilities;
+  try {
+    const profile = await ensureUserProductProfile(user);
+    return profile.capabilities;
+  } catch (error) {
+    if (isUserProductStorageUnavailableError(error)) {
+      const email = normalizeAccountEmail(user.email) ?? buildAccountFallbackEmail(user);
+      const role = defaultRoleForEmail(email);
+      return getDefaultCapabilitiesForRole(role);
+    }
+
+    throw error;
+  }
 }
 
 function resolveMembershipTierForProfile(
@@ -1490,9 +2375,9 @@ export async function getUserWatchlist(user: Pick<User, "id" | "email" | "user_m
   const fallbackStore = await readStore();
   const fallbackItems = findRecord(fallbackStore, user)?.watchlist ?? [];
 
-  if (hasDurableCmsStateStore()) {
+  if (hasDurableUserSessionStateStore()) {
     const profile = await ensureUserProductProfile(user);
-    const durableItems = await listDurableWatchlistItems(profile.id);
+    const durableItems = await listSessionDurableWatchlistItems(profile.id);
     if (durableItems) {
       return mergeWatchlistCollections(
         durableItems.map((item) => normalizeWatchlistItem(item)),
@@ -1517,12 +2402,12 @@ export async function addWatchlistItem(
     throw new Error("Could not match that input to a stock or mutual fund.");
   }
 
-  if (hasDurableCmsStateStore() && target.pageType === "stock") {
+  if (hasDurableUserSessionStateStore() && target.pageType === "stock") {
     const profile = await ensureUserProductProfile(user);
-    const currentItems = (await listDurableWatchlistItems(profile.id)) ?? [];
+    const currentItems = (await listSessionDurableWatchlistItems(profile.id)) ?? [];
     const exists = currentItems.find((item) => item.stockSlug === target.slug);
     if (!exists) {
-      await saveDurableWatchlistItem(
+      await saveSessionDurableWatchlistItem(
         profile.id,
         normalizeWatchlistItem({
           pageType: "stock",
@@ -1537,11 +2422,12 @@ export async function addWatchlistItem(
       );
     }
     const lastActiveAt = new Date().toISOString();
-    await saveDurableUserProfile({
-      ...profile,
+    await touchSessionDurableUserProfileLastActive({
+      authUserId: cleanString(user.id) || profile.authUserId,
       lastActiveAt,
+      updatedAt: lastActiveAt,
     });
-    const durableItems = await listDurableWatchlistItems(profile.id);
+    const durableItems = await listSessionDurableWatchlistItems(profile.id);
     if (durableItems) {
       const fallbackStore = await readStore();
       const fallbackItems = findRecord(fallbackStore, user)?.watchlist ?? [];
@@ -1589,15 +2475,16 @@ export async function removeWatchlistItem(
   const normalizedSlug = normalizeSlug(input.slug);
   const pageType = input.pageType ?? null;
 
-  if (hasDurableCmsStateStore() && (!pageType || pageType === "stock")) {
+  if (hasDurableUserSessionStateStore() && (!pageType || pageType === "stock")) {
     const profile = await ensureUserProductProfile(user);
-    await deleteDurableWatchlistItem(profile.id, normalizedSlug);
+    await deleteSessionDurableWatchlistItem(profile.id, normalizedSlug);
     const lastActiveAt = new Date().toISOString();
-    await saveDurableUserProfile({
-      ...profile,
+    await touchSessionDurableUserProfileLastActive({
+      authUserId: cleanString(user.id) || profile.authUserId,
       lastActiveAt,
+      updatedAt: lastActiveAt,
     });
-    const durableItems = (await listDurableWatchlistItems(profile.id)) ?? [];
+    const durableItems = (await listSessionDurableWatchlistItems(profile.id)) ?? [];
     const fallbackStore = await readStore();
     const fallbackItems =
       findRecord(fallbackStore, user)?.watchlist.filter(
@@ -1702,9 +2589,9 @@ export async function getPublicUserProfileByUsername(username: string) {
     return null;
   }
 
-  const profile =
-    (await listUserProductProfiles()).find((item) => item.username === normalized && item.profileVisible) ??
-    null;
+  const profile = (await listUserProductProfiles()).find(
+    (item) => item.username === normalized && item.profileVisible,
+  ) ?? null;
 
   if (!profile) {
     return null;
@@ -1796,9 +2683,9 @@ async function getResolvedUserPortfolioCollection(
   const fallbackPortfolio =
     findRecord(fallbackStore, user)?.portfolio.map((holding) => normalizePortfolioHolding(holding)) ??
     [];
-  if (hasDurableCmsStateStore()) {
+  if (hasDurableUserSessionStateStore()) {
     const profile = await ensureUserProductProfile(user);
-    const durablePortfolio = await listDurablePortfolioHoldings(profile.id);
+    const durablePortfolio = await listSessionDurablePortfolioHoldings(profile.id);
     if (durablePortfolio) {
       if (!fallbackPortfolio.length) {
         return {
@@ -1878,7 +2765,7 @@ export async function saveUserPortfolioHolding(
   user: Pick<User, "id" | "email" | "user_metadata">,
   input: SaveUserPortfolioHoldingInput,
 ): Promise<SaveUserPortfolioHoldingResult> {
-  if (hasDurableCmsStateStore()) {
+  if (hasDurableUserSessionStateStore()) {
     const profile = await ensureUserProductProfile(user);
     const stock = resolveStockIdentity(input.stockSlug);
     if (!stock) {
@@ -1892,9 +2779,9 @@ export async function saveUserPortfolioHolding(
       throw new Error("Quantity and buy price must be valid positive numbers.");
     }
 
-    const currentHoldings = (await listDurablePortfolioHoldings(profile.id)) ?? [];
+    const currentHoldings = (await listSessionDurablePortfolioHoldings(profile.id)) ?? [];
     const existing = currentHoldings.find((item) => item.stockSlug === stock.slug);
-    const saved = await saveDurablePortfolioHolding(
+    const saved = await saveSessionDurablePortfolioHolding(
       profile.id,
       normalizePortfolioHolding({
         id: existing?.id,
@@ -1910,11 +2797,12 @@ export async function saveUserPortfolioHolding(
 
     if (saved) {
       const lastActiveAt = new Date().toISOString();
-      await saveDurableUserProfile({
-        ...profile,
+      await touchSessionDurableUserProfileLastActive({
+        authUserId: cleanString(user.id) || profile.authUserId,
         lastActiveAt,
+        updatedAt: lastActiveAt,
       });
-      const holdings = await listDurablePortfolioHoldings(profile.id);
+      const holdings = await listSessionDurablePortfolioHoldings(profile.id);
       if (holdings) {
         await syncPortfolioHoldingsToFallbackStore(user, holdings, lastActiveAt);
         return {
@@ -1981,16 +2869,17 @@ export async function removeUserPortfolioHolding(
   input: { stockSlug: string },
 ): Promise<RemoveUserPortfolioHoldingResult> {
   const normalizedSlug = normalizeSlug(input.stockSlug);
-  if (hasDurableCmsStateStore()) {
+  if (hasDurableUserSessionStateStore()) {
     const profile = await ensureUserProductProfile(user);
-    const deleted = await deleteDurablePortfolioHolding(profile.id, normalizedSlug);
+    const deleted = await deleteSessionDurablePortfolioHolding(profile.id, normalizedSlug);
     if (deleted) {
       const lastActiveAt = new Date().toISOString();
-      await saveDurableUserProfile({
-        ...profile,
+      await touchSessionDurableUserProfileLastActive({
+        authUserId: cleanString(user.id) || profile.authUserId,
         lastActiveAt,
+        updatedAt: lastActiveAt,
       });
-      const holdings = await listDurablePortfolioHoldings(profile.id);
+      const holdings = await listSessionDurablePortfolioHoldings(profile.id);
       if (holdings) {
         await syncPortfolioHoldingsToFallbackStore(user, holdings, lastActiveAt);
         return {
@@ -2097,15 +2986,17 @@ export async function saveUploadedMediaAsset(input: {
 }
 
 export async function getSystemSettings() {
-  if (hasDurableCmsStateStore()) {
-    const settings = await getDurableSystemSettings();
-    if (settings) {
-      return settings;
-    }
+  const cached = readTimedSystemSettingsCache();
+
+  if (cached) {
+    return cached;
   }
 
-  const store = await readStore();
-  return store.settings;
+  return writeTimedSystemSettingsCache(await getCachedPublicSystemSettings());
+}
+
+export async function getAdminSystemSettings() {
+  return getCachedAdminSystemSettings();
 }
 
 export async function saveSystemSettings(input: SaveSystemSettingsInput): Promise<SaveSystemSettingsResult> {
@@ -2115,7 +3006,7 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
       ? undefined
       : (sanitizeSystemHeadCodeInput(input.publicHeadCode) ?? "");
   if (hasDurableCmsStateStore()) {
-    const currentSettings = (await getDurableSystemSettings()) ?? defaultSettings();
+    const currentSettings = await getAdminSystemSettings();
     const nextSettings: SystemSettings = {
       ...currentSettings,
       ...input,
@@ -2156,11 +3047,12 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
     };
     const saved = await saveDurableSystemSettings(nextSettings);
     if (saved) {
+      writeTimedSystemSettingsCache(saved);
       return { settings: saved, storageMode: "durable", savedAt };
     }
   }
 
-  return mutateStore(async (store) => {
+  const result = await mutateStore(async (store) => {
     store.settings = {
       ...store.settings,
       ...input,
@@ -2200,6 +3092,9 @@ export async function saveSystemSettings(input: SaveSystemSettingsInput): Promis
 
     return { settings: store.settings, storageMode: "fallback" as const, savedAt };
   });
+
+  writeTimedSystemSettingsCache(result.settings);
+  return result;
 }
 
 export async function createCmsPreviewSession(input: {
@@ -2304,6 +3199,12 @@ export async function appendCmsRecordVersion(input: {
     if (saved) {
       return saved;
     }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "CMS record version durable write failed. See server logs for the Supabase error details.",
+      );
+    }
   }
 
   return mutateStore(async (store) => {
@@ -2350,6 +3251,12 @@ export async function appendRefreshJobRun(input: Omit<RefreshJobRun, "id">) {
     const saved = await appendDurableRefreshJobRun(run);
     if (saved) {
       return saved;
+    }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "CMS refresh job durable write failed. See server logs for the Supabase error details.",
+      );
     }
   }
 

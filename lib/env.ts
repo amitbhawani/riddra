@@ -18,6 +18,8 @@ function readEnv(name: string) {
   return normalized;
 }
 
+const explicitMeilisearchIndexPrefix = readEnv("MEILISEARCH_INDEX_PREFIX");
+
 export const env = {
   siteUrl: readEnv("NEXT_PUBLIC_SITE_URL") ?? "",
   launchMode: readEnv("NEXT_PUBLIC_LAUNCH_MODE"),
@@ -41,7 +43,8 @@ export const env = {
   triggerProjectRef: readEnv("TRIGGER_PROJECT_REF"),
   meilisearchHost: readEnv("MEILISEARCH_HOST"),
   meilisearchApiKey: readEnv("MEILISEARCH_API_KEY"),
-  meilisearchIndexPrefix: readEnv("MEILISEARCH_INDEX_PREFIX") ?? "riddra",
+  meilisearchIndexPrefix: explicitMeilisearchIndexPrefix ?? "riddra",
+  meilisearchIndexPrefixExplicit: explicitMeilisearchIndexPrefix,
   openAiApiKey: readEnv("OPENAI_API_KEY"),
   aiDefaultMode: readEnv("AI_DEFAULT_MODE") ?? "formula_first",
   aiRealCallsEnabled: readEnv("AI_REAL_CALLS_ENABLED") ?? "false",

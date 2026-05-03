@@ -614,6 +614,7 @@ export function MutualFundDetailBriefPage({
                 featureGate={{
                   label: "Premium analytics",
                   enabled: premiumAnalyticsUnlocked,
+                  featureKey: "premium_analytics",
                   lockedReason:
                     "Advanced fund analytics stay on the higher tier while benchmark, NAV, and category basics remain visible here.",
                   ctaHref: "/pricing",

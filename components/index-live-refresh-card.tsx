@@ -6,6 +6,8 @@ import { getPublicDataStateMeta } from "@/lib/product-page-design";
 
 type IndexLiveRefreshCardProps = {
   slug?: string;
+  initialSnapshot?: IndexSnapshotPayload | null;
+  fallbackState?: "read_failed" | "unavailable" | null;
 };
 
 type IndexSnapshotPayload = {
@@ -16,19 +18,76 @@ type IndexSnapshotPayload = {
   dataMode: "verified" | "seeded" | "manual";
 };
 
-export function IndexLiveRefreshCard({ slug }: IndexLiveRefreshCardProps) {
+function buildSnapshotSummary(snapshot: IndexSnapshotPayload) {
+  return snapshot.dataMode === "verified"
+    ? `${snapshot.title} is currently reading verified index data. Last update: ${snapshot.lastUpdated}.`
+    : snapshot.dataMode === "manual"
+      ? `${snapshot.title} is currently using admin-entered source rows. Last update: ${snapshot.lastUpdated}.`
+      : `${snapshot.title} is still showing seeded intelligence. Latest refresh path: ${snapshot.lastUpdated}.`;
+}
+
+export function IndexLiveRefreshCard({
+  slug,
+  initialSnapshot = null,
+  fallbackState = null,
+}: IndexLiveRefreshCardProps) {
   const refreshingMeta = getPublicDataStateMeta("refreshing");
   const readFailedMeta = getPublicDataStateMeta("read_failed");
   const unavailableMeta = getPublicDataStateMeta("unavailable");
   const [state, setState] = useState<{
     status: "loading" | "ready" | "error";
     summary: string;
-  }>({
-    status: "loading",
-    summary: `${refreshingMeta.title}.`,
-  });
+  }>(() =>
+    initialSnapshot
+      ? {
+          status: "ready",
+          summary: buildSnapshotSummary(initialSnapshot),
+        }
+      : fallbackState === "read_failed"
+        ? {
+            status: "error",
+            summary: readFailedMeta.description,
+          }
+        : fallbackState === "unavailable"
+          ? {
+              status: "error",
+              summary: slug
+                ? unavailableMeta.description
+                : "Tracked index snapshots have not been written yet.",
+            }
+      : {
+          status: "loading",
+          summary: `${refreshingMeta.title}.`,
+        },
+  );
 
   useEffect(() => {
+    if (initialSnapshot) {
+      setState({
+        status: "ready",
+        summary: buildSnapshotSummary(initialSnapshot),
+      });
+      return;
+    }
+
+    if (fallbackState === "read_failed") {
+      setState({
+        status: "error",
+        summary: readFailedMeta.description,
+      });
+      return;
+    }
+
+    if (fallbackState === "unavailable") {
+      setState({
+        status: "error",
+        summary: slug
+          ? unavailableMeta.description
+          : "Tracked index snapshots have not been written yet.",
+      });
+      return;
+    }
+
     const controller = new AbortController();
     const url = slug ? `/api/index-snapshots?slug=${encodeURIComponent(slug)}` : "/api/index-snapshots";
 
@@ -58,15 +117,10 @@ export function IndexLiveRefreshCard({ slug }: IndexLiveRefreshCardProps) {
           throw new Error("missing_snapshot");
         }
 
-          setState({
-            status: "ready",
-            summary:
-              snapshot.dataMode === "verified"
-                ? `${snapshot.title} is currently reading verified index data. Last update: ${snapshot.lastUpdated}.`
-                : snapshot.dataMode === "manual"
-                  ? `${snapshot.title} is currently using admin-entered source rows. Last update: ${snapshot.lastUpdated}.`
-                  : `${snapshot.title} is still showing seeded intelligence. Latest refresh path: ${snapshot.lastUpdated}.`,
-          });
+        setState({
+          status: "ready",
+          summary: buildSnapshotSummary(snapshot),
+        });
       })
       .catch(() => {
         setState({
@@ -76,7 +130,14 @@ export function IndexLiveRefreshCard({ slug }: IndexLiveRefreshCardProps) {
       });
 
     return () => controller.abort();
-  }, [slug]);
+  }, [
+    fallbackState,
+    initialSnapshot,
+    readFailedMeta.description,
+    refreshingMeta.title,
+    slug,
+    unavailableMeta.description,
+  ]);
 
   const tone =
     state.status === "ready"

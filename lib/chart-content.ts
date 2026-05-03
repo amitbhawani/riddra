@@ -27,6 +27,15 @@ export type StockChartSnapshot = {
   mode: StockChartSnapshotMode;
 };
 
+export type StockChartSnapshotSourcePoint = {
+  tradeDate: string;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number | null;
+  volume: number | null;
+};
+
 function formatSnapshotTimestamp(value: string | null | undefined) {
   if (!value) return "Awaiting verified OHLCV";
 
@@ -82,6 +91,55 @@ function buildVolumeSeries(bars: CandlePoint[]): HistogramPoint[] {
         : Number((Math.abs(bar.close - bar.open) * 1.8 + 8 + index * 0.2).toFixed(2)),
     color: bar.close >= bar.open ? "rgba(90, 230, 198, 0.75)" : "rgba(255, 107, 107, 0.75)",
   }));
+}
+
+function toFiniteNumber(value: number | null | undefined) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+export function buildStockChartSnapshotFromSourcePoints(input: {
+  slug: string;
+  source?: string | null;
+  lastUpdated?: string | null;
+  timeframe?: string | null;
+  mode?: StockChartSnapshotMode;
+  points: StockChartSnapshotSourcePoint[];
+}): StockChartSnapshot {
+  const bars = input.points.flatMap((point) => {
+    const tradeDate = typeof point.tradeDate === "string" ? point.tradeDate.trim() : "";
+    const open = toFiniteNumber(point.open);
+    const high = toFiniteNumber(point.high);
+    const low = toFiniteNumber(point.low);
+    const close = toFiniteNumber(point.close);
+
+    if (!tradeDate || open === null || high === null || low === null || close === null) {
+      return [];
+    }
+
+    const volume = toFiniteNumber(point.volume);
+    return [
+      {
+        time: tradeDate,
+        open,
+        high,
+        low,
+        close,
+        volume: volume === null ? undefined : volume,
+      },
+    ];
+  });
+
+  return {
+    slug: input.slug,
+    source: input.source?.trim() || "Riddra stored market history",
+    lastUpdated: formatSnapshotTimestamp(input.lastUpdated),
+    timeframe: input.timeframe?.trim() || "1D",
+    bars,
+    trendSeries: buildTrendSeries(bars),
+    signalSeries: buildSignalSeries(bars),
+    volumeSeries: buildVolumeSeries(bars),
+    mode: input.mode ?? "verified",
+  };
 }
 
 function resolveDurableChartMode(source: string, ingestMode?: string | null): StockChartSnapshotMode {

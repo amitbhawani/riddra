@@ -11,7 +11,7 @@ import {
 import { getFundOverlapLens, getFundReturnValue } from "@/lib/fund-research";
 import { getFundTruthDetail, getFundTruthLabel, getStockTruthDetail, getStockTruthLabel } from "@/lib/market-truth";
 import type { FundSnapshot, StockSnapshot } from "@/lib/mock-data";
-import { getFund, getFunds, getStock, getStocks } from "@/lib/content";
+import { getFund, getFunds, getPublicStockDiscoveryStocks, getPublicStocks, getStock } from "@/lib/content";
 
 export type InsightCard = {
   label: string;
@@ -183,7 +183,7 @@ export function buildFundInsights(fund: FundSnapshot): InsightCard[] {
 }
 
 export const getComparableStocks = cache(async (slug: string): Promise<ComparableAsset[]> => {
-  const stocks = await getStocks();
+  const stocks = await getPublicStockDiscoveryStocks();
   const current = stocks.find((item) => item.slug === slug);
 
   if (!current) {
@@ -242,7 +242,7 @@ export const getStockCompareCandidates = cache(
       limit?: number;
     },
   ): Promise<CompareRouteCandidate[]> => {
-    const stocks = await getStocks();
+    const stocks = await getPublicStocks();
     const current = stocks.find((item) => item.slug === slug);
 
     if (!current) {

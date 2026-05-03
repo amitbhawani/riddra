@@ -221,6 +221,34 @@ function buildDailyMarketBrief(
   } satisfies RiddraDailyMarketBrief;
 }
 
+export function buildRiddraDailyMarketBriefFromArticles(
+  articles: readonly MarketNewsArticleWithRelations[],
+  options?: {
+    maxArticles?: number;
+    minimumArticles?: number;
+  },
+): RiddraDailyMarketBrief | null {
+  const safeMaxArticles = Number.isFinite(options?.maxArticles)
+    ? Math.min(Math.max(Math.trunc(options?.maxArticles ?? 5), 1), 8)
+    : 5;
+  const minimumArticles = Number.isFinite(options?.minimumArticles)
+    ? Math.min(Math.max(Math.trunc(options?.minimumArticles ?? 3), 1), safeMaxArticles)
+    : 3;
+  const topArticles = [...articles]
+    .sort((left, right) => getBriefArticleScore(right) - getBriefArticleScore(left))
+    .slice(0, safeMaxArticles);
+
+  if (topArticles.length < minimumArticles) {
+    return null;
+  }
+
+  const todayParts = getBriefDateParts(new Date().toISOString());
+  const dateLabel = todayParts?.label ?? "Today";
+  const dateKey = todayParts?.key ?? "today";
+
+  return buildDailyMarketBrief(topArticles, dateLabel, dateKey, true);
+}
+
 export function getRiddraDailyMarketBriefPreview(
   brief: Pick<RiddraDailyMarketBrief, "summary">,
   wordLimit = 42,
@@ -244,11 +272,19 @@ export function getRiddraDailyBriefStorySummary(
 
 export async function getRiddraDailyMarketBrief() {
   const articles = await getDailyMarketBriefArticles(5);
+  const brief = buildRiddraDailyMarketBriefFromArticles(articles, {
+    maxArticles: 5,
+    minimumArticles: 0,
+  });
+  if (brief) {
+    return brief;
+  }
+
   const todayParts = getBriefDateParts(new Date().toISOString());
   const dateLabel = todayParts?.label ?? "Today";
   const dateKey = todayParts?.key ?? "today";
 
-  return buildDailyMarketBrief(articles, dateLabel, dateKey, true);
+  return buildDailyMarketBrief([], dateLabel, dateKey, true);
 }
 
 export async function getRiddraDailyMarketBriefHistory(days = 5) {

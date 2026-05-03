@@ -15,6 +15,7 @@ import {
   type FiiDiiReportRow,
   type FiiDiiReportSection,
 } from "@/lib/fii-dii-report";
+import { getExternalLinkProps } from "@/lib/link-utils";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -67,8 +68,7 @@ export default async function FiiDiiReportPage() {
           <div className="flex flex-wrap gap-3">
             <a
               href={fiiDiiReport.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
+              {...getExternalLinkProps()}
               className="inline-flex rounded-full border border-[rgba(27,58,107,0.14)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[#D4853B] hover:text-[#D4853B]"
             >
               Open NSE source

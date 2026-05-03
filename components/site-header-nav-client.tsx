@@ -222,6 +222,8 @@ export function SiteHeaderNavClient({
     [marketNav, utilityNav, visibleMenuGroups],
   );
   const [contentTheme, setContentTheme] = useState<ContentTheme>("light");
+  const [resolvedAccountLabel, setResolvedAccountLabel] = useState(accountLabel ?? null);
+  const [resolvedIsSignedIn, setResolvedIsSignedIn] = useState(isSignedIn);
   const [openDesktopGroup, setOpenDesktopGroup] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -246,6 +248,46 @@ export function SiteHeaderNavClient({
   useEffect(() => {
     applyContentTheme(contentTheme);
   }, [contentTheme]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadClientState = () => {
+      void fetch("/api/account/client-state", {
+        cache: "no-store",
+      })
+        .then((response) => response.json())
+        .then((data: { isSignedIn?: boolean; accountLabel?: string | null }) => {
+          if (cancelled) {
+            return;
+          }
+
+          setResolvedIsSignedIn(Boolean(data?.isSignedIn));
+          setResolvedAccountLabel(typeof data?.accountLabel === "string" ? data.accountLabel : null);
+        })
+        .catch(() => undefined);
+    };
+
+    const canUseIdleCallback = typeof window.requestIdleCallback === "function";
+    let idleHandle: number | null = null;
+    let timeoutHandle: number | null = null;
+
+    if (canUseIdleCallback) {
+      idleHandle = window.requestIdleCallback(() => loadClientState(), { timeout: 1200 });
+    } else {
+      timeoutHandle = window.setTimeout(loadClientState, 250);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleHandle !== null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleHandle);
+      }
+
+      if (timeoutHandle !== null) {
+        window.clearTimeout(timeoutHandle);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleThemeChange = (event: Event) => {
@@ -314,7 +356,7 @@ export function SiteHeaderNavClient({
   }, []);
 
   const isDark = true;
-  const accountName = accountLabel?.trim() || (isSignedIn ? "Account" : "Sign in");
+  const accountName = resolvedAccountLabel?.trim() || (resolvedIsSignedIn ? "Account" : "Sign in");
   const brandMark = brand.mark.trim().slice(0, 2) || "R";
   const brandLogoUrl = brand.logoUrl.trim();
   const brandLogoWidthPx = Number.isFinite(brand.logoWidthPx) ? brand.logoWidthPx : 28;
@@ -525,7 +567,7 @@ export function SiteHeaderNavClient({
               <SearchAssistForm compact chromeTheme="dark" placeholder="Search stocks, indices..." />
             </div>
 
-            {isSignedIn ? (
+            {resolvedIsSignedIn ? (
               <Link
                 href="/account"
                 className={`inline-flex h-8 items-center gap-2 rounded-[6px] px-3 text-[13px] font-medium transition ${shellClasses.accountButton}`}
@@ -652,21 +694,21 @@ export function SiteHeaderNavClient({
 
             <div className={`mt-5 rounded-[12px] border px-3.5 py-3 ${shellClasses.drawerSection}`}>
               <p className={`text-[11px] uppercase tracking-[0.16em] ${isDark ? "text-[rgba(255,255,255,0.52)]" : "text-[rgba(15,23,42,0.48)]"}`}>
-                {isSignedIn ? "Account" : "Welcome"}
+                {resolvedIsSignedIn ? "Account" : "Welcome"}
               </p>
               <Link
-                href={isSignedIn ? "/account" : "/login"}
+                href={resolvedIsSignedIn ? "/account" : "/login"}
                 onClick={() => setMobileMenuOpen(false)}
                 className="mt-2 flex items-center gap-3"
               >
-                {isSignedIn ? (
+                {resolvedIsSignedIn ? (
                   <span className={`grid h-8 w-8 place-items-center rounded-full text-sm font-semibold ${isDark ? "bg-[rgba(255,255,255,0.14)] text-white" : "bg-[rgba(15,23,42,0.08)] text-[#111827]"}`}>
                     {getAccountInitial(accountName)}
                   </span>
                 ) : null}
                 <span className="text-sm font-medium">{accountName}</span>
               </Link>
-              {!isSignedIn ? (
+              {!resolvedIsSignedIn ? (
                 <div className="mt-3 grid gap-2">
                   {signedOutAccountLinks.map((item) => (
                     <Link

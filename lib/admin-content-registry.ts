@@ -33,6 +33,7 @@ import {
   buildGeneratedSeoDefaults,
   pickFirstNonEmptySeoValue,
 } from "@/lib/generated-seo";
+import { resolveSeoRoutePolicy } from "@/lib/seo-config";
 import { getLaunchConfigStore } from "@/lib/launch-config-store";
 import { listUserProductProfiles } from "@/lib/user-product-store";
 import { listAdminEditorLocks } from "@/lib/admin-editor-locks";
@@ -280,6 +281,49 @@ function keyValueText(items: Array<{ label: string; value: string }>) {
 
 function labelValueNoteText(items: Array<{ label: string; value: string; note: string }>) {
   return rowsToText(items, (item) => `${item.label} | ${item.value} | ${item.note}`);
+}
+
+function findKeyValueTextValue(
+  items: Array<{ label: string; value: string }> | undefined,
+  labels: string[],
+) {
+  if (!items?.length) {
+    return "";
+  }
+
+  const match = items.find((item) =>
+    labels.some((label) => item.label.trim().toLowerCase() === label.trim().toLowerCase()),
+  );
+
+  return match?.value ?? "";
+}
+
+function findKeyValueNoteTextValue(
+  items: Array<{ label: string; value: string; note: string }> | undefined,
+  labels: string[],
+) {
+  if (!items?.length) {
+    return "";
+  }
+
+  const match = items.find((item) =>
+    labels.some((label) => item.label.trim().toLowerCase() === label.trim().toLowerCase()),
+  );
+
+  return match?.value ?? "";
+}
+
+function parseRangeBounds(rangeText: string | null | undefined) {
+  const normalized = String(rangeText ?? "")
+    .replace(/[–—]/g, "-")
+    .split("-")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  return {
+    low: normalized[0] ?? "",
+    high: normalized[1] ?? "",
+  };
 }
 
 function faqText(items: Array<{ question: string; answer: string }>) {
@@ -1038,6 +1082,8 @@ function buildSeoSection(input: {
   canonicalUrl: string | null;
   ogImage: string | null;
   noIndex: boolean;
+  noFollow: boolean;
+  sitemapInclude: boolean;
 }) {
   return {
     definition: {
@@ -1077,6 +1123,18 @@ function buildSeoSection(input: {
           type: "select",
           options: yesNoOptions,
         },
+        {
+          key: "noFollow",
+          label: "Nofollow",
+          type: "select",
+          options: yesNoOptions,
+        },
+        {
+          key: "sitemapInclude",
+          label: "Include in sitemap",
+          type: "select",
+          options: yesNoOptions,
+        },
       ],
     },
     values: {
@@ -1085,6 +1143,8 @@ function buildSeoSection(input: {
       ogImage: input.ogImage ?? "",
       canonicalUrl: input.canonicalUrl ?? "",
       noIndex: input.noIndex ? "yes" : "no",
+      noFollow: input.noFollow ? "yes" : "no",
+      sitemapInclude: input.sitemapInclude ? "yes" : "no",
     },
   } satisfies AdminSectionSeed;
 }
@@ -1097,6 +1157,8 @@ function injectSeoSection(
     canonicalUrl: string | null;
     ogImage: string | null;
     noIndex: boolean;
+    noFollow: boolean;
+    sitemapInclude: boolean;
   },
 ) {
   const seoSection = buildSeoSection(input);
@@ -1552,6 +1614,7 @@ function deriveEditorFreshness(sourceDate: string) {
 }
 
 function buildStockSections(stock: StockSnapshot | null) {
+  const range52 = parseRangeBounds(findKeyValueTextValue(stock?.stats, ["52W Range"]));
   const identity: AdminSectionDefinition = {
     key: "identity",
     label: "Identity",
@@ -1607,10 +1670,59 @@ function buildStockSections(stock: StockSnapshot | null) {
       { key: "sourceUrl", label: "Primary source URL", type: "text", placeholder: "https://..." },
     ],
   };
+  const marketSnapshot: AdminSectionDefinition = {
+    key: "market_snapshot",
+    label: "Market snapshot",
+    description:
+      "Editable quote and headline ratio fields for the stock hero and quick-stat cards.",
+    fields: [
+      { key: "currentPrice", label: "Current price", type: "text", placeholder: "₹2,938.20" },
+      { key: "dayChange", label: "Day change", type: "text", placeholder: "-0.42%" },
+      { key: "snapshotAsOf", label: "Snapshot as of", type: "text", placeholder: "27 Apr 2026, 7:54 pm" },
+      { key: "marketCap", label: "Market cap", type: "text", placeholder: "₹19.9L Cr" },
+      { key: "week52High", label: "52W high", type: "text", placeholder: "₹3,132" },
+      { key: "week52Low", label: "52W low", type: "text", placeholder: "₹2,221" },
+      { key: "peRatio", label: "P/E", type: "text", placeholder: "24.1x" },
+      { key: "pbRatio", label: "P/B", type: "text", placeholder: "2.3x" },
+      { key: "roe", label: "ROE", type: "text", placeholder: "9.8%" },
+      { key: "roce", label: "ROCE", type: "text", placeholder: "11.4%" },
+      { key: "dividendYield", label: "Dividend yield", type: "text", placeholder: "0.45%" },
+      { key: "debtEquity", label: "Debt / equity", type: "text", placeholder: "0.44" },
+    ],
+  };
+  const financialMetrics: AdminSectionDefinition = {
+    key: "financial_metrics",
+    label: "Financial metrics",
+    description:
+      "Editable business and profitability rows that feed the fundamentals block on the stock page.",
+    fields: [
+      { key: "revenueGrowth", label: "Revenue growth", type: "text", placeholder: "+8.9%" },
+      { key: "profitGrowth", label: "Profit growth", type: "text", placeholder: "+11.6%" },
+      { key: "operatingMargin", label: "Operating margin", type: "text", placeholder: "17.8%" },
+      { key: "ebitdaMargin", label: "EBITDA margin", type: "text", placeholder: "17.8%" },
+      { key: "eps", label: "EPS", type: "text", placeholder: "₹101.4" },
+      { key: "freeCashFlow", label: "Free cash flow", type: "text", placeholder: "₹18,420 Cr" },
+      { key: "netDebtToEbitda", label: "Net debt / EBITDA", type: "text", placeholder: "1.7x" },
+      { key: "bookValue", label: "Book value", type: "text", placeholder: "₹1,274" },
+    ],
+  };
+  const ownershipMetrics: AdminSectionDefinition = {
+    key: "ownership_metrics",
+    label: "Ownership metrics",
+    description:
+      "Editable shareholding split that powers the ownership block without forcing editors to type structured text rows.",
+    fields: [
+      { key: "promoterHolding", label: "Promoters", type: "text", placeholder: "50.3%" },
+      { key: "fiiHolding", label: "FIIs", type: "text", placeholder: "22.5%" },
+      { key: "diiHolding", label: "DIIs", type: "text", placeholder: "13.7%" },
+      { key: "publicHolding", label: "Public", type: "text", placeholder: "13.5%" },
+    ],
+  };
   const frontend: AdminSectionDefinition = {
     key: "frontend_fields",
     label: "Frontend fields",
-    description: "Summary, editorial support, quick stats, fundamentals, ownership, peers, FAQs, and news configuration shown on the frontend.",
+    description:
+      "Opening brief, route context, FAQ, peer handoffs, and editorial support shown in the lower stock-page content blocks.",
     fields: [
       {
         key: "summary",
@@ -1622,59 +1734,58 @@ function buildStockSections(stock: StockSnapshot | null) {
       },
       {
         key: "thesis",
-        label: "Editorial thesis",
+        label: "Opening brief thesis",
         type: "textarea",
         rows: 4,
         placeholder:
           "Use this block for the front-page investment read: demand outlook, margin quality, order book, valuation posture, and the next trigger the reader should track.",
       },
-      { key: "momentumLabel", label: "Headline label", type: "text", placeholder: "Industrial automation leader" },
       {
         key: "keyPointsText",
-        label: "Key points",
+        label: "Research details",
         type: "textarea",
         rows: 4,
         placeholder:
           "Premium industrial automation franchise with high switching costs\nStrong parentage and balance-sheet quality\nWatch valuation comfort and order inflow cadence",
       },
       {
-        key: "quickStatsText",
-        label: "Quick stats",
-        type: "textarea",
-        rows: 5,
-        placeholder:
-          "1Y Return | +18.4%\n52W High | ₹48,720\n52W Low | ₹31,180\nMarket Cap | ₹43,520 Cr",
+        key: "momentumLabel",
+        label: "Headline label",
+        type: "text",
+        placeholder: "Industrial automation leader",
       },
-      {
-        key: "fundamentalsText",
-        label: "Fundamentals",
-        type: "textarea",
-        rows: 6,
-        placeholder:
-          "Revenue | ₹4,812 Cr | Latest full year\nEBIT Margin | 18.6% | Use the latest reported number\nROCE | 27.4% | High-quality capital efficiency\nDividend Yield | 0.9% | Optional note if relevant",
-      },
-      {
-        key: "shareholdingText",
-        label: "Shareholding",
-        type: "textarea",
-        rows: 6,
-        placeholder:
-          "Promoters | 75.0% | Latest quarter\nFIIs | 6.8% | Use the reported quarter\nDIIs | 9.1% | Add note only when needed\nPublic | 9.1% | Optional if shown on page",
-      },
-      { key: "peerConfigText", label: "Peer / related route configuration", type: "textarea", rows: 4, placeholder: "Label | /stocks/peer-slug | Why it belongs here" },
       {
         key: "newsReadinessNote",
-        label: "Latest news readiness / config",
+        label: "Route context note",
         type: "textarea",
         rows: 4,
         placeholder:
           "Explain whether latest news should pull live items, stay hidden, or use a manual fallback when the source feed is thin.",
       },
-      { key: "newsItemsText", label: "News items", type: "textarea", rows: 5, placeholder: "Title | Source | Type" },
-      { key: "faqText", label: "FAQ items", type: "textarea", rows: 5, placeholder: "Question | Answer" },
+      {
+        key: "newsItemsText",
+        label: "Recent route context items",
+        type: "textarea",
+        rows: 5,
+        placeholder: "Title | Source | Type",
+      },
+      {
+        key: "faqText",
+        label: "FAQ items",
+        type: "textarea",
+        rows: 5,
+        placeholder: "Question | Answer",
+      },
+      {
+        key: "peerConfigText",
+        label: "Peer / related route configuration",
+        type: "textarea",
+        rows: 4,
+        placeholder: "Label | /stocks/peer-slug | Why it belongs here",
+      },
       {
         key: "manualNotes",
-        label: "Public editorial note",
+        label: "Support note",
         type: "textarea",
         rows: 4,
         placeholder:
@@ -1731,15 +1842,51 @@ function buildStockSections(stock: StockSnapshot | null) {
       },
     },
     {
+      definition: marketSnapshot,
+      values: {
+        currentPrice: stock?.price ?? "",
+        dayChange: stock?.change ?? "",
+        snapshotAsOf: stock?.snapshotMeta?.lastUpdated ?? "",
+        marketCap: findKeyValueTextValue(stock?.stats, ["Market Cap"]),
+        week52High: range52.high,
+        week52Low: range52.low,
+        peRatio: findKeyValueTextValue(stock?.stats, ["P/E", "PE"]),
+        pbRatio: findKeyValueTextValue(stock?.stats, ["P/B", "PB"]),
+        roe: findKeyValueTextValue(stock?.stats, ["ROE"]),
+        roce: findKeyValueTextValue(stock?.stats, ["ROCE"]),
+        dividendYield: findKeyValueTextValue(stock?.stats, ["Dividend Yield"]),
+        debtEquity: findKeyValueTextValue(stock?.stats, ["Debt / Equity", "Debt/Equity"]),
+      },
+    },
+    {
+      definition: ownershipMetrics,
+      values: {
+        promoterHolding: findKeyValueNoteTextValue(stock?.shareholding, ["Promoters", "Promoter"]),
+        fiiHolding: findKeyValueNoteTextValue(stock?.shareholding, ["FIIs", "FII"]),
+        diiHolding: findKeyValueNoteTextValue(stock?.shareholding, ["DIIs", "DII"]),
+        publicHolding: findKeyValueNoteTextValue(stock?.shareholding, ["Public"]),
+      },
+    },
+    {
+      definition: financialMetrics,
+      values: {
+        revenueGrowth: findKeyValueNoteTextValue(stock?.fundamentals, ["Revenue growth", "Sales growth"]),
+        profitGrowth: findKeyValueNoteTextValue(stock?.fundamentals, ["Profit growth"]),
+        operatingMargin: findKeyValueNoteTextValue(stock?.fundamentals, ["Operating margin"]),
+        ebitdaMargin: findKeyValueNoteTextValue(stock?.fundamentals, ["EBITDA margin"]),
+        eps: findKeyValueNoteTextValue(stock?.fundamentals, ["EPS"]),
+        freeCashFlow: findKeyValueNoteTextValue(stock?.fundamentals, ["Free cash flow"]),
+        netDebtToEbitda: findKeyValueNoteTextValue(stock?.fundamentals, ["Net debt / EBITDA", "Net debt/EBITDA"]),
+        bookValue: findKeyValueNoteTextValue(stock?.fundamentals, ["Book value"]),
+      },
+    },
+    {
       definition: frontend,
       values: {
         summary: stock?.summary ?? "",
         thesis: stock?.thesis ?? "",
         momentumLabel: stock?.momentumLabel ?? "",
         keyPointsText: lines(stock?.keyPoints ?? []),
-        quickStatsText: keyValueText(stock?.stats ?? []),
-        fundamentalsText: labelValueNoteText(stock?.fundamentals ?? []),
-        shareholdingText: labelValueNoteText(stock?.shareholding ?? []),
         peerConfigText: "",
         newsReadinessNote: stock?.newsItems?.length
           ? "Latest news rows are available on the source-backed stock route."
@@ -3664,6 +3811,23 @@ async function buildAdminEditorRecord(
     launchConfig,
     seoContext: meta.seoContext,
   });
+  const seoPolicyKey =
+    family === "stocks"
+      ? "stocks_detail"
+      : family === "mutual-funds"
+        ? "mutual_funds_detail"
+        : "index_detail";
+  const seoRoutePolicy = await resolveSeoRoutePolicy({
+    policyKey: seoPolicyKey,
+    publicHref: meta.publicHref ?? `/${family}/${slug}`,
+    launchConfig,
+    recordSeo: {
+      canonicalUrl: record?.sections.seo?.values.canonicalUrl ?? record?.canonicalRoute,
+      noIndex: record?.sections.seo?.values.noIndex,
+      noFollow: record?.sections.seo?.values.noFollow,
+      sitemapInclude: record?.sections.seo?.values.sitemapInclude,
+    },
+  });
   const sectionsWithSeo = injectSeoSection(sectionsWithAccess, {
     title:
       pickFirstNonEmptySeoValue(record?.sections.seo?.values.metaTitle) ||
@@ -3679,7 +3843,9 @@ async function buildAdminEditorRecord(
     ogImage:
       pickFirstNonEmptySeoValue(record?.sections.seo?.values.ogImage) ||
       generatedSeoDefaults.ogImage,
-    noIndex: (record?.sections.seo?.values.noIndex ?? "no") === "yes",
+    noIndex: !seoRoutePolicy.indexable,
+    noFollow: !seoRoutePolicy.follow,
+    sitemapInclude: seoRoutePolicy.sitemapIncluded,
   });
   const completeness = buildRowCompleteness({
     family,

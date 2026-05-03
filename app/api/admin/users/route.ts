@@ -7,6 +7,7 @@ import {
   sanitizeAdminUserProfileInput,
 } from "@/lib/admin-operator-guards";
 import {
+  backfillUserProductProfileActivityForToday,
   listUserProductProfiles,
   removeUserProductProfile,
   saveUserProductProfile,
@@ -20,6 +21,7 @@ function badRequest(message: string) {
 export async function GET() {
   try {
     await requireAdmin();
+    await backfillUserProductProfileActivityForToday();
 
     return NextResponse.json({
       ok: true,

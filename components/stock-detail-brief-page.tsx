@@ -21,6 +21,7 @@ import {
 import { UserContentActionCard } from "@/components/user-content-action-card";
 import type { StockChartSnapshot } from "@/lib/chart-content";
 import type { IndexSnapshot } from "@/lib/index-intelligence";
+import { getExternalLinkProps, getInternalLinkProps } from "@/lib/link-utils";
 import type { StockSnapshot } from "@/lib/mock-data";
 import { formatBenchmarkLabel } from "@/lib/benchmark-labels";
 import {
@@ -1715,8 +1716,7 @@ export function StockDetailBriefPage({
                       <a
                         key={item.title}
                         href={item.href}
-                        target="_blank"
-                        rel="noreferrer"
+                        {...getExternalLinkProps()}
                         className="riddra-product-body inline-flex min-h-[38px] w-full items-center justify-center rounded-[8px] bg-[#1B3A6B] px-3 text-[13px] font-medium text-white transition hover:bg-[#264a83]"
                       >
                         {item.title}
@@ -1725,6 +1725,7 @@ export function StockDetailBriefPage({
                       <Link
                         key={item.title}
                         href={item.href}
+                        {...getInternalLinkProps()}
                         className="flex items-center justify-between gap-3 rounded-[8px] border border-[rgba(226,222,217,0.82)] bg-white px-3 py-2 transition hover:border-[rgba(27,58,107,0.18)]"
                       >
                         <div className="min-w-0">

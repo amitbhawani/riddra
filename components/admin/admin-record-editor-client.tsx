@@ -32,6 +32,13 @@ import {
   AdminSectionCard,
   AdminSimpleTable,
 } from "@/components/admin/admin-primitives";
+import {
+  AdminStockImportTabs,
+  stockImportEditorTabs,
+  type StockImportEditorTabKey,
+} from "@/components/admin/admin-stock-import-tabs";
+import { getInternalLinkProps } from "@/lib/link-utils";
+import type { AdminStockImportDetails } from "@/lib/admin-stock-import-dashboard";
 
 type EditorSectionState = {
   key: string;
@@ -459,6 +466,38 @@ function getSectionFieldGroups(
       essential: ["publishState", "assignedTo", "dueDate"],
       advanced: ["assignedBy"],
     },
+    "stocks:market_snapshot": {
+      essential: [
+        "currentPrice",
+        "dayChange",
+        "snapshotAsOf",
+        "marketCap",
+        "week52High",
+        "week52Low",
+        "peRatio",
+        "pbRatio",
+      ],
+      advanced: ["roe", "roce", "dividendYield", "debtEquity"],
+    },
+    "stocks:financial_metrics": {
+      essential: ["revenueGrowth", "profitGrowth", "operatingMargin", "eps"],
+      advanced: ["ebitdaMargin", "freeCashFlow", "netDebtToEbitda", "bookValue"],
+    },
+    "stocks:ownership_metrics": {
+      essential: ["promoterHolding", "fiiHolding", "diiHolding", "publicHolding"],
+    },
+    "stocks:frontend_fields": {
+      essential: [
+        "summary",
+        "thesis",
+        "keyPointsText",
+        "momentumLabel",
+        "newsReadinessNote",
+        "newsItemsText",
+        "faqText",
+      ],
+      advanced: ["peerConfigText", "manualNotes"],
+    },
     "mutual-funds:workflow": {
       essential: ["publishState", "assignedTo", "dueDate"],
       advanced: ["assignedBy"],
@@ -766,6 +805,7 @@ export function AdminRecordEditorClient({
   mediaAssets,
   activePreview,
   pendingApproval,
+  stockImportInsights,
   currentUserEmail = "",
   permissions,
   isNew,
@@ -778,6 +818,7 @@ export function AdminRecordEditorClient({
   mediaAssets: MediaAsset[];
   activePreview?: CmsPreviewSession | null;
   pendingApproval?: AdminPendingApproval | null;
+  stockImportInsights?: AdminStockImportDetails | null;
   currentUserEmail?: string;
   permissions?: {
     canPublishContent: boolean;
@@ -805,7 +846,13 @@ export function AdminRecordEditorClient({
   const [availableMediaAssets, setAvailableMediaAssets] = useState(mediaAssets);
   const [activeEditors, setActiveEditors] = useState(record.activeEditors);
   const [lastKnownUpdatedAt, setLastKnownUpdatedAt] = useState(record.updatedAt ?? null);
+  const [autoSaveMessage, setAutoSaveMessage] = useState<string>("Autosave runs every minute while you edit.");
+  const [activeStockTab, setActiveStockTab] = useState<StockImportEditorTabKey>("basic_info");
   const [isPending, startTransition] = useTransition();
+  const lastPersistedDraftSignatureRef = useRef<string | null>(null);
+  const autoSaveIntervalRef = useRef<number | null>(null);
+  const saveInFlightRef = useRef(false);
+  const isStockEditor = record.family === "stocks";
 
   useEffect(() => {
     setLatestPreview(activePreview ?? null);
@@ -820,6 +867,10 @@ export function AdminRecordEditorClient({
   useEffect(() => {
     setActiveEditors(record.activeEditors);
   }, [record.activeEditors]);
+
+  useEffect(() => {
+    setActiveStockTab("basic_info");
+  }, [record.id]);
 
   useEffect(() => {
     setAvailableMediaAssets(mediaAssets);
@@ -1220,6 +1271,14 @@ export function AdminRecordEditorClient({
     () => versionComparisonRows.map((row) => row.displayLabel),
     [versionComparisonRows],
   );
+  const draftComparablePayload = useMemo(
+    () => buildComparablePayload(buildPayload("draft")),
+    [sections, currentSlug, currentTitle, currentPublicRoute],
+  );
+  const draftComparablePayloadSignature = useMemo(
+    () => JSON.stringify(draftComparablePayload),
+    [draftComparablePayload],
+  );
   const lifecycleTimeline = useMemo(() => {
     const items: Array<{ id: string; label: string; note: string; at: string }> = [];
 
@@ -1304,6 +1363,11 @@ export function AdminRecordEditorClient({
     });
   }
 
+  useEffect(() => {
+    lastPersistedDraftSignatureRef.current = draftComparablePayloadSignature;
+    setAutoSaveMessage("Autosave runs every minute while you edit.");
+  }, [record.id, record.updatedAt, pendingApproval?.id, pendingApproval?.updatedAt]);
+
   function handlePreview() {
     startTransition(async () => {
       setBanner(null);
@@ -1347,8 +1411,32 @@ export function AdminRecordEditorClient({
     });
   }
 
-  function handleSave(nextStatus: AdminPublishState) {
-    startTransition(async () => {
+  async function persistRecord(
+    nextStatus: AdminPublishState,
+    options?: {
+      skipConfirmation?: boolean;
+      autosave?: boolean;
+    },
+  ) {
+    const skipConfirmation = options?.skipConfirmation ?? false;
+    const autosave = options?.autosave ?? false;
+
+    if (autosave) {
+      const minimumIdentityReady = Boolean(currentTitle.trim()) && Boolean(currentSlug.trim());
+      if (!minimumIdentityReady) {
+        setAutoSaveMessage("Autosave waits until the title and slug are filled.");
+        return;
+      }
+      if (lastPersistedDraftSignatureRef.current === draftComparablePayloadSignature) {
+        return;
+      }
+    }
+
+    if (isPending || saveInFlightRef.current) {
+      return;
+    }
+
+    if (!skipConfirmation) {
       setBanner(null);
 
       const criticalChanges = !isNew ? getCriticalFieldChanges() : [];
@@ -1385,9 +1473,12 @@ export function AdminRecordEditorClient({
       ) {
         return;
       }
+    }
 
-      const payload = buildPayload(nextStatus);
+    const payload = buildPayload(nextStatus);
+    saveInFlightRef.current = true;
 
+    try {
       const response = await fetch("/api/admin/operator-console/records", {
         method: "POST",
         headers: {
@@ -1408,6 +1499,16 @@ export function AdminRecordEditorClient({
         | null;
 
       if (!response.ok || !data?.record) {
+        if (autosave) {
+          setAutoSaveMessage(
+            data?.error ??
+              (response.status === 409
+                ? "Autosave paused because the record changed elsewhere. Refresh the editor."
+                : "Autosave could not save the pending draft."),
+          );
+          return;
+        }
+
         setBanner({
           tone: "danger",
           label: response.status === 409 ? "Refresh required" : "Save failed",
@@ -1435,7 +1536,16 @@ export function AdminRecordEditorClient({
           lastManualEditAt: new Date().toISOString(),
         })),
       );
+      lastPersistedDraftSignatureRef.current = draftComparablePayloadSignature;
       router.refresh();
+
+      if (autosave) {
+        setAutoSaveMessage(
+          `Pending draft autosaved ${formatAdminDateTime(data.savedAt ?? data.record.updatedAt, "just now")}.`,
+        );
+        return;
+      }
+
       setBanner({
         tone: "success",
         label:
@@ -1449,7 +1559,7 @@ export function AdminRecordEditorClient({
                 ? "Ready for review"
                 : nextStatus === "needs_fix"
                   ? "Needs fix"
-              : "Saved",
+                  : "Saved",
         text:
           data?.operation === "submitted_for_approval"
             ? nextStatus === "published"
@@ -1463,16 +1573,48 @@ export function AdminRecordEditorClient({
               ? "Record saved and moved to the review queue."
               : nextStatus === "needs_fix"
                 ? "Record saved and marked as needs fix."
-            : nextStatus === "archived"
-              ? "Record archived."
-              : "Draft saved.",
+                : nextStatus === "archived"
+                  ? "Record archived."
+                  : "Draft saved.",
         detail:
           data?.operation === "submitted_for_approval"
             ? `Queued for admin review. ${formatAdminSavedState(data.savedAt ?? data.record.updatedAt)}`
             : `Saved through the current operator storage path. ${formatAdminSavedState(data.savedAt ?? data.record.updatedAt)}`,
       });
+    } finally {
+      saveInFlightRef.current = false;
+    }
+  }
+
+  function handleSave(nextStatus: AdminPublishState) {
+    startTransition(async () => {
+      await persistRecord(nextStatus);
     });
   }
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (autoSaveIntervalRef.current) {
+      window.clearInterval(autoSaveIntervalRef.current);
+    }
+
+    autoSaveIntervalRef.current = window.setInterval(() => {
+      void persistRecord("draft", {
+        skipConfirmation: true,
+        autosave: true,
+      });
+    }, 60_000);
+
+    return () => {
+      if (autoSaveIntervalRef.current) {
+        window.clearInterval(autoSaveIntervalRef.current);
+        autoSaveIntervalRef.current = null;
+      }
+    };
+  }, [draftComparablePayloadSignature, currentSlug, currentTitle, isPending]);
 
   return (
     <div className="space-y-3">
@@ -1531,7 +1673,7 @@ export function AdminRecordEditorClient({
                 disabled={isPending}
                 className="inline-flex h-8 items-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isPending ? "Saving..." : "Save draft"}
+                {isPending ? "Saving..." : canPublishContent ? "Save draft" : "Save pending draft"}
               </button>
               <button
                 type="button"
@@ -1589,7 +1731,7 @@ export function AdminRecordEditorClient({
               <p className="mt-1 text-sm leading-5 text-[#6b7280]">
                 Route:{" "}
                 {currentPublicRoute ? (
-                  <Link href={currentPublicRoute} className="font-medium text-[#111827] underline">
+                  <Link href={currentPublicRoute} {...getInternalLinkProps()} className="font-medium text-[#111827] underline">
                     {currentPublicRoute}
                   </Link>
                 ) : (
@@ -1665,246 +1807,281 @@ export function AdminRecordEditorClient({
             ) : null}
           </AdminCard>
 
-          {mainSections.map((section) =>
-            renderSection(record.family, section, updateSection, availableMediaAssets, setAvailableMediaAssets, {
-              isAdmin,
-              status,
-              setStatus,
-            }),
-          )}
-
-          {renderSection(record.family, documentsSection, updateSection, availableMediaAssets, setAvailableMediaAssets, {
-            isAdmin,
-            status,
-            setStatus,
-          })}
-
-          <AdminAdvancedPanel
-            title="Advanced source settings"
-            description="Open this only when someone needs to adjust how the page uses source data, tracing, or refresh timing."
-          >
-            <div className="space-y-3">
-              {!isAdmin ? (
-                <AdminEmptyState
-                  title="Admin-only source controls"
-                  description="Content managers can edit the page safely without opening source mapping or automation internals. Ask an admin only when a source lane or refresh rule must change."
-                />
-              ) : advancedSections.length ? (
-                advancedSections.map((section) =>
-                  renderSection(record.family, section, updateSection, availableMediaAssets, setAvailableMediaAssets, {
-                    isAdmin,
-                    status,
-                    setStatus,
-                  }),
-                )
-              ) : (
-                <AdminEmptyState
-                  title="No advanced source sections"
-                  description="This record does not currently expose extra source or automation controls."
-                />
-              )}
-            </div>
-          </AdminAdvancedPanel>
-
-          <AdminAdvancedPanel
-            title="Manual source decisions"
-            description="Open this only when an admin needs to decide whether source data or manual changes should win."
-          >
-            {!isAdmin ? (
-              <AdminEmptyState
-                title="Admin-only override controls"
-                description="Editors can change normal page fields directly. This deeper override table is reserved for admins making source-versus-manual decisions."
-              />
-            ) : overrides.length ? (
-              <div className="overflow-x-auto rounded-lg border border-[#e5e7eb] bg-white">
-                <table className="min-w-full text-left">
-                  <thead className="bg-[#f9fafb]">
-                    <tr>
-                      {["Field", "Source Value", "Manual Value", "Mode", "Effective", "Freshness", "Controls"].map((column) => (
-                        <th
-                          key={column}
-                          className="sticky top-[var(--admin-sticky-offset)] z-[20] border-b border-[#d1d5db] bg-[#f3f4f6] px-3 py-2 text-[12px] font-medium text-[#6b7280]"
-                        >
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e5e7eb]">
-                    {overrides.map((item) => (
-                      <tr key={`${item.sectionKey}-${item.field.key}`} className="align-top transition hover:bg-[#f9fafb]">
-                        <td className="px-3 py-2 text-[13px] text-[#111827]">
-                          <div className="space-y-0.5">
-                            <p className="font-medium">{item.field.label}</p>
-                            <p className="text-[12px] text-[#6b7280]">{item.sectionLabel}</p>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 text-[13px] text-[#111827]">
-                          <FieldValuePreview value={item.sourceValue} />
-                        </td>
-                        <td className="px-3 py-2 text-[13px] text-[#111827]">
-                          <FieldValuePreview value={item.manualValue} />
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="space-y-1.5">
-                            <AdminBadge label={getOverrideLabel(item.mode)} tone={getOverrideTone(item.mode)} />
-                            <select
-                              value={item.mode}
-                              onChange={(event) =>
-                                updateSection(item.sectionKey, (current) => ({
-                                  ...current,
-                                  mode: event.target.value as AdminOverrideMode,
-                                }))
-                              }
-                              className="h-8 w-[126px] rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[13px] text-[#111827] outline-none transition focus:border-[#2563eb] focus:bg-white"
-                            >
-                              {adminOverrideModeOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 text-[13px] text-[#111827]">
-                          <FieldValuePreview value={item.effectiveValue} />
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="space-y-1.5">
-                            <AdminBadge
-                              label={item.conflictStatus.replaceAll("_", " ")}
-                              tone={
-                                item.conflictStatus === "source_current"
-                                  ? "success"
-                                  : item.conflictStatus === "locked_manual_value" || item.conflictStatus === "import_conflict_needs_review"
-                                    ? "danger"
-                                    : "warning"
-                              }
-                            />
-                            <p className="text-[12px] leading-5 text-[#6b7280]">
-                              Source {item.lastSourceRefreshAt || "not refreshed"}
-                            </p>
-                            <p className="text-[12px] leading-5 text-[#6b7280]">
-                              Manual {item.lastManualEditAt || "not edited"}
-                            </p>
-                            <p className="text-[12px] leading-5 text-[#6b7280]">
-                              Live {item.liveSource}
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2">
-                          <div className="flex flex-col gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => ({
-                                  ...current,
-                                  manualValues: {
-                                    ...current.manualValues,
-                                    [item.field.key]: current.sourceValues[item.field.key] ?? "",
-                                  },
-                                  mode:
-                                    current.mode === "auto_source"
-                                      ? "manual_override"
-                                      : current.mode,
-                                }))
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
-                            >
-                              Copy source
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => {
-                                  const nextManualValues = { ...current.manualValues };
-                                  delete nextManualValues[item.field.key];
-                                  return {
-                                    ...current,
-                                    manualValues: nextManualValues,
-                                    mode: Object.keys(nextManualValues).length
-                                      ? current.mode
-                                      : "auto_source",
-                                  };
-                                })
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[12px] font-medium text-[#6b7280]"
-                            >
-                              Use source
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => ({
-                                  ...current,
-                                  mode: "manual_override",
-                                }))
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
-                            >
-                              Use manual
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => ({
-                                  ...current,
-                                  mode: "manual_until_next_refresh",
-                                }))
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#fffbeb] px-3 text-[12px] font-medium text-[#b45309]"
-                            >
-                              Temp
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => ({
-                                  ...current,
-                                  mode: "manual_permanent_lock",
-                                }))
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 text-[12px] font-medium text-[#b91c1c]"
-                            >
-                              Lock
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateSection(item.sectionKey, (current) => {
-                                  const nextManualValues = { ...current.manualValues };
-                                  delete nextManualValues[item.field.key];
-                                  return {
-                                    ...current,
-                                    manualValues: nextManualValues,
-                                    mode: Object.keys(nextManualValues).length ? current.mode : "auto_source",
-                                  };
-                                })
-                              }
-                              className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[12px] font-medium text-[#6b7280]"
-                            >
-                              Clear
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {isStockEditor ? (
+            <AdminSectionCard
+              title="Stock editor tabs"
+              description="Basic Info keeps the normal CMS editor. The other tabs read the durable Yahoo import data, coverage reports, logs, and raw responses for this stock."
+            >
+              <div className="flex flex-wrap gap-2">
+                {stockImportEditorTabs.map((tab) => {
+                  const active = activeStockTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setActiveStockTab(tab.key)}
+                      className={`inline-flex h-8 items-center rounded-lg border px-3 text-[12px] font-medium transition ${
+                        active
+                          ? "border-[#0f172a] bg-[#0f172a] text-white"
+                          : "border-[#d1d5db] bg-white text-[#111827] hover:bg-[#f9fafb]"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              <AdminEmptyState
-                title="No override-capable fields"
-                description="Override rows will appear here once the editor has trackable frontend or source fields."
-              />
-            )}
-          </AdminAdvancedPanel>
+            </AdminSectionCard>
+          ) : null}
 
-          <AdminAdvancedPanel
-            title="Import and revision history"
-            description="Advanced operator trail for import review, revision confidence, and source-vs-manual follow-through."
-          >
-            <div className="space-y-3">
+          {!isStockEditor || activeStockTab === "basic_info" ? (
+            <>
+              {mainSections.map((section) =>
+                renderSection(record.family, section, updateSection, availableMediaAssets, setAvailableMediaAssets, {
+                  isAdmin,
+                  status,
+                  setStatus,
+                  currentTitle,
+                  currentPublicRoute,
+                }),
+              )}
+
+              {renderSection(record.family, documentsSection, updateSection, availableMediaAssets, setAvailableMediaAssets, {
+                isAdmin,
+                status,
+                setStatus,
+                currentTitle,
+                currentPublicRoute,
+              })}
+
+              <AdminAdvancedPanel
+                title="Advanced source settings"
+                description="Open this only when someone needs to adjust how the page uses source data, tracing, or refresh timing."
+              >
+                <div className="space-y-3">
+                  {!isAdmin ? (
+                    <AdminEmptyState
+                      title="Admin-only source controls"
+                      description="Content managers can edit the page safely without opening source mapping or automation internals. Ask an admin only when a source lane or refresh rule must change."
+                    />
+                  ) : advancedSections.length ? (
+                    advancedSections.map((section) =>
+                      renderSection(record.family, section, updateSection, availableMediaAssets, setAvailableMediaAssets, {
+                        isAdmin,
+                        status,
+                        setStatus,
+                        currentTitle,
+                        currentPublicRoute,
+                      }),
+                    )
+                  ) : (
+                    <AdminEmptyState
+                      title="No advanced source sections"
+                      description="This record does not currently expose extra source or automation controls."
+                    />
+                  )}
+                </div>
+              </AdminAdvancedPanel>
+
+              <AdminAdvancedPanel
+                title="Manual source decisions"
+                description="Open this only when an admin needs to decide whether source data or manual changes should win."
+              >
+                {!isAdmin ? (
+                  <AdminEmptyState
+                    title="Admin-only override controls"
+                    description="Editors can change normal page fields directly. This deeper override table is reserved for admins making source-versus-manual decisions."
+                  />
+                ) : overrides.length ? (
+                  <div className="overflow-x-auto rounded-lg border border-[#e5e7eb] bg-white">
+                    <table className="min-w-full text-left">
+                      <thead className="bg-[#f9fafb]">
+                        <tr>
+                          {["Field", "Source Value", "Manual Value", "Mode", "Effective", "Freshness", "Controls"].map((column) => (
+                            <th
+                              key={column}
+                              className="sticky top-[var(--admin-sticky-offset)] z-[20] border-b border-[#d1d5db] bg-[#f3f4f6] px-3 py-2 text-[12px] font-medium text-[#6b7280]"
+                            >
+                              {column}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#e5e7eb]">
+                        {overrides.map((item) => (
+                          <tr key={`${item.sectionKey}-${item.field.key}`} className="align-top transition hover:bg-[#f9fafb]">
+                            <td className="px-3 py-2 text-[13px] text-[#111827]">
+                              <div className="space-y-0.5">
+                                <p className="font-medium">{item.field.label}</p>
+                                <p className="text-[12px] text-[#6b7280]">{item.sectionLabel}</p>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-[13px] text-[#111827]">
+                              <FieldValuePreview value={item.sourceValue} />
+                            </td>
+                            <td className="px-3 py-2 text-[13px] text-[#111827]">
+                              <FieldValuePreview value={item.manualValue} />
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="space-y-1.5">
+                                <AdminBadge label={getOverrideLabel(item.mode)} tone={getOverrideTone(item.mode)} />
+                                <select
+                                  value={item.mode}
+                                  onChange={(event) =>
+                                    updateSection(item.sectionKey, (current) => ({
+                                      ...current,
+                                      mode: event.target.value as AdminOverrideMode,
+                                    }))
+                                  }
+                                  className="h-8 w-[126px] rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[13px] text-[#111827] outline-none transition focus:border-[#2563eb] focus:bg-white"
+                                >
+                                  {adminOverrideModeOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                      {option.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-[13px] text-[#111827]">
+                              <FieldValuePreview value={item.effectiveValue} />
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="space-y-1.5">
+                                <AdminBadge
+                                  label={item.conflictStatus.replaceAll("_", " ")}
+                                  tone={
+                                    item.conflictStatus === "source_current"
+                                      ? "success"
+                                      : item.conflictStatus === "locked_manual_value" || item.conflictStatus === "import_conflict_needs_review"
+                                        ? "danger"
+                                        : "warning"
+                                  }
+                                />
+                                <p className="text-[12px] leading-5 text-[#6b7280]">
+                                  Source {item.lastSourceRefreshAt || "not refreshed"}
+                                </p>
+                                <p className="text-[12px] leading-5 text-[#6b7280]">
+                                  Manual {item.lastManualEditAt || "not edited"}
+                                </p>
+                                <p className="text-[12px] leading-5 text-[#6b7280]">
+                                  Live {item.liveSource}
+                                </p>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="flex flex-col gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => ({
+                                      ...current,
+                                      manualValues: {
+                                        ...current.manualValues,
+                                        [item.field.key]: current.sourceValues[item.field.key] ?? "",
+                                      },
+                                      mode:
+                                        current.mode === "auto_source"
+                                          ? "manual_override"
+                                          : current.mode,
+                                    }))
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
+                                >
+                                  Copy source
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => {
+                                      const nextManualValues = { ...current.manualValues };
+                                      delete nextManualValues[item.field.key];
+                                      return {
+                                        ...current,
+                                        manualValues: nextManualValues,
+                                        mode: Object.keys(nextManualValues).length
+                                          ? current.mode
+                                          : "auto_source",
+                                      };
+                                    })
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[12px] font-medium text-[#6b7280]"
+                                >
+                                  Use source
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => ({
+                                      ...current,
+                                      mode: "manual_override",
+                                    }))
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
+                                >
+                                  Use manual
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => ({
+                                      ...current,
+                                      mode: "manual_until_next_refresh",
+                                    }))
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#fffbeb] px-3 text-[12px] font-medium text-[#b45309]"
+                                >
+                                  Temp
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => ({
+                                      ...current,
+                                      mode: "manual_permanent_lock",
+                                    }))
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#fecaca] bg-[#fef2f2] px-3 text-[12px] font-medium text-[#b91c1c]"
+                                >
+                                  Lock
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSection(item.sectionKey, (current) => {
+                                      const nextManualValues = { ...current.manualValues };
+                                      delete nextManualValues[item.field.key];
+                                      return {
+                                        ...current,
+                                        manualValues: nextManualValues,
+                                        mode: Object.keys(nextManualValues).length ? current.mode : "auto_source",
+                                      };
+                                    })
+                                  }
+                                  className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-[#f9fafb] px-3 text-[12px] font-medium text-[#6b7280]"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <AdminEmptyState
+                    title="No override-capable fields"
+                    description="Override rows will appear here once the editor has trackable frontend or source fields."
+                  />
+                )}
+              </AdminAdvancedPanel>
+
+              <AdminAdvancedPanel
+                title="Import and revision history"
+                description="Advanced operator trail for import review, revision confidence, and source-vs-manual follow-through."
+              >
+                <div className="space-y-3">
               <AdminSectionCard
                 id="version-history"
                 title="Version comparison"
@@ -2123,8 +2300,12 @@ export function AdminRecordEditorClient({
                   />
                 )}
               </AdminSectionCard>
-            </div>
-          </AdminAdvancedPanel>
+                </div>
+              </AdminAdvancedPanel>
+            </>
+          ) : (
+            <AdminStockImportTabs activeTab={activeStockTab} details={stockImportInsights ?? null} />
+          )}
         </div>
 
         <div className="space-y-3 xl:sticky xl:top-[var(--admin-sticky-offset)] xl:self-start">
@@ -2380,6 +2561,7 @@ export function AdminRecordEditorClient({
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Link
                       href={`/preview/${latestPreview.token}`}
+                      {...getInternalLinkProps()}
                       className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[12px] font-medium text-[#111827]"
                     >
                       Open latest preview
@@ -2393,6 +2575,7 @@ export function AdminRecordEditorClient({
               {currentPublicRoute ? (
                 <Link
                   href={currentPublicRoute}
+                  {...getInternalLinkProps()}
                   className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[13px] font-medium text-[#111827]"
                 >
                   Open page
@@ -2412,7 +2595,7 @@ export function AdminRecordEditorClient({
                 disabled={isPending}
                 className="inline-flex h-8 items-center justify-center rounded-lg border border-[#d1d5db] bg-white px-3 text-[13px] font-medium text-[#111827]"
               >
-                {isPending ? "Saving..." : canPublishContent ? "Save draft" : latestPendingApproval ? "Update pending draft" : "Save pending draft"}
+                {isPending ? "Saving..." : canPublishContent ? "Save draft" : "Save pending draft"}
               </button>
               <button
                 type="button"
@@ -2447,9 +2630,14 @@ export function AdminRecordEditorClient({
                 {isPending ? (canPublishContent ? "Archiving..." : "Submitting...") : canPublishContent ? "Archive" : "Request archive"}
               </button>
               {!canPublishContent ? (
-                <p className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] px-3 py-2 text-[12px] leading-5 text-[#4b5563]">
-                  Editors can save and request status changes here, but live publish and archive only happen after admin approval.
-                </p>
+                <>
+                  <p className="rounded-lg border border-[#dbeafe] bg-[#eff6ff] px-3 py-2 text-[12px] leading-5 text-[#1d4ed8]">
+                    {autoSaveMessage}
+                  </p>
+                  <p className="rounded-lg border border-[#e5e7eb] bg-[#f8fafc] px-3 py-2 text-[12px] leading-5 text-[#4b5563]">
+                    Editors can save pending drafts and request status changes here, but live publish and archive only happen after admin approval.
+                  </p>
+                </>
               ) : null}
             </div>
           </AdminSectionCard>
@@ -2497,6 +2685,8 @@ function renderSection(
     isAdmin: boolean;
     status: AdminPublishState;
     setStatus: (value: AdminPublishState) => void;
+    currentTitle: string;
+    currentPublicRoute: string;
   },
 ) {
   if (!section) {
@@ -2515,6 +2705,52 @@ function renderSection(
     resolvedSection.key,
     visibleFields,
   );
+  const seoPreview =
+    resolvedSection.key === "seo"
+      ? {
+          metaTitle:
+            getVisibleFieldValue(
+              resolvedSection.sourceValues,
+              resolvedSection.manualValues,
+              resolvedSection.effectiveValues,
+              "metaTitle",
+            ) || options.currentTitle,
+          metaDescription: getVisibleFieldValue(
+            resolvedSection.sourceValues,
+            resolvedSection.manualValues,
+            resolvedSection.effectiveValues,
+            "metaDescription",
+          ),
+          canonicalUrl:
+            getVisibleFieldValue(
+              resolvedSection.sourceValues,
+              resolvedSection.manualValues,
+              resolvedSection.effectiveValues,
+              "canonicalUrl",
+            ) || options.currentPublicRoute,
+          noIndex:
+            getVisibleFieldValue(
+              resolvedSection.sourceValues,
+              resolvedSection.manualValues,
+              resolvedSection.effectiveValues,
+              "noIndex",
+            ) === "yes",
+          noFollow:
+            getVisibleFieldValue(
+              resolvedSection.sourceValues,
+              resolvedSection.manualValues,
+              resolvedSection.effectiveValues,
+              "noFollow",
+            ) === "yes",
+          sitemapInclude:
+            getVisibleFieldValue(
+              resolvedSection.sourceValues,
+              resolvedSection.manualValues,
+              resolvedSection.effectiveValues,
+              "sitemapInclude",
+            ) !== "no",
+        }
+      : null;
 
   function renderField(field: AdminFieldDefinition) {
     if (field.adminOnly && !options.isAdmin) {
@@ -2640,6 +2876,32 @@ function renderSection(
                 Missing critical: {resolvedSection.completeness.missingCritical.length} • Missing important: {resolvedSection.completeness.missingImportant.length}
               </p>
             </div>
+            {seoPreview ? (
+              <div className="rounded-lg border border-[#d1d5db] bg-[#f8fafc] px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-[#6b7280]">
+                    SEO preview
+                  </p>
+                  <AdminBadge label={seoPreview.noIndex ? "Noindex" : "Indexable"} tone={seoPreview.noIndex ? "warning" : "success"} />
+                  <AdminBadge label={seoPreview.noFollow ? "Nofollow" : "Follow"} tone={seoPreview.noFollow ? "warning" : "success"} />
+                  <AdminBadge
+                    label={seoPreview.sitemapInclude ? "Included in sitemap" : "Excluded from sitemap"}
+                    tone={seoPreview.sitemapInclude ? "info" : "default"}
+                  />
+                </div>
+                <div className="mt-3 rounded-lg border border-[#e5e7eb] bg-white px-4 py-3">
+                  <p className="text-[20px] leading-6 text-[#1a0dab]">
+                    {seoPreview.metaTitle || options.currentTitle || "Untitled page"}
+                  </p>
+                  <p className="mt-1 text-[13px] text-[#188038]">
+                    {seoPreview.canonicalUrl || options.currentPublicRoute || "Public route will be assigned after the slug is saved."}
+                  </p>
+                  <p className="mt-1 text-[13px] leading-6 text-[#4d5156]">
+                    {seoPreview.metaDescription || "Add a clear meta description to improve snippet quality and keep search signals intentional."}
+                  </p>
+                </div>
+              </div>
+            ) : null}
             <div className="grid gap-x-3 gap-y-2 md:grid-cols-2 xl:grid-cols-3">
               {essentialFields.map(renderField).filter(Boolean)}
             </div>

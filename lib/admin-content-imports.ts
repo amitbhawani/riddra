@@ -39,6 +39,7 @@ import { saveAdminPendingApproval } from "@/lib/admin-approvals";
 import { persistApprovedAdminRecordChange } from "@/lib/admin-record-workflow";
 import { canUseFileFallback, getFileFallbackDisabledMessage } from "@/lib/durable-data-runtime";
 import { canEditAdminFamily, hasProductUserCapability, type ProductUserCapability, type ProductUserRole } from "@/lib/product-permissions";
+import { syncSearchIndexForAdminContentChange } from "@/lib/search-index-rebuild";
 
 export const supportedAdminImportFamilies = [
   "stocks",
@@ -191,6 +192,12 @@ export type AdminImportPreview = {
 export type ExecuteAdminImportResult = {
   batch: AdminImportBatch;
   rows: AdminImportBatchRow[];
+};
+
+type AdminImportRowCandidate = {
+  rowId?: string | null;
+  rowNumber: number;
+  payload: Record<AdminImportFieldKey, string>;
 };
 
 type ImportStore = {
@@ -585,6 +592,28 @@ const stockImportTemplateConfig: AdminImportTemplateConfig = {
           sectionLabel: "SEO and sharing",
           valueType: "yes_no",
         }),
+        createField({
+          key: "noFollow",
+          label: "Nofollow",
+          required: false,
+          description: "Use yes or no.",
+          example: "no",
+          aliases: ["noFollow", "no_follow", "nofollow"],
+          sectionKey: "seo",
+          sectionLabel: "SEO and sharing",
+          valueType: "yes_no",
+        }),
+        createField({
+          key: "sitemapInclude",
+          label: "Include in sitemap",
+          required: false,
+          description: "Use yes or no.",
+          example: "yes",
+          aliases: ["sitemapInclude", "sitemap_include", "include_in_sitemap"],
+          sectionKey: "seo",
+          sectionLabel: "SEO and sharing",
+          valueType: "yes_no",
+        }),
       ],
     },
     {
@@ -748,6 +777,8 @@ const stockImportTemplateConfig: AdminImportTemplateConfig = {
     ogImage: "/media-library/stocks/import-test-stock-og.jpg",
     canonicalUrl: "https://riddra.com/stocks/import-test-stock",
     noIndex: "no",
+    noFollow: "no",
+    sitemapInclude: "yes",
     publicRoute: "/stocks/import-test-stock",
     scheduledPublishAt: "",
     scheduledUnpublishAt: "",
@@ -1083,8 +1114,30 @@ const fundImportTemplateConfig: AdminImportTemplateConfig = {
           label: "Noindex",
           required: false,
           description: "Use yes or no.",
-          example: "no",
+          example: "yes",
           aliases: ["noIndex", "no_index", "noindex"],
+          sectionKey: "seo",
+          sectionLabel: "SEO and sharing",
+          valueType: "yes_no",
+        }),
+        createField({
+          key: "noFollow",
+          label: "Nofollow",
+          required: false,
+          description: "Use yes or no.",
+          example: "yes",
+          aliases: ["noFollow", "no_follow", "nofollow"],
+          sectionKey: "seo",
+          sectionLabel: "SEO and sharing",
+          valueType: "yes_no",
+        }),
+        createField({
+          key: "sitemapInclude",
+          label: "Include in sitemap",
+          required: false,
+          description: "Use yes or no.",
+          example: "no",
+          aliases: ["sitemapInclude", "sitemap_include", "include_in_sitemap"],
           sectionKey: "seo",
           sectionLabel: "SEO and sharing",
           valueType: "yes_no",
@@ -1254,7 +1307,9 @@ const fundImportTemplateConfig: AdminImportTemplateConfig = {
     metaDescription: "Editorial overview of the fund with returns framing, holdings, and benchmark context.",
     ogImage: "/media-library/funds/import-test-mutual-fund-og.jpg",
     canonicalUrl: "https://riddra.com/mutual-funds/import-test-mutual-fund",
-    noIndex: "no",
+    noIndex: "yes",
+    noFollow: "yes",
+    sitemapInclude: "no",
     publicRoute: "/mutual-funds/import-test-mutual-fund",
     scheduledPublishAt: "",
     scheduledUnpublishAt: "",
@@ -1467,8 +1522,30 @@ function buildGenericTemplateConfig(
             label: "Noindex",
             required: false,
             description: "Use yes or no.",
-            example: "no",
+            example: family === "indices" ? "no" : "yes",
             aliases: ["noIndex", "no_index", "noindex"],
+            sectionKey: "seo",
+            sectionLabel: "SEO and sharing",
+            valueType: "yes_no",
+          }),
+          createField({
+            key: "noFollow",
+            label: "Nofollow",
+            required: false,
+            description: "Use yes or no.",
+            example: family === "indices" ? "no" : "yes",
+            aliases: ["noFollow", "no_follow", "nofollow"],
+            sectionKey: "seo",
+            sectionLabel: "SEO and sharing",
+            valueType: "yes_no",
+          }),
+          createField({
+            key: "sitemapInclude",
+            label: "Include in sitemap",
+            required: false,
+            description: "Use yes or no.",
+            example: family === "indices" ? "yes" : "no",
+            aliases: ["sitemapInclude", "sitemap_include", "include_in_sitemap"],
             sectionKey: "seo",
             sectionLabel: "SEO and sharing",
             valueType: "yes_no",
@@ -1537,7 +1614,9 @@ function buildGenericTemplateConfig(
         family === "indices"
           ? "https://riddra.com/import-test-index"
           : `https://riddra.com${adminFamilyMeta[family].routeBase}/import-test-${family.slice(0, -1)}`,
-      noIndex: "no",
+      noIndex: family === "indices" ? "no" : "yes",
+      noFollow: family === "indices" ? "no" : "yes",
+      sitemapInclude: family === "indices" ? "yes" : "no",
       publicRoute:
         family === "indices"
           ? "/import-test-index"
@@ -1654,6 +1733,78 @@ function getImportBenchmarkValue(payload: Record<AdminImportFieldKey, string>) {
       payload.benchmark,
     160,
   );
+}
+
+function slugifyImportValue(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function shouldReplaceImportTemplateSlug(slug: string, title: string) {
+  const normalizedSlug = cleanString(slug, 160).toLowerCase();
+  const normalizedTitle = cleanString(title, 240).toLowerCase();
+
+  if (!normalizedSlug.startsWith("import-test-")) {
+    return false;
+  }
+
+  return Boolean(normalizedTitle && !normalizedTitle.startsWith("import test "));
+}
+
+function resolveImportSlug(
+  family: SupportedAdminImportFamily,
+  payload: Record<AdminImportFieldKey, string>,
+) {
+  const rawSlug = cleanString(payload.slug, 160).toLowerCase();
+  const title = getImportTitleValue(family, payload);
+
+  if (rawSlug && !shouldReplaceImportTemplateSlug(rawSlug, title)) {
+    return rawSlug;
+  }
+
+  const derivedSlug = slugifyImportValue(title);
+  return derivedSlug || rawSlug;
+}
+
+function shouldNormalizeImportPublicRoute(
+  family: SupportedAdminImportFamily,
+  slug: string,
+  currentRoute: string,
+) {
+  const normalizedRoute = cleanString(currentRoute, 400);
+  if (!normalizedRoute) {
+    return true;
+  }
+
+  if (normalizedRoute.includes("/import-test-")) {
+    return true;
+  }
+
+  return normalizedRoute !== getDefaultPublicRoute(family, slug);
+}
+
+function shouldNormalizeImportCanonicalUrl(
+  slug: string,
+  publicRoute: string,
+  currentValue: string,
+) {
+  const normalized = cleanString(currentValue, 800);
+  if (!normalized) {
+    return true;
+  }
+
+  if (normalized.includes("/import-test-")) {
+    return true;
+  }
+
+  return /^https?:\/\/(?:www\.)?riddra\.com\//i.test(normalized) &&
+    normalized !== `https://www.riddra.com${publicRoute}`;
 }
 
 function normalizeImportPublishState(
@@ -2334,11 +2485,9 @@ function buildResultNote(
   return "This row will be skipped.";
 }
 
-async function buildPreviewRows(input: {
+async function evaluateImportRowCandidates(input: {
   family: SupportedAdminImportFamily;
-  parsedRows: CsvRow[];
-  headers: string[];
-  fieldMapping: Record<string, AdminImportFieldKey>;
+  candidates: AdminImportRowCandidate[];
   importMode: AdminImportMode;
 }) {
   const store = await getAdminOperatorStore();
@@ -2348,8 +2497,11 @@ async function buildPreviewRows(input: {
   const duplicateSlugCounter = new Map<string, number>();
   const templateFieldMap = getTemplateFieldMap(input.family);
 
-  return input.parsedRows.map((row, index) => {
-    const payload = normalizeRowPayload(input.family, input.headers, row, input.fieldMapping);
+  return input.candidates.map((candidate, index) => {
+    const payload = createEmptyPayloadForFamily(input.family);
+    for (const [fieldKey, rawValue] of Object.entries(candidate.payload ?? {})) {
+      payload[fieldKey] = cleanString(rawValue, 4000);
+    }
     const errors: string[] = [];
     const warnings: string[] = [];
     const requiredFieldKeys = new Set(
@@ -2389,7 +2541,16 @@ async function buildPreviewRows(input: {
       }
     }
 
-    const normalizedSlug = payload.slug;
+    const originalSlug = payload.slug;
+    const normalizedSlug = resolveImportSlug(input.family, payload);
+    if (normalizedSlug) {
+      payload.slug = normalizedSlug;
+      if (!originalSlug) {
+        warnings.push("Slug was blank, so the system derived it from the row title.");
+      } else if (normalizedSlug !== originalSlug) {
+        warnings.push("Slug still used the template placeholder, so the system derived a real slug from the row title.");
+      }
+    }
     const title = getImportTitleValue(input.family, payload);
 
     if (normalizedSlug) {
@@ -2426,9 +2587,18 @@ async function buildPreviewRows(input: {
       warnings.push("Summary is blank. You can import the record now and finish the summary later.");
     }
 
-    if (!payload.publicRoute && normalizedSlug) {
+    if (normalizedSlug && shouldNormalizeImportPublicRoute(input.family, normalizedSlug, payload.publicRoute)) {
       payload.publicRoute = getDefaultPublicRoute(input.family, normalizedSlug);
-      warnings.push("Public route was blank, so the default route will be used.");
+      warnings.push("Public route was aligned to the current slug.");
+    }
+
+    if (
+      normalizedSlug &&
+      Object.prototype.hasOwnProperty.call(payload, "canonicalUrl") &&
+      shouldNormalizeImportCanonicalUrl(normalizedSlug, payload.publicRoute, payload.canonicalUrl)
+    ) {
+      payload.canonicalUrl = `https://www.riddra.com${payload.publicRoute}`;
+      warnings.push("Canonical URL was aligned to the current slug.");
     }
 
     const operation: AdminImportOperation =
@@ -2442,8 +2612,9 @@ async function buildPreviewRows(input: {
 
     return normalizeBatchRow(
       {
+        id: candidate.rowId ?? undefined,
         batchId: "preview",
-        rowNumber: index + 1,
+        rowNumber: candidate.rowNumber || index + 1,
         identifier: getRowIdentifier(payload),
         title: title || matchedRow?.title || null,
         slug: normalizedSlug || matchedRow?.slug || null,
@@ -2462,27 +2633,71 @@ async function buildPreviewRows(input: {
   });
 }
 
+async function buildPreviewRows(input: {
+  family: SupportedAdminImportFamily;
+  parsedRows: CsvRow[];
+  headers: string[];
+  fieldMapping: Record<string, AdminImportFieldKey>;
+  importMode: AdminImportMode;
+}) {
+  const candidates = input.parsedRows.map((row, index) => ({
+    rowNumber: index + 1,
+    payload: normalizeRowPayload(input.family, input.headers, row, input.fieldMapping),
+  }));
+
+  return evaluateImportRowCandidates({
+    family: input.family,
+    candidates,
+    importMode: input.importMode,
+  });
+}
+
 export async function previewAdminImport(input: {
   family: SupportedAdminImportFamily;
-  csvText: string;
+  csvText?: string;
   fileName: string;
   importMode: AdminImportMode;
   fieldMapping?: Record<string, AdminImportFieldKey>;
+  previewRows?: AdminImportBatchRow[];
 }): Promise<AdminImportPreview> {
   const family = getSupportedFamilyOrThrow(input.family);
   const template = getTemplate(family);
-  const parsed = parseCsvText(input.csvText);
-  const mappingResult = buildHeaderMapping(family, parsed.headers, input.fieldMapping);
-  const rows = await buildPreviewRows({
-    family,
-    parsedRows: parsed.rows,
-    headers: parsed.headers,
-    fieldMapping: mappingResult.mapping,
-    importMode: input.importMode,
-  });
-  const validRows = rows.filter((row) => row.status === "valid").length;
-  const warningRows = rows.filter((row) => row.status === "warning").length;
-  const failedRows = rows.filter((row) => row.status === "failed").length;
+  let mappingResult: {
+    mapping: Record<string, AdminImportFieldKey>;
+    unmappedHeaders: string[];
+  } = {
+    mapping: input.fieldMapping ?? {},
+    unmappedHeaders: [],
+  };
+
+  const rows = Array.isArray(input.previewRows) && input.previewRows.length > 0
+    ? await evaluateImportRowCandidates({
+        family,
+        candidates: input.previewRows.map((row) => ({
+          rowId: row.id,
+          rowNumber: row.rowNumber,
+          payload: row.payload,
+        })),
+        importMode: input.importMode,
+      })
+    : (() => {
+        if (!input.csvText) {
+          throw new Error("CSV content is required to preview this import.");
+        }
+        const parsed = parseCsvText(input.csvText);
+        mappingResult = buildHeaderMapping(family, parsed.headers, input.fieldMapping);
+        return buildPreviewRows({
+          family,
+          parsedRows: parsed.rows,
+          headers: parsed.headers,
+          fieldMapping: mappingResult.mapping,
+          importMode: input.importMode,
+        });
+      })();
+  const resolvedRows = await rows;
+  const validRows = resolvedRows.filter((row) => row.status === "valid").length;
+  const warningRows = resolvedRows.filter((row) => row.status === "warning").length;
+  const failedRows = resolvedRows.filter((row) => row.status === "failed").length;
 
   return {
     family,
@@ -2492,12 +2707,14 @@ export async function previewAdminImport(input: {
     fieldMapping: mappingResult.mapping,
     unmappedHeaders: mappingResult.unmappedHeaders,
     availableFields: template.fields.map((field) => ({ key: field.key, label: field.label })),
-    rows,
-    totalRows: rows.length,
+    rows: resolvedRows,
+    totalRows: resolvedRows.length,
     validRows,
     warningRows,
     failedRows,
-    canImport: rows.some((row) => row.status !== "failed") && mappingResult.unmappedHeaders.length === 0,
+    canImport:
+      resolvedRows.some((row) => row.status !== "failed") &&
+      mappingResult.unmappedHeaders.length === 0,
   };
 }
 
@@ -2530,18 +2747,33 @@ async function saveBatchWithRows(batch: AdminImportBatch, rows: AdminImportBatch
       storageMode: "durable",
     });
     if (durableBatch) {
-      const durableRows =
-        (await replaceDurableAdminImportRows(
-          durableBatch.id,
-          rows.map((row) => ({ ...row, batchId: durableBatch.id })),
-        )) ?? [];
-      const normalizedRows = durableRows.map((row, index) => normalizeBatchRow(row, index, durableBatch.id));
-      const normalizedBatch = normalizeBatch(durableBatch, 0);
-      await mirrorBatchToFallback(normalizedBatch, normalizedRows);
-      return {
-        batch: normalizedBatch,
-        rows: normalizedRows,
-      };
+      const durableRows = await replaceDurableAdminImportRows(
+        durableBatch.id,
+        rows.map((row) => ({ ...row, batchId: durableBatch.id })),
+      );
+      if (durableRows === null) {
+        if (!canUseFileFallback()) {
+          throw new Error(
+            "Admin import row durable write failed. See server logs for the Supabase error details.",
+          );
+        }
+      } else {
+        const normalizedRows = durableRows.map((row, index) =>
+          normalizeBatchRow(row, index, durableBatch.id),
+        );
+        const normalizedBatch = normalizeBatch(durableBatch, 0);
+        await mirrorBatchToFallback(normalizedBatch, normalizedRows);
+        return {
+          batch: normalizedBatch,
+          rows: normalizedRows,
+        };
+      }
+    }
+
+    if (!canUseFileFallback()) {
+      throw new Error(
+        "Admin import batch durable write failed. See server logs for the Supabase error details.",
+      );
     }
   }
 
@@ -2656,10 +2888,11 @@ export async function executeAdminImport(input: {
   actorUserId: string | null;
   actorEmail: string;
   family: SupportedAdminImportFamily;
-  csvText: string;
+  csvText?: string;
   fileName: string;
   importMode: AdminImportMode;
   fieldMapping?: Record<string, AdminImportFieldKey>;
+  previewRows?: AdminImportBatchRow[];
 }) {
   const family = getSupportedFamilyOrThrow(input.family);
   if (!canEditAdminFamily(input.role, input.capabilities, family)) {
@@ -2672,6 +2905,7 @@ export async function executeAdminImport(input: {
     fileName: input.fileName,
     importMode: input.importMode,
     fieldMapping: input.fieldMapping,
+    previewRows: input.previewRows,
   });
 
   if (preview.unmappedHeaders.length > 0) {
@@ -2875,6 +3109,30 @@ export async function executeAdminImport(input: {
       failedCount: saved.batch.failedCount,
     },
   });
+
+  if (family === "stocks" && (saved.batch.createdCount > 0 || saved.batch.updatedCount > 0 || saved.batch.queuedCount > 0)) {
+    const trackedSlugs = saved.rows
+      .map((row) => row.slug || row.matchedSlug || "")
+      .filter(Boolean);
+
+    try {
+      await syncSearchIndexForAdminContentChange({
+        family: "stocks",
+        slugs: trackedSlugs,
+        requestedBy: input.actorEmail,
+        source: input.role === "admin" ? "admin_stock_import" : "editor_stock_import_submission",
+        force: true,
+        publicStatus: input.role === "admin" ? "draft" : "ready_for_review",
+      });
+    } catch (error) {
+      console.error("[search-index-sync] stock import refresh failed", {
+        family,
+        fileName: saved.batch.fileName,
+        trackedSlugs,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   return saved;
 }

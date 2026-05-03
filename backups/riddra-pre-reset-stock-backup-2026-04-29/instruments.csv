@@ -1,0 +1,23 @@
+created_at,exchange,id,instrument_type,name,primary_source_code,sector_index_slug,slug,status,symbol,updated_at
+2026-04-18T15:17:13.329893+00:00,NSE,0ed351ab-1f24-4e53-83bc-0310df25b210,stock,HDFC Bank,nse_equities,nifty_bank,hdfc-bank,active,HDFCBANK,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:03:36.803928+00:00,NSE,223f6dba-6e87-4e62-a727-ade4f34c39a0,stock,Reliance Industries,nse_equities,,reliance-industries,active,RELIANCE,2026-04-18T15:03:36.803928+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,44866753-f6be-4b0c-b320-522f89d70a8a,stock,State Bank of India,nse_equities,,state-bank-of-india,active,SBIN,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,4ebb224d-06d3-4b58-b148-64d8c6e6656f,stock,Asian Paints,nse_equities,,asian-paints,active,ASIANPAINT,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,554d9ba5-319c-4144-a0e4-d54efa872a2c,stock,TCS,nse_equities,,tcs,active,TCS,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,5ed86959-7b6a-4d5e-9520-400b955dd51c,stock,Hindustan Unilever,nse_equities,,hindustan-unilever,active,HINDUNILVR,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,5f4ca0ef-cd8e-45f0-a095-426517c3a568,stock,Kotak Mahindra Bank,nse_equities,,kotak-mahindra-bank,active,KOTAKBANK,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,611f7883-15d0-43c6-a0e9-3ed23a87b497,stock,Maruti Suzuki,nse_equities,,maruti-suzuki,active,MARUTI,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,6a22172a-9be2-436f-8bba-96ef3e6956b3,stock,Infosys,nse_equities,nifty_it,infosys,active,INFY,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,6c2b5d0d-c2e1-45cb-afaf-07d92c2ef293,stock,Bajaj Auto,nse_equities,,bajaj-auto,active,BAJAJ-AUTO,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,772f171e-a0ec-4ffc-bf6d-558bedebe4e3,stock,HCLTech,nse_equities,,hcltech,active,HCLTECH,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,7b0295ff-b6aa-489d-8d53-32fc2dae2547,stock,ICICI Bank,nse_equities,,icici-bank,active,ICICIBANK,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,9d682111-b60b-482c-b64c-283d78231e99,stock,NTPC,nse_equities,,ntpc,active,NTPC,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,ac0a2f2a-ac3d-4d87-b67b-fff2680f4e88,stock,Wipro,nse_equities,,wipro,active,WIPRO,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,acf6da11-c615-40e6-9bd0-717591886527,stock,Bajaj Finance,nse_equities,,bajaj-finance,active,BAJFINANCE,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:03:36.803928+00:00,NSE,bda0e61e-7fd7-47e2-ae31-42b922d4988f,stock,Tata Motors,nse_equities,nifty_auto,tata-motors,active,TMCV,2026-04-18T15:03:36.803928+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,c97f8dde-607c-4de2-9ec8-6fcfcd2d56c5,stock,Power Grid,nse_equities,,power-grid,active,POWERGRID,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,cbc13814-4bbf-49d1-8275-0e342498dac8,stock,Larsen & Toubro,nse_equities,,larsen-and-toubro,active,LT,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,cc1b62ea-a822-4abb-b027-092545ba7f67,stock,Sun Pharma,nse_equities,,sun-pharma,active,SUNPHARMA,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,f2a54dd2-8fc8-434a-8661-243929da918c,stock,ITC,nse_equities,,itc,active,ITC,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,f52c64fd-6eab-4a09-bfc8-7b2802d4f938,stock,Bharti Airtel,nse_equities,,bharti-airtel,active,BHARTIARTL,2026-04-18T15:17:13.329893+00:00
+2026-04-18T15:17:13.329893+00:00,NSE,fc5c2bba-190c-4eeb-90b5-cc6fd1b90cf0,stock,Axis Bank,nse_equities,,axis-bank,active,AXISBANK,2026-04-18T15:17:13.329893+00:00

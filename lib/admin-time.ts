@@ -25,6 +25,12 @@ const adminDateFormatter = buildFormatter({
   year: "numeric",
 });
 
+const adminDateKeyFormatter = buildFormatter({
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
 export function formatAdminDateTime(
   value: string | null | undefined,
   fallback = "Not recorded",
@@ -89,4 +95,55 @@ export function formatAdminDateLabel(
   }
 
   return adminDateFormatter.format(date);
+}
+
+export function getAdminLastActivePresentation(
+  value: string | null | undefined,
+  options?: {
+    now?: Date;
+    activeWindowMs?: number;
+  },
+) {
+  if (!value) {
+    return {
+      label: "Not recorded",
+      detail: null,
+      tone: "default" as const,
+    };
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return {
+      label: value,
+      detail: null,
+      tone: "default" as const,
+    };
+  }
+
+  const now = options?.now ?? new Date();
+  const activeWindowMs = options?.activeWindowMs ?? 5 * 60 * 1000;
+  const ageMs = now.getTime() - date.getTime();
+
+  if (ageMs >= 0 && ageMs < activeWindowMs) {
+    return {
+      label: "Active now",
+      detail: formatAdminDateTime(value),
+      tone: "success" as const,
+    };
+  }
+
+  if (adminDateKeyFormatter.format(now) === adminDateKeyFormatter.format(date)) {
+    return {
+      label: "Today",
+      detail: formatAdminDateTime(value),
+      tone: "info" as const,
+    };
+  }
+
+  return {
+    label: formatAdminDateTime(value),
+    detail: null,
+    tone: "default" as const,
+  };
 }

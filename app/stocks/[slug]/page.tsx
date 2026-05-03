@@ -3,27 +3,28 @@ import { notFound } from "next/navigation";
 
 import { JsonLd } from "@/components/json-ld";
 import { TestStockDetailPage } from "@/components/test-stock-detail-page";
-import { getCurrentUser } from "@/lib/auth";
-import { getComparableStocks } from "@/lib/asset-insights";
 import { formatBenchmarkLabel } from "@/lib/benchmark-labels";
 import {
   getBenchmarkHistory,
   getFormattedBenchmarkReturns,
 } from "@/lib/benchmark-history";
-import type { BenchmarkHistoryEntry } from "@/lib/benchmark-history-store";
-import { getStockChartSnapshot } from "@/lib/chart-content";
-import { getStock, getFund } from "@/lib/content";
-import { getDurableFundHoldingSnapshots } from "@/lib/fund-holding-store";
+import {
+  getStockChartSnapshot,
+} from "@/lib/chart-content";
+import { getPublicStockDiscoverySlugs, getStock, getStocks } from "@/lib/content";
 import { getIndexSnapshot } from "@/lib/index-content";
-import { getLatestMarketNewsForEntity } from "@/lib/market-news/queries";
+import { getPublishedAdminManagedStockFallbackRecords } from "@/lib/ipo-lifecycle";
 import type { StockSnapshot } from "@/lib/mock-data";
 import {
-  formatProductPercent,
+  getNativeStockChartData,
+} from "@/lib/native-stock-chart";
+import {
   parseDesignNumericValue,
 } from "@/lib/product-page-design";
 import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
+import { getNormalizedStockDetailData } from "@/lib/stock-normalized-detail";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -84,7 +85,33 @@ const shareholdingPalette = [
   { label: "Public", shortLabel: "Public", color: "#374151", fallback: 6.37 },
 ] as const;
 
-export const dynamic = "force-dynamic";
+const stockStaticParamOverrides = [
+  "alankit-limited",
+  "axita-cotton-limited",
+  "capillary-techno-india-l",
+  "dev-information-technology-limited",
+  "force-motors-limited",
+  "hardwyn-india-limited",
+  "infosys",
+] as const;
+
+export async function generateStaticParams() {
+  const [stockSlugs, stocks, fallbackRecords] = await Promise.all([
+    getPublicStockDiscoverySlugs(),
+    getStocks(),
+    getPublishedAdminManagedStockFallbackRecords(),
+  ]);
+  const publishedSlugs = Array.from(
+    new Set([
+      ...stockSlugs,
+      ...stocks.map((stock) => stock.slug),
+      ...fallbackRecords.map((record) => record.slug),
+      ...stockStaticParamOverrides,
+    ]),
+  ).sort();
+
+  return publishedSlugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,
@@ -110,30 +137,6 @@ export async function generateMetadata({
       benchmark: stock.sectorIndexSlug ?? null,
     },
   });
-}
-
-function computePeerOneYearReturn(
-  peerChange: string,
-  peerChartBars: Array<{ close: number }>,
-) {
-  if (peerChartBars.length > 252) {
-    const latest = peerChartBars[peerChartBars.length - 1]?.close;
-    const previous = peerChartBars[peerChartBars.length - 1 - 252]?.close;
-
-    if (
-      typeof latest === "number" &&
-      typeof previous === "number" &&
-      previous !== 0
-    ) {
-      return formatProductPercent(((latest - previous) / previous) * 100);
-    }
-  }
-
-  if (parseDesignNumericValue(peerChange) !== null) {
-    return peerChange;
-  }
-
-  return "Awaiting extended history";
 }
 
 function readStockStat(stock: StockSnapshot, label: string) {
@@ -272,112 +275,42 @@ function toSectorSlug(value: string | null | undefined) {
 
 export default async function StockDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const currentUser = await getCurrentUser();
-  const [
-    stock,
-    chartSnapshot,
-    benchmark,
-    benchmarkReturns,
-    comparableStocks,
-    sharedSidebarRailData,
-    fundHoldingSnapshots,
-  ] = await Promise.all([
+  const benchmarkHistoryPromise = getBenchmarkHistory("nifty50").catch(() => []);
+  const [stock, benchmark, benchmarkReturns, sharedSidebarRailData, benchmarkHistory] = await Promise.all([
     getStock(slug),
-    getStockChartSnapshot(slug),
-    getIndexSnapshot("nifty50"),
-    getFormattedBenchmarkReturns("nifty50"),
-    getComparableStocks(slug),
+    getIndexSnapshot("nifty50").catch(() => null),
+    getFormattedBenchmarkReturns("nifty50").catch(() => null),
     getSharedSidebarRailData({ pageCategory: "stocks" }),
-    getDurableFundHoldingSnapshots(),
+    benchmarkHistoryPromise,
   ]);
 
   if (!stock) {
     notFound();
   }
 
-  const sectorBenchmarkSlug = stock.sectorIndexSlug?.trim() || null;
-  const marketNews = await getLatestMarketNewsForEntity({
-    entityType: "stock",
-    entitySlug: stock.slug,
-    symbol: stock.symbol,
-    sectorSlug: toSectorSlug(stock.sector),
-    limit: 5,
-  }).catch(() => ({
-    articles: [],
-    matchedEntityType: null,
-    usedSectorFallback: false,
-    usedEntityFallback: false,
-    usedKeywordFallback: false,
-    usedIpoFallback: false,
-    usedLatestFallback: false,
-  }));
-  const [benchmarkHistory, sectorBenchmarkHistory] = await Promise.all([
-    getBenchmarkHistory("nifty50"),
-    sectorBenchmarkSlug
-      ? getBenchmarkHistory(sectorBenchmarkSlug)
-      : Promise.resolve<BenchmarkHistoryEntry[]>([]),
+  const resolvedSlug = stock.slug;
+  const [nativeChartInitialData, chartSnapshot, normalizedData] = await Promise.all([
+    getNativeStockChartData({ slug: resolvedSlug, range: "1Y", interval: "1d" }),
+    getStockChartSnapshot(resolvedSlug),
+    getNormalizedStockDetailData(resolvedSlug),
   ]);
 
-  const similarAssets = (
-    await Promise.all(
-      comparableStocks.slice(0, 6).map(async (peer) => {
-        const [peerStock, peerChart] = await Promise.all([
-          getStock(peer.slug),
-          getStockChartSnapshot(peer.slug),
-        ]);
+  const sectorBenchmarkSlug = stock.sectorIndexSlug?.trim() || null;
+  const sectorBenchmarkHistory = sectorBenchmarkSlug
+    ? await getBenchmarkHistory(sectorBenchmarkSlug).catch(() => [])
+    : [];
 
-        if (!peerStock) {
-          return null;
-        }
-
-        return {
-          name: peerStock.name,
-          price: peerStock.price,
-          change1Y: computePeerOneYearReturn(peerStock.change, peerChart.bars),
-          ratioLabel: "P/E",
-          ratioValue:
-            peerStock.stats.find((item) =>
-              ["P/E", "PE", "P/E Ratio", "PE Ratio"].includes(item.label),
-            )?.value ?? "Awaiting extended dataset",
-          marketCap:
-            peerStock.stats.find((item) => item.label === "Market Cap")?.value ??
-            "Awaiting extended dataset",
-          href: `/stocks/${peerStock.slug}`,
-          hrefLabel: peerStock.name,
-        };
-      }),
-    )
-  ).filter((item): item is NonNullable<typeof item> => Boolean(item));
-
-  const mutualFundOwners = (
-    await Promise.all(
-      fundHoldingSnapshots
-        .filter((snapshot) =>
-          snapshot.rows.some(
-            (row) => row.name.trim().toLowerCase() === stock.name.trim().toLowerCase(),
-          ),
-        )
-        .slice(0, 5)
-        .map(async (snapshot) => {
-          const matchingRow = snapshot.rows.find(
-            (row) => row.name.trim().toLowerCase() === stock.name.trim().toLowerCase(),
-          );
-
-          if (!matchingRow) {
-            return null;
-          }
-
-          const fund = await getFund(snapshot.fundSlug);
-
-          return {
-            fundSlug: snapshot.fundSlug,
-            fundName: fund?.name ?? snapshot.fundSlug,
-            weight: matchingRow.weight,
-            sourceDate: snapshot.sourceDate,
-          };
-        }),
-    )
-  ).filter((item): item is NonNullable<typeof item> => Boolean(item));
+  const similarAssets: Array<{
+    name: string;
+    price: string;
+    change1Y: string;
+    ratioLabel: string;
+    ratioValue: string;
+    marketCap?: string;
+    href?: string;
+    hrefLabel: string;
+  }> = [];
+  const mutualFundOwners: MutualFundOwner[] = [];
 
   const shareholdingBuckets = buildShareholdingBuckets(stock);
   const investorDetailRows = buildInvestorTimelineRows(stock);
@@ -423,11 +356,10 @@ export default async function StockDetailPage({ params }: PageProps) {
         similarAssets={similarAssets}
         mutualFundOwners={mutualFundOwners}
         demoData={demoData}
-        marketNews={marketNews.articles}
-        marketNewsUsedSectorFallback={marketNews.usedSectorFallback}
-        marketNewsFallbackSectorLabel={marketNews.usedSectorFallback ? stock.sector : null}
-        viewerSignedIn={Boolean(currentUser)}
+        viewerSignedIn={false}
         sharedSidebarRailData={sharedSidebarRailData}
+        nativeChartInitialData={nativeChartInitialData}
+        normalizedData={normalizedData}
         pageContext={{
           label: stock.name,
           href: `/stocks/${stock.slug}`,

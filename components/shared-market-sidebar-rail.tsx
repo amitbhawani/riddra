@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { ProductCard } from "@/components/product-page-system";
 import {
@@ -88,7 +89,11 @@ export function SharedMarketSidebarRail({
   const showTopGainers = visibleBlocks?.topGainers ?? true;
   const showTopLosers = visibleBlocks?.topLosers ?? true;
   const showPopularStocks = visibleBlocks?.popularStocks ?? true;
-  const updatedLabel = formatSidebarUpdatedLabel();
+  const [updatedLabel, setUpdatedLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUpdatedLabel(formatSidebarUpdatedLabel());
+  }, []);
 
   return (
     <div className="shared-market-sidebar-rail space-y-3">
@@ -96,7 +101,7 @@ export function SharedMarketSidebarRail({
         <div className="grid gap-3">
           {marketSnapshotSections.map((section) => (
           <ProductCard key={section.title} tone="primary" className="space-y-3">
-            <SidebarSectionHeading title={section.title} meta={updatedLabel} />
+            <SidebarSectionHeading title={section.title} meta={updatedLabel ?? undefined} />
             <div className="shared-market-sidebar-table overflow-hidden rounded-[10px] border border-[rgba(27,58,107,0.08)] bg-white">
               <div className="shared-market-sidebar-header grid grid-cols-[minmax(0,46%)_minmax(68px,34%)_minmax(54px,20%)] items-center gap-2 border-b border-[rgba(27,58,107,0.08)] bg-[rgba(255,255,255,0.92)] px-3 py-2">
                 <span className="shared-market-sidebar-table-label text-left font-[family:var(--font-riddra-mono)] text-[10px] uppercase tracking-[0.14em] text-[rgba(107,114,128,0.82)]">
@@ -151,7 +156,7 @@ export function SharedMarketSidebarRail({
           .filter((group): group is { title: string; rows: SharedSidebarMover[]; positive: boolean } => Boolean(group))
           .map((group) => (
           <ProductCard key={group.title} tone="secondary" className="space-y-3">
-            <SidebarSectionHeading title={group.title} meta={updatedLabel} />
+            <SidebarSectionHeading title={group.title} meta={updatedLabel ?? undefined} />
             <div className="grid gap-1.5">
               {group.rows.map((item, index) => (
                 <SidebarMoverRow
@@ -165,7 +170,7 @@ export function SharedMarketSidebarRail({
               ))}
             </div>
             <Link
-              href={group.positive ? "/stocks#top-gainers" : "/stocks#top-losers"}
+              href={group.positive ? "/markets#top-gainers" : "/markets#top-losers"}
               className="inline-flex text-[13px] font-semibold text-[#4361EE] hover:text-[#1B3A6B]"
             >
               View All
@@ -176,7 +181,7 @@ export function SharedMarketSidebarRail({
 
       {showPopularStocks ? (
         <ProductCard tone="secondary" className="space-y-3">
-          <SidebarSectionHeading title="Popular Stocks" meta={updatedLabel} />
+          <SidebarSectionHeading title="Popular Stocks" meta={updatedLabel ?? undefined} />
           <div className="grid gap-1.5">
             {popularStocks.slice(0, 6).map((item, index) => (
               <SidebarMoverRow key={`${item.label}-${index}`} href={item.href} name={item.label} price={item.price} />

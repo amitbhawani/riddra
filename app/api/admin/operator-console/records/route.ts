@@ -25,6 +25,7 @@ import {
 import { canEditAdminFamily, hasProductUserCapability } from "@/lib/product-permissions";
 import { saveAdminPendingApproval } from "@/lib/admin-approvals";
 import { persistApprovedAdminRecordChange } from "@/lib/admin-record-workflow";
+import { syncSearchIndexForAdminContentChange } from "@/lib/search-index-rebuild";
 import type { AdminEditorRecord, AdminFamilyKey, AdminListRow } from "@/lib/admin-content-schema";
 
 function badRequest(message: string) {
@@ -228,6 +229,24 @@ export async function POST(request: NextRequest) {
       if (deleted.publicHref) {
         revalidatePath(deleted.publicHref);
       }
+      if (family === "stocks") {
+        try {
+          await syncSearchIndexForAdminContentChange({
+            family: "stocks",
+            slugs: [deleted.slug],
+            requestedBy: user.email ?? "Admin",
+            source: "admin_records_delete",
+            force: true,
+            publicStatus: "archived",
+          });
+        } catch (error) {
+          console.error("[search-index-sync] stock delete refresh failed", {
+            family,
+            slug: deleted.slug,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
 
       return NextResponse.json({
         ok: true,
@@ -302,6 +321,23 @@ export async function POST(request: NextRequest) {
       });
 
       revalidateAdminRecentEditSurfaces(family, [saved.slug]);
+      if (family === "stocks") {
+        try {
+          await syncSearchIndexForAdminContentChange({
+            family: "stocks",
+            slugs: [saved.slug],
+            requestedBy: user.email ?? "Admin",
+            source: "admin_records_quick_edit",
+            publicStatus: saved.status,
+          });
+        } catch (error) {
+          console.error("[search-index-sync] stock quick-edit refresh failed", {
+            family,
+            slug: saved.slug,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
 
       return NextResponse.json({
         ok: true,
@@ -389,6 +425,25 @@ export async function POST(request: NextRequest) {
         family,
         results.map((row) => row.slug),
       );
+      if (family === "stocks" && payload.bulkAction !== "assign") {
+        try {
+          await syncSearchIndexForAdminContentChange({
+            family: "stocks",
+            slugs: results.map((row) => row.slug),
+            requestedBy: user.email ?? "Admin",
+            source: "admin_records_bulk_update",
+            force: true,
+            publicStatus: payload.bulkAction === "archive" ? "archived" : "published",
+          });
+        } catch (error) {
+          console.error("[search-index-sync] stock bulk refresh failed", {
+            family,
+            bulkAction: payload.bulkAction,
+            slugs,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
 
       return NextResponse.json({
         ok: true,

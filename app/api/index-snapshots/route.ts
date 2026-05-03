@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
-import { unstable_noStore as noStore } from "next/cache";
 
 import { getIndexSnapshot, getIndexSnapshots } from "@/lib/index-content";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 export async function GET(request: Request) {
-  noStore();
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
   const successHeaders = {

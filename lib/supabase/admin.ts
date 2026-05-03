@@ -19,6 +19,9 @@ export function createSupabaseAdminClient() {
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      fetch: createSupabaseTimedFetch("Supabase admin request"),
+    },
   });
 }
 
@@ -28,17 +31,14 @@ export function createSupabaseReadClient() {
   }
 
   const config = getRuntimeLaunchConfig();
-  const key = hasRuntimeSupabaseAdminEnv()
-    ? config.supabaseServiceRoleKey
-    : config.supabaseAnonKey;
 
-  return createClient(config.supabaseUrl, key, {
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
     global: {
-      fetch: createSupabaseTimedFetch("Supabase durable CMS read"),
+      fetch: createSupabaseTimedFetch("Supabase public read"),
     },
   });
 }

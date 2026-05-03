@@ -43,6 +43,100 @@ body {
   font-family: var(--font-body), sans-serif;
 }
 
+.admin-readable-surface {
+  color-scheme: light;
+}
+
+.admin-readable-surface .riddra-product-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: #dbe3ed !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+.admin-readable-surface .riddra-product-card [class*="text-white/"],
+.admin-readable-surface .riddra-product-card [class*="text-white"] {
+  color: #1f2937 !important;
+}
+
+.admin-readable-surface .riddra-product-card [class*="text-mist/"],
+.admin-readable-surface .riddra-product-card [class*="text-mist"] {
+  color: #4b5563 !important;
+}
+
+.admin-readable-surface .riddra-product-card [class*="bg-black/15"],
+.admin-readable-surface .riddra-product-card [class*="bg-black/20"] {
+  background: #f8fafc !important;
+}
+
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.02]"],
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.03]"],
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.04]"],
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.05]"],
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.06]"],
+.admin-readable-surface .riddra-product-card [class*="bg-white/[0.08]"] {
+  background: #ffffff !important;
+}
+
+.admin-readable-surface .riddra-product-card [class*="border-white/8"],
+.admin-readable-surface .riddra-product-card [class*="border-white/10"],
+.admin-readable-surface .riddra-product-card [class*="border-white/12"],
+.admin-readable-surface .riddra-product-card [class*="border-white/18"],
+.admin-readable-surface .riddra-product-card [class*="border-white/20"] {
+  border-color: #dbe3ed !important;
+}
+
+.admin-readable-surface .riddra-product-card input,
+.admin-readable-surface .riddra-product-card select,
+.admin-readable-surface .riddra-product-card textarea {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+}
+
+.admin-readable-surface .riddra-product-card input::placeholder,
+.admin-readable-surface .riddra-product-card textarea::placeholder {
+  color: #9ca3af !important;
+}
+
+.admin-readable-surface .riddra-product-card option {
+  background: #ffffff;
+  color: #111827;
+}
+
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.03]"],
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.04]"],
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.06]"],
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.03]"],
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.04]"],
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.06]"],
+.admin-readable-surface .riddra-product-card a[class*="bg-black/15"],
+.admin-readable-surface .riddra-product-card button[class*="bg-black/15"] {
+  background: #eef4ff !important;
+  border-color: #bfdbfe !important;
+  color: #1b3a6b !important;
+}
+
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.03]"]:hover,
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.04]"]:hover,
+.admin-readable-surface .riddra-product-card a[class*="bg-white/[0.06]"]:hover,
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.03]"]:hover,
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.04]"]:hover,
+.admin-readable-surface .riddra-product-card button[class*="bg-white/[0.06]"]:hover,
+.admin-readable-surface .riddra-product-card a[class*="bg-black/15"]:hover,
+.admin-readable-surface .riddra-product-card button[class*="bg-black/15"]:hover {
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+  color: #1b3a6b !important;
+}
+
+.admin-readable-surface .riddra-product-card a[class*="text-white/"],
+.admin-readable-surface .riddra-product-card a[class*="text-white"],
+.admin-readable-surface .riddra-product-card button[class*="text-white/"],
+.admin-readable-surface .riddra-product-card button[class*="text-white"] {
+  color: #1b3a6b !important;
+}
+
 .public-site-shell {
   background:
     linear-gradient(180deg, rgba(250, 247, 242, 0.98) 0%, rgba(244, 239, 231, 0.98) 38%, #ece5dc 100%);

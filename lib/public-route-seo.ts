@@ -4,8 +4,15 @@ import { getAdminManagedRecord } from "@/lib/admin-operator-store";
 import { buildGeneratedSeoDefaults, pickFirstNonEmptySeoValue } from "@/lib/generated-seo";
 import { getLaunchConfigStore } from "@/lib/launch-config-store";
 import type { AdminFamilyKey } from "@/lib/admin-content-schema";
+import { buildSeoMetadata, type SeoRoutePolicyKey } from "@/lib/seo-config";
 
 type SupportedSeoFamily = Extract<AdminFamilyKey, "stocks" | "mutual-funds" | "indices">;
+
+const seoRoutePolicyByFamily: Record<SupportedSeoFamily, SeoRoutePolicyKey> = {
+  stocks: "stocks_detail",
+  "mutual-funds": "mutual_funds_detail",
+  indices: "index_detail",
+};
 
 export async function buildManagedRouteMetadata(input: {
   family: SupportedSeoFamily;
@@ -51,35 +58,18 @@ export async function buildManagedRouteMetadata(input: {
     generatedSeo.canonicalUrl;
   const ogImage =
     pickFirstNonEmptySeoValue(seoValues.ogImage) || generatedSeo.ogImage;
-  const noIndex = pickFirstNonEmptySeoValue(seoValues.noIndex) === "yes";
-
-  return {
-    title: {
-      absolute: metaTitle,
-    },
+  return buildSeoMetadata({
+    policyKey: seoRoutePolicyByFamily[input.family],
+    title: metaTitle,
     description: metaDescription,
-    alternates: canonicalUrl
-      ? {
-          canonical: canonicalUrl,
-        }
-      : undefined,
-    openGraph: {
-      title: metaTitle,
-      description: metaDescription,
-      url: canonicalUrl || input.publicHref,
-      images: ogImage ? [ogImage] : undefined,
+    publicHref: input.publicHref,
+    ogImage,
+    launchConfig,
+    recordSeo: {
+      canonicalUrl,
+      noIndex: seoValues.noIndex,
+      noFollow: seoValues.noFollow,
+      sitemapInclude: seoValues.sitemapInclude,
     },
-    twitter: {
-      card: "summary_large_image",
-      title: metaTitle,
-      description: metaDescription,
-      images: ogImage ? [ogImage] : undefined,
-    },
-    robots: noIndex
-      ? {
-          index: false,
-          follow: false,
-        }
-      : undefined,
-  };
+  });
 }

@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { AdminGuidanceCard, AdminStorageStatusCard } from "@/components/admin/admin-operator-notices";
 import { AdminRecordEditorClient } from "@/components/admin/admin-record-editor-client";
 import { AdminPageFrame, AdminPageHeader } from "@/components/admin/admin-primitives";
+import { StockFieldMapCard } from "@/components/stock-field-map-card";
 import { getActivePendingApprovalForRecord } from "@/lib/admin-approvals";
+import { getAdminStockImportDetails } from "@/lib/admin-stock-import-dashboard";
 import {
   adminFamilyMeta,
   getAdminRecordEditorData,
@@ -60,12 +62,15 @@ export default async function AdminRecordEditorPage({
   const revisions = store.revisions.filter(
     (revision) => revision.family === typedFamily && revision.slug === editor.slug,
   );
-  const [versions, mediaAssets, activePreview, pendingApproval] = await Promise.all([
+  const [versions, mediaAssets, activePreview, pendingApproval, stockImportInsights] = await Promise.all([
     getCmsRecordVersions(typedFamily, editor.slug, 50),
     listMediaAssets(),
     getLatestCmsPreviewSessionForRecord(typedFamily, editor.slug),
     role === "editor" && user.email
       ? getActivePendingApprovalForRecord(typedFamily, editor.slug, user.email)
+      : Promise.resolve(null),
+    typedFamily === "stocks"
+      ? getAdminStockImportDetails({ slug: editor.slug, symbol: editor.symbol }).catch(() => null)
       : Promise.resolve(null),
   ]);
   const editorWithRevisionCount = {
@@ -103,6 +108,14 @@ export default async function AdminRecordEditorPage({
         ]}
       />
 
+      {typedFamily === "stocks" ? (
+        <StockFieldMapCard
+          record={editorWithRevisionCount}
+          title="Stock field parity map"
+          description="This stock editor now shares the same frontend label → backend field-key map that internal users can open on the public stock route."
+        />
+      ) : null}
+
       <AdminRecordEditorClient
         record={editorWithRevisionCount}
         importHistory={record?.imports ?? []}
@@ -111,6 +124,7 @@ export default async function AdminRecordEditorPage({
         mediaAssets={mediaAssets}
         activePreview={activePreview}
         pendingApproval={pendingApproval}
+        stockImportInsights={stockImportInsights}
         currentUserEmail={user.email ?? ""}
         permissions={{
           canPublishContent: hasProductUserCapability(role, capabilities, "can_publish_content"),

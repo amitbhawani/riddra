@@ -22,7 +22,9 @@ import {
 import { getMarketNewsDisplayFallbackImage } from "@/lib/market-news/images";
 import { getMarketNewsArticleBySlug, getRelatedMarketNewsArticles } from "@/lib/market-news/queries";
 import type { StockSnapshot } from "@/lib/mock-data";
+import { getExternalLinkProps, getInternalLinkProps } from "@/lib/link-utils";
 import { getPublicSiteUrl } from "@/lib/public-site-url";
+import { buildSeoMetadata } from "@/lib/seo-config";
 import { buildBreadcrumbSchema } from "@/lib/seo";
 
 type PageProps = {
@@ -339,6 +341,7 @@ function linkStockMentionsInParagraph(
       <Link
         key={`${match.candidate.slug}-${match.start}-${match.end}`}
         href={`/stocks/${match.candidate.slug}`}
+        {...getInternalLinkProps()}
         className="font-medium text-[#1B3A6B] underline decoration-[rgba(27,58,107,0.24)] underline-offset-[3px] transition hover:text-[#D4853B] hover:decoration-[rgba(212,133,59,0.4)]"
         title={match.candidate.stockName}
       >
@@ -401,26 +404,14 @@ export async function generateMetadata({
   const canonicalUrl = buildMarketNewsDetailUrl(article.slug);
   const imageUrl = article.display_image_url || `${getPublicSiteUrl()}/news-fallbacks/riddra-market-news.svg`;
 
-  return {
+  return buildSeoMetadata({
+    policyKey: "market_news_detail",
     title,
     description,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      type: "article",
-      images: imageUrl ? [{ url: imageUrl, alt: article.image_display_alt_text }] : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: imageUrl ? [imageUrl] : undefined,
-    },
-  };
+    publicHref: `/markets/news/${article.slug}`,
+    ogImage: imageUrl,
+    openGraphType: "article",
+  });
 }
 
 export default async function MarketNewsDetailPage({
@@ -552,8 +543,7 @@ export default async function MarketNewsDetailPage({
               <div className="flex flex-wrap items-center gap-3">
                 <a
                   href={article.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...getExternalLinkProps()}
                   className="inline-flex items-center gap-2 rounded-[8px] border border-[rgba(221,215,207,0.94)] bg-white px-4 py-2 text-sm font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.22)] hover:bg-[rgba(27,58,107,0.04)]"
                 >
                   Read full story at {sourceLabel}
@@ -581,6 +571,7 @@ export default async function MarketNewsDetailPage({
                   <Link
                     key={stock.slug}
                     href={`/stocks/${stock.slug}`}
+                    {...getInternalLinkProps()}
                     className="rounded-[16px] border border-[rgba(221,215,207,0.92)] bg-white px-4 py-4 transition hover:border-[rgba(212,133,59,0.28)] hover:shadow-[0_16px_34px_rgba(15,23,42,0.06)]"
                   >
                     <p className="riddra-product-body text-sm font-semibold uppercase tracking-[0.12em] text-[rgba(107,114,128,0.78)]">
@@ -623,6 +614,7 @@ export default async function MarketNewsDetailPage({
               {canLoadMoreStories ? (
                 <Link
                   href={`/markets/news/${article.slug}?stories=${nextStoriesCount}`}
+                  {...getInternalLinkProps()}
                   className="inline-flex items-center justify-center rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-5 py-2.5 text-sm font-medium text-[#1B3A6B] transition hover:border-[rgba(27,58,107,0.22)] hover:bg-[rgba(27,58,107,0.04)]"
                 >
                   Load more stories
@@ -631,6 +623,7 @@ export default async function MarketNewsDetailPage({
               {canShowLessStories ? (
                 <Link
                   href={`/markets/news/${article.slug}`}
+                  {...getInternalLinkProps()}
                   className="inline-flex rounded-full border border-[rgba(221,215,207,0.94)] bg-white px-5 py-2.5 text-sm font-medium text-[rgba(55,65,81,0.88)] transition hover:border-[rgba(212,133,59,0.3)] hover:text-[#8E5723]"
                 >
                   Show less

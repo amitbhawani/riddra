@@ -18,6 +18,14 @@ type CanonicalComparePair = {
   rightSlug: string;
 };
 
+type ScoredStockCandidate = {
+  candidate: StockSnapshot;
+  score: number;
+};
+
+const stockSlugIndexCache = new WeakMap<StockSnapshot[], Map<string, StockSnapshot>>();
+const topStockCandidateCache = new WeakMap<StockSnapshot[], Map<string, StockSnapshot | null>>();
+
 const stockSectorFamilies: Record<string, string> = {
   banking: "financials",
   nbfc: "financials",
@@ -231,6 +239,69 @@ function readStockStat(stock: StockSnapshot, label: string) {
   return stock.stats.find((item) => item.label === label)?.value ?? "";
 }
 
+function getStockSlugIndex(stocks: StockSnapshot[]) {
+  const cached = stockSlugIndexCache.get(stocks);
+
+  if (cached) {
+    return cached;
+  }
+
+  const index = new Map(stocks.map((stock) => [stock.slug, stock]));
+  stockSlugIndexCache.set(stocks, index);
+  return index;
+}
+
+function insertRankedStockCandidate(
+  ranking: ScoredStockCandidate[],
+  nextCandidate: ScoredStockCandidate,
+  limit: number,
+) {
+  let inserted = false;
+
+  for (let index = 0; index < ranking.length; index += 1) {
+    const current = ranking[index];
+
+    if (
+      nextCandidate.score > current.score ||
+      (nextCandidate.score === current.score &&
+        nextCandidate.candidate.name.localeCompare(current.candidate.name) < 0)
+    ) {
+      ranking.splice(index, 0, nextCandidate);
+      inserted = true;
+      break;
+    }
+  }
+
+  if (!inserted) {
+    ranking.push(nextCandidate);
+  }
+
+  if (ranking.length > limit) {
+    ranking.length = limit;
+  }
+}
+
+function getCachedTopStockCandidate(
+  stocks: StockSnapshot[],
+  slug: string,
+  resolver: () => StockSnapshot | null,
+) {
+  let cacheForUniverse = topStockCandidateCache.get(stocks);
+
+  if (!cacheForUniverse) {
+    cacheForUniverse = new Map();
+    topStockCandidateCache.set(stocks, cacheForUniverse);
+  }
+
+  if (cacheForUniverse.has(slug)) {
+    return cacheForUniverse.get(slug) ?? null;
+  }
+
+  const resolved = resolver();
+  cacheForUniverse.set(slug, resolved);
+  return resolved;
+}
+
 function scoreNumericCloseness(left: number | null, right: number | null, maxPoints: number) {
   if (left === null || right === null) {
     return 0;
@@ -392,7 +463,7 @@ export function getRankedStockCompareCandidates(
     limit?: number;
   },
 ) {
-  const current = stocks.find((item) => item.slug === slug);
+  const current = getStockSlugIndex(stocks).get(slug);
 
   if (!current) {
     return [];
@@ -400,21 +471,97 @@ export function getRankedStockCompareCandidates(
 
   const limit = options?.limit ?? 3;
 
-  return stocks
-    .filter((item) => item.slug !== current.slug && item.slug !== options?.excludeSlug)
-    .map((candidate) => ({
-      candidate,
-      score: scoreStockCandidate(current, candidate),
-    }))
-    .sort((left, right) => {
-      if (right.score !== left.score) {
-        return right.score - left.score;
+  if (!options?.excludeSlug && limit === 1) {
+    const topCandidate = getTopRankedStockCompareCandidate(stocks, slug);
+    return topCandidate ? [topCandidate] : [];
+  }
+
+  const ranking: ScoredStockCandidate[] = [];
+
+  for (const candidate of stocks) {
+    if (candidate.slug === current.slug || candidate.slug === options?.excludeSlug) {
+      continue;
+    }
+
+    insertRankedStockCandidate(
+      ranking,
+      {
+        candidate,
+        score: scoreStockCandidate(current, candidate),
+      },
+      limit,
+    );
+  }
+
+  return ranking.map((item) => item.candidate);
+}
+
+export function getTopRankedStockCompareCandidate(
+  stocks: StockSnapshot[],
+  slug: string,
+  options?: {
+    excludeSlug?: string;
+  },
+) {
+  if (options?.excludeSlug) {
+    const current = getStockSlugIndex(stocks).get(slug);
+
+    if (!current) {
+      return null;
+    }
+
+    let bestCandidate: StockSnapshot | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+
+    for (const candidate of stocks) {
+      if (candidate.slug === current.slug || candidate.slug === options.excludeSlug) {
+        continue;
       }
 
-      return left.candidate.name.localeCompare(right.candidate.name);
-    })
-    .slice(0, limit)
-    .map((item) => item.candidate);
+      const score = scoreStockCandidate(current, candidate);
+
+      if (
+        bestCandidate === null ||
+        score > bestScore ||
+        (score === bestScore && candidate.name.localeCompare(bestCandidate.name) < 0)
+      ) {
+        bestCandidate = candidate;
+        bestScore = score;
+      }
+    }
+
+    return bestCandidate;
+  }
+
+  return getCachedTopStockCandidate(stocks, slug, () => {
+    const current = getStockSlugIndex(stocks).get(slug);
+
+    if (!current) {
+      return null;
+    }
+
+    let bestCandidate: StockSnapshot | null = null;
+    let bestScore = Number.NEGATIVE_INFINITY;
+
+    for (const candidate of stocks) {
+      if (candidate.slug === current.slug || candidate.slug === options?.excludeSlug) {
+        continue;
+      }
+
+      const score = scoreStockCandidate(current, candidate);
+
+      if (
+        bestCandidate === null ||
+        score > bestScore ||
+        (score === bestScore && candidate.name.localeCompare(bestCandidate.name) < 0)
+      ) {
+        bestCandidate = candidate;
+        bestScore = score;
+      }
+    }
+
+    return bestCandidate;
+  });
 }
 
 export function getRankedFundCompareCandidates(
@@ -519,8 +666,9 @@ export function getPreferredFundComparePairs(funds: FundSnapshot[], limitPerFund
 }
 
 export function getCanonicalStockComparePair(stocks: StockSnapshot[], leftSlug: string, rightSlug: string): CanonicalComparePair | null {
-  const left = stocks.find((item) => item.slug === leftSlug);
-  const right = stocks.find((item) => item.slug === rightSlug);
+  const stockIndex = getStockSlugIndex(stocks);
+  const left = stockIndex.get(leftSlug);
+  const right = stockIndex.get(rightSlug);
 
   if (!left || !right || left.slug === right.slug) {
     return null;

@@ -34,6 +34,14 @@ export default function AdminGlobalSitePage() {
             </div>
           </AdminSectionCard>
         ))}
+        <AdminSectionCard
+          title="SEO controls"
+          description="Manage crawl posture, sitemap discipline, and route-family indexing policy from one central screen."
+        >
+          <div className="flex items-center gap-2">
+            <AdminActionLink href="/admin/seo" label="Open page" tone="primary" />
+          </div>
+        </AdminSectionCard>
       </div>
     </AdminPageFrame>
   );

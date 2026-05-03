@@ -13,13 +13,11 @@ import {
   ProductSectionTitle,
 } from "@/components/product-page-system";
 import { SubscriberTruthNotice } from "@/components/subscriber-truth-notice";
-import { getCurrentUser } from "@/lib/auth";
 import { getLearnArticle, getLearnArticles } from "@/lib/learn";
 import { getPublicTruthItems } from "@/lib/public-route-truth";
 import { getPublishableCmsRecordBySlug, getPublishableCmsSlugSet } from "@/lib/publishable-content";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { getSubscriberSurfaceTruth } from "@/lib/subscriber-surface-truth";
-import { getMembershipFeatureStatus, getUserProductProfile } from "@/lib/user-product-store";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -53,11 +51,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function LearnArticlePage({ params }: PageProps) {
   const { slug } = await params;
-  const currentUser = await getCurrentUser();
-  const viewerProfile = currentUser ? await getUserProductProfile(currentUser) : null;
-  const researchUnlocked = viewerProfile
-    ? await getMembershipFeatureStatus(viewerProfile, "research_access")
-    : false;
   const publishableRecord = await getPublishableCmsRecordBySlug("research_article", slug);
   if (!publishableRecord) {
     notFound();
@@ -147,10 +140,11 @@ export default async function LearnArticlePage({ params }: PageProps) {
                   slug={article.slug}
                   title={article.title}
                   href={`/learn/${article.slug}`}
-                  isSignedIn={Boolean(currentUser)}
+                  isSignedIn={false}
                   featureGate={{
                     label: "Research access",
-                    enabled: researchUnlocked,
+                    enabled: false,
+                    featureKey: "research_access",
                     lockedReason:
                       "This editorial layer stays public-friendly, but the deeper research workflow and continuity prompts are tied to membership.",
                     ctaHref: "/pricing",

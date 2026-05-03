@@ -6,7 +6,7 @@ import {
 } from "@/components/admin/admin-operator-notices";
 import { AdminSettingsClient } from "@/components/admin/admin-settings-client";
 import { AdminPageFrame, AdminPageHeader } from "@/components/admin/admin-primitives";
-import { getSystemSettings } from "@/lib/user-product-store";
+import { getAdminSystemSettings } from "@/lib/user-product-store";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminSettingsPage() {
-  const settings = await getSystemSettings();
+  const settings = await getAdminSystemSettings();
 
   return (
     <AdminPageFrame>

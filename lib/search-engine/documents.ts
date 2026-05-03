@@ -1,9 +1,9 @@
 import { courses } from "@/lib/courses";
 import { communityProgramsItems } from "@/lib/community-programs";
-import { getFunds, getIpos, getStocks } from "@/lib/content";
+import { getFunds, getIpos, getPublicStockDiscoveryStocks } from "@/lib/content";
 import { getFundCategorySearchAliases } from "@/lib/fund-search-aliases";
 import { getLearnArticles, getLearningPaths, getMarketEvents } from "@/lib/learn";
-import { filterEntriesToPublishableCms } from "@/lib/publishable-content";
+import { filterEntriesToPublicSearchRoutes } from "@/lib/public-search-routes";
 import { mentorshipTracks } from "@/lib/mentorship";
 import { buildSearchCatalog, type SearchCatalogEntry } from "@/lib/search-catalog";
 import { tools } from "@/lib/tools";
@@ -47,6 +47,7 @@ export type SearchIndexDocument = SearchCatalogEntry & {
 
 export type SearchDocumentBuildSummary = {
   totalDocuments: number;
+  stockDocuments: number;
   assetDocuments: number;
   compareDocuments: number;
   workflowDocuments: number;
@@ -55,7 +56,7 @@ export type SearchDocumentBuildSummary = {
 };
 
 type SearchSourceGraph = {
-  stocks: Awaited<ReturnType<typeof getStocks>>;
+  stocks: Awaited<ReturnType<typeof getPublicStockDiscoveryStocks>>;
   ipos: Awaited<ReturnType<typeof getIpos>>;
   funds: Awaited<ReturnType<typeof getFunds>>;
   learnArticles: Awaited<ReturnType<typeof getLearnArticles>>;
@@ -210,7 +211,7 @@ function buildIndexAliases(entry: SearchCatalogEntry) {
 
 async function getSourceGraph(): Promise<SearchSourceGraph> {
   const [stocks, ipos, funds, learnArticles, learningPaths, marketEvents] = await Promise.all([
-    getStocks(),
+    getPublicStockDiscoveryStocks(),
     getIpos(),
     getFunds(),
     getLearnArticles(),
@@ -225,7 +226,7 @@ async function getSourceGraph(): Promise<SearchSourceGraph> {
     learnArticles,
     learningPaths,
     marketEvents,
-    catalog: await filterEntriesToPublishableCms(
+    catalog: await filterEntriesToPublicSearchRoutes(
       buildSearchCatalog({
         stocks,
         ipos,
@@ -419,6 +420,7 @@ export async function buildSearchIndexDocuments() {
     documents,
     summary: {
       totalDocuments: documents.length,
+      stockDocuments: documents.filter((item) => item.entityType === "stock").length,
       assetDocuments: documents.filter((item) =>
         ["stock", "stock_chart", "mutual_fund", "ipo", "wealth_product", "sector", "fund_category", "index"].includes(item.entityType),
       ).length,

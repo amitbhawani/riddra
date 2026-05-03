@@ -70,7 +70,7 @@ export function AdminShell({
             </div>
           </div>
         ) : null}
-        {children}
+        <div className="admin-readable-surface">{children}</div>
       </main>
     </div>
   );

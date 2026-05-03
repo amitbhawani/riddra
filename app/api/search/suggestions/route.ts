@@ -4,13 +4,13 @@ import { getServerSearchSuggestions } from "@/lib/search-suggestions";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get("query") ?? "";
+  const query = searchParams.get("query") ?? searchParams.get("q") ?? "";
   const limit = Number(searchParams.get("limit") ?? "8");
 
   try {
     const payload = await getServerSearchSuggestions(query, Number.isFinite(limit) ? limit : 8);
 
-    if (payload.degraded && query.trim()) {
+    if (payload.degraded && query.trim() && payload.suggestions.length === 0) {
       return NextResponse.json(payload, {
         status: 503,
         headers: {

@@ -56,6 +56,12 @@ const publishableCmsEntityTypes = Object.keys(
   publishableCmsEntityRouteBases,
 ) as PublishableCmsEntityType[];
 
+let publishableContentCacheVersion = 0;
+
+export function invalidatePublishableContentCaches() {
+  publishableContentCacheVersion += 1;
+}
+
 export function isDevelopmentPublishableFallbackEnabled() {
   return canUseDebugFallbackPaths() && env.devPublishableFallback === "true";
 }
@@ -293,8 +299,12 @@ async function getDevelopmentFallbackRecords(
   }
 }
 
-export const getPublishableCmsRecords = cache(
-  async (entityType: PublishableCmsEntityType): Promise<PublishableCmsRecord[]> => {
+const getPublishableCmsRecordsCached = cache(
+  async (
+    entityType: PublishableCmsEntityType,
+    cacheVersion: number,
+  ): Promise<PublishableCmsRecord[]> => {
+    void cacheVersion;
     let records: PublishableCmsRecord[] = [];
     let durableReadAttempted = false;
 
@@ -339,11 +349,19 @@ export const getPublishableCmsRecords = cache(
   },
 );
 
-export const getPublishableCmsRecordBySlug = cache(
+export async function getPublishableCmsRecords(
+  entityType: PublishableCmsEntityType,
+): Promise<PublishableCmsRecord[]> {
+  return getPublishableCmsRecordsCached(entityType, publishableContentCacheVersion);
+}
+
+const getPublishableCmsRecordBySlugCached = cache(
   async (
     entityType: PublishableCmsEntityType,
     slug: string,
+    cacheVersion: number,
   ): Promise<PublishableCmsRecord | null> => {
+    void cacheVersion;
     const normalizedSlug = normalizeSlug(slug);
 
     if (!normalizedSlug) {
@@ -355,19 +373,34 @@ export const getPublishableCmsRecordBySlug = cache(
   },
 );
 
+export async function getPublishableCmsRecordBySlug(
+  entityType: PublishableCmsEntityType,
+  slug: string,
+): Promise<PublishableCmsRecord | null> {
+  return getPublishableCmsRecordBySlugCached(entityType, slug, publishableContentCacheVersion);
+}
+
 export async function getPublishableCmsSlugSet(entityType: PublishableCmsEntityType) {
   return new Set(
     (await getPublishableCmsRecords(entityType)).map((record) => record.canonicalSlug),
   );
 }
 
-export const getPublishableCmsHrefSet = cache(async () => {
+const getPublishableCmsHrefSetCached = cache(async (cacheVersion: number) => {
   const records = (
-    await Promise.all(publishableCmsEntityTypes.map((entityType) => getPublishableCmsRecords(entityType)))
+    await Promise.all(
+      publishableCmsEntityTypes.map((entityType) =>
+        getPublishableCmsRecordsCached(entityType, cacheVersion),
+      ),
+    )
   ).flat();
 
   return new Set(records.map((record) => normalizePublicHref(record.href)));
 });
+
+export async function getPublishableCmsHrefSet() {
+  return getPublishableCmsHrefSetCached(publishableContentCacheVersion);
+}
 
 export async function filterEntriesToPublishableCms<T extends { href: string }>(entries: readonly T[]) {
   const publishableHrefSet = await getPublishableCmsHrefSet();
