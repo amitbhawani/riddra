@@ -87,6 +87,8 @@ export const metadata: Metadata = {
   description: "Riddra screener with saved stacks, truth-aware filters, intent-aware search, sortable results, and research-ready result framing.",
 };
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   searchParams: Promise<{
     query?: string;

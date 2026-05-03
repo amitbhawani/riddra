@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   description: "Explore stock charts, compare setups, and jump into dedicated chart routes from Riddra's chart workspace.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ChartsPage() {
   const stocks = await getStocks();
   const sidebar = await getGlobalSidebarRail("charts");

@@ -11,9 +11,8 @@ import {
 import {
   getStockChartSnapshot,
 } from "@/lib/chart-content";
-import { getPublicStockDiscoverySlugs, getStock, getStocks } from "@/lib/content";
+import { getStock } from "@/lib/content";
 import { getIndexSnapshot } from "@/lib/index-content";
-import { getPublishedAdminManagedStockFallbackRecords } from "@/lib/ipo-lifecycle";
 import type { StockSnapshot } from "@/lib/mock-data";
 import {
   getNativeStockChartData,
@@ -25,6 +24,7 @@ import { buildManagedRouteMetadata } from "@/lib/public-route-seo";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { getSharedSidebarRailData } from "@/lib/shared-sidebar-config";
 import { getNormalizedStockDetailData } from "@/lib/stock-normalized-detail";
+import { getStockRouteBuildWarmSlugs } from "@/lib/stock-route-static-slugs";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -85,32 +85,11 @@ const shareholdingPalette = [
   { label: "Public", shortLabel: "Public", color: "#374151", fallback: 6.37 },
 ] as const;
 
-const stockStaticParamOverrides = [
-  "alankit-limited",
-  "axita-cotton-limited",
-  "capillary-techno-india-l",
-  "dev-information-technology-limited",
-  "force-motors-limited",
-  "hardwyn-india-limited",
-  "infosys",
-] as const;
+export const dynamicParams = true;
+export const revalidate = 300;
 
 export async function generateStaticParams() {
-  const [stockSlugs, stocks, fallbackRecords] = await Promise.all([
-    getPublicStockDiscoverySlugs(),
-    getStocks(),
-    getPublishedAdminManagedStockFallbackRecords(),
-  ]);
-  const publishedSlugs = Array.from(
-    new Set([
-      ...stockSlugs,
-      ...stocks.map((stock) => stock.slug),
-      ...fallbackRecords.map((record) => record.slug),
-      ...stockStaticParamOverrides,
-    ]),
-  ).sort();
-
-  return publishedSlugs.map((slug) => ({ slug }));
+  return getStockRouteBuildWarmSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({

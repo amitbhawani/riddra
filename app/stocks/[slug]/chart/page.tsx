@@ -10,10 +10,11 @@ import { MarketDataStatusBadge } from "@/components/market-data-status-badge";
 import { PublicSurfaceTruthSection } from "@/components/public-surface-truth-section";
 import { Eyebrow, GlowCard } from "@/components/ui";
 import { getStockChartSnapshot } from "@/lib/chart-content";
-import { getStock, getStocks } from "@/lib/content";
+import { getStock } from "@/lib/content";
 import { getChartSnapshotPresentation } from "@/lib/market-session";
 import { buildBreadcrumbSchema, buildWebPageSchema } from "@/lib/seo";
 import { buildSeoMetadata } from "@/lib/seo-config";
+import { getStockRouteBuildWarmSlugs } from "@/lib/stock-route-static-slugs";
 import { getTradingviewStockSymbol } from "@/lib/tradingview-symbols";
 
 type PageProps = {
@@ -26,9 +27,11 @@ const nextMilestones = [
   "Expand chart controls with drawing, compare, and saved-layout support for deeper daily use.",
 ];
 
+export const dynamicParams = true;
+export const revalidate = 300;
+
 export async function generateStaticParams() {
-  const stocks = await getStocks();
-  return stocks.map((stock) => ({ slug: stock.slug }));
+  return getStockRouteBuildWarmSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

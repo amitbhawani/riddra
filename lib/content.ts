@@ -1062,6 +1062,36 @@ async function readCanonicalStockCatalogRows(): Promise<CanonicalStockCatalogRow
   return rows;
 }
 
+async function readCanonicalStockCatalogSlugs(): Promise<string[]> {
+  const supabase = await createSupabaseContentReadClient();
+  const slugs: string[] = [];
+
+  for (let start = 0; ; start += CANONICAL_STOCK_CATALOG_BATCH_SIZE) {
+    const end = start + CANONICAL_STOCK_CATALOG_BATCH_SIZE - 1;
+    const { data, error } = await supabase
+      .from("stocks_master")
+      .select("slug")
+      .eq("status", "active")
+      .order("slug", { ascending: true })
+      .range(start, end);
+
+    if (error) {
+      throw new Error(`Canonical stock slug read failed: ${error.message}`);
+    }
+
+    const page = (data ?? [])
+      .map((row) => normalizeCatalogSlug(row?.slug))
+      .filter((slug): slug is string => Boolean(slug));
+    slugs.push(...page);
+
+    if (page.length < CANONICAL_STOCK_CATALOG_BATCH_SIZE) {
+      break;
+    }
+  }
+
+  return slugs;
+}
+
 async function readStockDetailSourceRow(slug: string): Promise<StockDetailSourceRow | null> {
   const supabase = await createSupabaseContentReadClient();
 
@@ -1300,19 +1330,15 @@ async function buildPublicStockDiscoveryStocks(): Promise<StockSnapshot[]> {
 }
 
 async function buildPublicStockDiscoverySlugs(): Promise<string[]> {
-  const [canonicalRows, adminFallbackRecords] = await Promise.all([
-    readCanonicalStockCatalogRows(),
+  const [canonicalSlugs, adminFallbackRecords] = await Promise.all([
+    readCanonicalStockCatalogSlugs(),
     getPublishedAdminManagedStockFallbackRecords(),
   ]);
 
   const slugs = new Set<string>();
 
-  for (const row of canonicalRows) {
-    const slug = normalizeCatalogSlug(row.slug);
-
-    if (slug) {
-      slugs.add(slug);
-    }
+  for (const slug of canonicalSlugs) {
+    slugs.add(slug);
   }
 
   for (const record of adminFallbackRecords) {
